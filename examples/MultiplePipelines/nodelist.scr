@@ -2,8 +2,9 @@
 # processes to run on that node 
 #
 # Single node case
-neon.physics.ucdavis.edu:4
+neon.physics.ucdavis.edu:2
 
 # Example for two nodes, two processes each (dual core) 
 # lsst8.ncsa.uiuc.edu:2
 # lsst6.ncsa.uiuc.edu:2
+

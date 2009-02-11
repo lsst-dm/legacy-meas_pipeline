@@ -15,17 +15,15 @@ multifit. This pipeline benefits from having as many nodes as are available.
 Each slice will work on a fraction of the detection list. The more slices, the
 smaller the fraction of detections each slice has to work on.
 
-To run this example run:
+This example uses just one nodelist file for simplicity, but the pipelines need
+not run on the same nodes.
 
-% ./run.sh multifit_pipeline.paf <runId>
+To run this example run:
+% ./run.sh <coadd-policy> <runId> false
 
 and in a seperate shell:
-% ./run.sh coadd_pipeline.paf <runId>
+% ./run.sh <multifit-policy> <runId>
 
-the order in which the two pipelines are run does not matter. Both pipelines 
-will block waiting for their respective events. Just make sure both are running
-before transmitting the event to trigger the coadd pipeline.
+The pipelines must be run in this order. Both pipelines will block waiting for their respective events. To trigger execution, supply an event by running the script:
 
-The event can be supplied by a separate shell by running the script:
-
-% python triggerCoaddEventTramit.py
+% python triggerCoaddEventTransmitter.py
