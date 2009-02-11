@@ -1,0 +1,6 @@
+#-------------------------------------------------------------------------------
+# EventStage policies:
+#
+
+RunMode: "postprocess"
+keysToPublish:"triggerMultifitEvent=triggerDetectOnCoaddEvent"

@@ -1,0 +1,33 @@
+# single_pipeline_policy.paf
+#
+# This policy file excutes a deep detection pipeline within a scenario that
+# protoptypes slices that are completely data-parallel, and deep detection is
+# run front to back on every slice.
+# 
+# In this scenrario, the creation and subsequent detection on a coadd is
+# is duplicated accross slices. This imposes the constraint that the algorithms
+# contained within these stages MUST be completely deterministic. Otherwise 
+# two slices could output different detection lists for the same image set
+#
+# The Pipeline is triggered by a single event, this is event is issued with the
+# test script triggerMultifitEventTransmitter.py
+#
+executionMode: "oneloop"
+localLogMode: true
+shutdownTopic: "triggerShutdownEvent"
+
+appStage: {
+    stageName: "lsst.meas.pipeline.CreateCoaddStage"
+    eventTopic: "triggerMultifitEvent"
+    stagePolicy: "policy/create_coadd.paf"
+}
+appStage: {    
+    stageName: "lsst.meas.pipeline.DetectOnCoaddStage"
+    eventTopic: "None"
+    stagePolicy: "policy/detect_on_coadd.paf"
+}
+appStage: {
+    stageName: "lsst.meas.pipeline.MultifitStage"
+    eventTopic: "None"
+    stagePolicy: "policy/multifit.paf"
+}

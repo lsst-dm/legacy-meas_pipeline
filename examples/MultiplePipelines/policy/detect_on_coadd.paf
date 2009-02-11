@@ -1,0 +1,15 @@
+#-------------------------------------------------------------------------------
+# EventStage policies:
+#
+
+RunMode: "postprocess"
+keysToPublish: "triggerMultifitEvent"
+
+
+#-------------------------------------------------------------------------------
+# Detection policies:
+#
+
+#threshold: 
+#minNpix:
+

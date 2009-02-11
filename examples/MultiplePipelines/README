@@ -1,0 +1,31 @@
+
+meas_pipeline examples/MultiplePipelines
+----------------------------------------------
+
+This example illustrates how to run the deep detection pipeline as two 
+distinct pipelines with different data-parallelism.
+
+The first pipeline is responsible for generating a coadd and generating a 
+list of detections in that coadd. It then persists this list to DB storage, and
+triggers the second pipeline via an event. This pipeline operates on only 1 node
+with 1 worker, and gains no benefit from more.
+
+The second pipeline retrieves the detection list from storage and then performs
+multifit. This pipeline benefits from having as many nodes as are available. 
+Each slice will work on a fraction of the detection list. The more slices, the
+smaller the fraction of detections each slice has to work on.
+
+To run this example run:
+
+% ./run.sh multifit_pipeline.paf <runId>
+
+and in a seperate shell:
+% ./run.sh coadd_pipeline.paf <runId>
+
+the order in which the two pipelines are run does not matter. Both pipelines 
+will block waiting for their respective events. Just make sure both are running
+before transmitting the event to trigger the coadd pipeline.
+
+The event can be supplied by a separate shell by running the script:
+
+% python triggerCoaddEventTramit.py

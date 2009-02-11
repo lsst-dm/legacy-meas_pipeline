@@ -1,0 +1,29 @@
+# multifit_pipeline_policy.paf
+#
+# This policy file triggers a deep detection pipeline within a scenario that
+# protoptypes a change in data-parallelism between the DetectOnCoaddStage and
+# the MultifitStage.
+# 
+# In this scenrario, the creation and subsequent detection on a coadd is
+# performed in its entirety on a single slice, and then the detectionlist is
+# persisted to DB storage before a new pipeline is triggered to perform the
+# MultifitStage
+#
+# The Pipeline is triggered by a the event triggerMultifitEvent published from
+# and EventStage after the DetectOnCoaddStage. It must first retrieve the 
+# detectionList via an InputStage before proceeding to perform MultifitStage.
+#
+executionMode: "oneloop"
+localLogMode: true
+shutdownTopic: "triggerShutdownEvent"
+
+appStage: {
+    stageName: "lsst.pex.harness.IOStage.InputStage"
+    eventTopic: "triggerMultifitEvent"
+    stagePolicy: "policy/input_detection.paf"
+}
+appStage: {
+    stageName: "lsst.meas.pipeline.MultifitStage"
+    eventTopic: "None"
+    stagePolicy: "policy/multifit.paf"
+}

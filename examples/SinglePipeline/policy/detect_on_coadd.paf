@@ -1,0 +1,14 @@
+
+
+#can also define a Persistence policy for the persistable object
+#Persitence: {
+#}
+
+
+#-------------------------------------------------------------------------------
+# Detection policies:
+#
+
+#threshold: 
+#minNpix:
+

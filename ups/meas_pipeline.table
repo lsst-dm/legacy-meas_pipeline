@@ -1,4 +1,6 @@
 setupRequired(utils)
+setupRequired(daf_data >= 3.2.2)
+setupRequired(pex_harness)
 
 envAppend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
 envAppend(DYLD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)

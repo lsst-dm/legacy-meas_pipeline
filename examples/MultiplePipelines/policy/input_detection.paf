@@ -1,0 +1,20 @@
+#-------------------------------------------------------------------------------
+# OutputStage policies:
+#
+
+RunMode: "process"
+
+#TODO: Determine how to persist detections.
+#InputItems: {
+#    DetectionList: {
+#        Type: ?
+#        PythonType: ?
+#        StoragePolicy: {
+#            Storage: "DbTsvStorage"
+#            Location: "_tmp_detectionList.runId%{runId}"
+#        }
+#    }
+#}
+
+#Can also define a Persistence object Policy
+#Persistence :{}

@@ -1,0 +1,5 @@
+# Format for node list is hostname followed by number of 
+# processes to run on that node 
+#
+# Single node case
+neon.physics.ucdavis.edu:4
