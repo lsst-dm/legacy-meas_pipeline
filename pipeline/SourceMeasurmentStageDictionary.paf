@@ -1,0 +1,88 @@
+#<?cfg paf dictionary ?>
+#
+# this is a comment
+#
+target: lsst.meas.pipeline.MeasureSourcesStage
+
+definitions: {
+    runMode: {        
+        type: "string"
+        description: "determines the run mode of this stage."
+        minOccurs: 0
+        maxOccurs: 1
+        default: "process"
+        allowed: {
+            value:  "preprocess"
+            description: "Initialize the coadd in the master pipeline process
+                          before any (subclass) processing."
+        }
+        allowed: {
+            value: "process"
+            description: "Initialize coadd in each worker slice."
+        }
+        allowed: {
+            value: "postprocess"
+            description: "Initialize the coadd the master pipeline process 
+                          after any (subclass) processing."
+        }
+    }
+    measureObjects: {
+        type: "policy"        
+        description: "policy for configuring measurement algorithms"
+        minOccurs: 1
+        maxOccurs: 1
+        dictionary: {
+            target: lsst.meas.algorithms.MeasureSources
+            definitions: {
+                centroidAlgorithm: {
+                    type: "string"
+                    description: "specifies the centroiding algorithm to use"
+                    minOccurs: 1
+                    maxOccurs: 1
+                    allowed: {
+                        value: "SDSS"
+                        description: "use the algorithm from SDSS"
+                    }
+                }
+                shapeAlgorithm: {
+                    type: "string"
+                    description: "specified the shape measurement algorithm"
+                    minOccurs: 1
+                    maxOccurs: 1
+                    allowed: {
+                        value: "SDSS"
+                        description: "use the algorithm from SDSS"
+                    }
+                }
+            }
+        }
+    }
+    exposureKey: {
+    	type: "string"
+    	description: "specify the clipboard key of the exposure to measure on."
+		minOccurs: 0
+		maxOccurs: 1
+		default: "Exposure"
+	}    	
+    psfKey: {
+        type: "string"
+        description: "specify the clipboard key of the psf to use."
+        minOccurs: 0
+        maxOccurs: 1
+        default: "PSF"
+    }
+    positiveDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the positive DetectionSet"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "PositiveDetectionKey"
+    }
+    negativeDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the negative DetectionSet"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "NegativeDetectionKey"
+    }
+}

@@ -1,4 +1,7 @@
-setupRequired(utils)
+setupRequired(pex_harness)
+setupRequired(meas_algorithms)
+setupRequired(meas_astrom)
+setupRequired(meas_marshall)
 
 envAppend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
 envAppend(DYLD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
