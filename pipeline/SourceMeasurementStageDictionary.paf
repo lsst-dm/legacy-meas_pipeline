@@ -57,20 +57,29 @@ definitions: {
             }
         }
     }
-    exposureKey: {
-    	type: "string"
-    	description: "specify the clipboard key of the exposure to measure on."
-		minOccurs: 0
-		maxOccurs: 1
-		default: "Exposure"
+    data: {
+    	type: "policy"		
+    	description: "specify the clipboard key of the exposure to measure on."		
+		minOccurs: 0		
+		dictionary:{
+			definitions: {
+				inputKey :{
+					type: "string"
+					description: "clipboard key of the input exposure"
+					minOccurs: 1
+					maxOccurs: 1
+					default: "Exposure"					
+				}
+				outputKey: {
+					type: "string"
+					description: "clipboard key of the output SourceSet"
+					minOccurs: 1
+					maxOccurs: 1
+					default: "SourceSet"					
+				}
+			}
+		}		
 	}    	
-    psfKey: {
-        type: "string"
-        description: "specify the clipboard key of the psf to use."
-        minOccurs: 0
-        maxOccurs: 1
-        default: "PSF"
-    }
     positiveDetectionKey: {
         type: "string"
         description: "specify the clipboard key of the positive DetectionSet"

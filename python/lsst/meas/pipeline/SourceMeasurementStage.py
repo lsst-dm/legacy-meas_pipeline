@@ -6,7 +6,7 @@ import lsst.pex.harness.Stage as stage
 import lsst.pex.policy as policy
 
 from lsst.pex.logging import Log, Rec
-
+import lsst.pex.exception as pexExcept
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImg
 import lsst.afw.math as afwMath
@@ -17,27 +17,28 @@ class SourceMeasurementStage(Stage):
     """
     Description:
         This stage wraps the measurement of sources on an exposure.
-        The exposure to detect should be in the clipboard along with the
-        DetectionSet(s) to measure on that exposure. The keys for the
-        exposure, its psf, and the DetectionSet(s) can be specified in the 
+        The exposures to measure on should be in the clipboard along with the
+        DetectionSet(s) to measure on those exposures. The keys for the
+        exposures, and the DetectionSet(s) can be specified in the 
         policy file. If not specified, default keys will be used
 
     Policy Input: 
-    - runMode (string): optional, default "process"    
-    - exposureKey (string): optional, default "Exposure"
+    - runMode (string): optional, default "process"  
+    - exposure (policy array): optional, default:
+		-inputKeys (strin
     - psfKey (string): optional, default "PSF"
     - positiveDetectionKey (string): optional, default "PositiveDetectionSet"
     - negativeDetectionKey (string): optional, default "NegativeDetectionSet"
     - outputKey (string): optional, default "SourceSet"
 
     Clipboard Input:
-    - Exposure: REQUIRED with key specified in policy ("exposureKey")
+    - Exposure(s): REQUIRED with key specified in policy ("exposureKey")
     - Psf: optional with key specified in policy ("psfKey")
     - DetectionSet(s): with key(s) specified in policy 
             ("positiveDetectionKey", "negativeDetectionKey")
 
-    ClipboardOutput:
-    - Exposure from input with same key name
+    Clipboard Output:
+    - Exposure(s) from input with same key name
     - Psf from input with same key name
     - DetetectionSet(s) from input with same key name(s)
     - SourceSet with key name specified in policy ("outputKey")
@@ -48,8 +49,8 @@ class SourceMeasurementStage(Stage):
         lsst.pex.harness.Stage.Stage.__init__(self,stageId, policy)
         # initialize a log
         self.log = Log(Log.getDefaultLog(), "SourceMeasurementStage")
-
-    def preprocess(self):
+    
+	def preprocess(self):
         """
         Measure sources in the master process before any processing
         """
@@ -80,65 +81,64 @@ class SourceMeasurementStage(Stage):
  
 
     def _measureSources(self):
-        self._validatePolicy()
-        queueLength = self.inputQueue.size();
-        for i in xrange(queueLength):
-            clipboard = self.inputQueue.getNextDataset()
-            exposure = clipboard.get(self._exposureKey)
-            psf = clipboard.get(self._psfKey)
-            dsPositive = clipboard.get(self._positiveDetectionKey)
-            dsNegative = clipboard.get(self._negativeDetectionKey)
-            
-            if exposure == None:
-                # Don't have an exposure to work with
-                # log warning and move on to next clipboard
-                continue
-                                    
-            if psf == None:
-                self.log.log(Log.DEBUG, "No PSF found on clipboard use default")                                        
-                measureSources = measAlg.makeMeasureSources( \
-                        exposure, \
-                        self._measurePolicy)
-            else:                
-                measureSources = measAlg.makeMeasureSources( \
-                        exposure, \
-                        self._measurePolicy, \
-                        psf)
-            
-            #
-            # Need to do something smart about merging positive and negative
-            # detection sets.             
-            #
-            # For now, assume they are disjoint sets, so merge is trivial
-            #   
-            footprintList = afwDet.FootprintContainerT()
-            if dsPositive != None:
-                self.log.log(Log.DEBUG, "Positive DetectionSet found")
-                for fp in dsPositive.getFootprints():
-                    footprintList.append(fp)
-            if dsNegative != None:
-                self.log.log(Log.DEBUG, "Negative DetectionSet found")
-                for fp in dsNegative.getFootprints():
-                    footprintLIst.append(fp)
+        self._validatePolicy()  	
+        clipboard = self.inputQueue.getNextDataset()		
+		self._getClipboardData(clipboard)
+						
+	    #
+        # Need to do something smart about merging positive and negative
+        # detection sets.             
+        #
+		# For now, assume they are disjoint sets, so merge is trivial
+		#   
+		footprintList = afwDet.FootprintContainerT()
+		if self._dsPositive != None:
+			self.log.log(Log.DEBUG, "Positive DetectionSet found")
+			for fp in self._dsPositive.getFootprints():
+				footprintList.append(fp)
+		if self._dsNegative != None:
+			self.log.log(Log.DEBUG, "Negative DetectionSet found")
+			for fp in self._dsNegative.getFootprints():
+				footprintList.append(fp)
+					
+		for exposure, outKey in zip(self._exposureList, self._outputKeys):
+            measureSources = measAlg.makeMeasureSources( exposure,
+														 self._measurePolicy)			
+			#rhl assures me psf will be in  exposure
+			#psf = exposure.getPsf()     			
+            #measureSources = measAlg.makeMeasureSources( exposure,
+			#								    self._measurePolicy
+			#  								    psf)			
             
             sourceSet = afwDetection.SourceSet()
             sourceId = 0;
             for footprint in footprintList:
                 source = afwDet.Source()
+				sourceList.append(source)
+				source.setId(sourceId)
+                sourceId += 1
                 try:
                     measureSources.apply(source, footprint)
                 except:
-                    self.log.log(Log.WARN, "Source measurement failed-skipping")
-                    continue
-
-                source.setId(sourceId)
-                sourceList.append(source)
-                sourceId+=1
-
-            clipboard.put(outputKey, sourceSet)
-            self.outputQueue.addDataset(clipboard)
-
-                    
+					# don't worry about measurement exceptions
+           			pass                    
+					            
+			clipboard.put(outKey, sourceSet)
+			
+        self.outputQueue.addDataset(clipboard)
+	
+	
+	def _getClipboardData(self, clipboard):
+		self._exposureList = []
+		for key in self._inputKeys:
+			exposure = clipboard.get(key)
+			if exposure == None:			
+				raise pexExcept.NotFoundException("exposureKey %s"%key)
+			self._exposureList.append(clipboard.get(key))
+				            
+        self._dsPositive = clipboard.get(self._positiveDetectionKey)
+        self._dsNegative = clipboard.get(self._negativeDetectionKey)
+		
     def _validatePolicy(self): 
         if not self._policy.exists("measureObjects"):
             self.log.log(Log.WARN, "Using default measureObjects Policy")
@@ -148,18 +148,13 @@ class SourceMeasurementStage(Stage):
         else:
             self._measurePolicy = self._policy
 
-        if self._policy.exists("exposureKey"):
-            self._exposureKey = self._policy.getString("exposureKey")
-        else:
-            self.log.log(Log.WARN, "Using default exposureKey=\"Exposure\"")
-            self._exposureKey = "Exposure"
+        if self._policy.exists("data"):
+            self._inputKeys = self._policy.getStringArray("data.inputKey")
+			self._outputKeys = self._policy.getStringArray("data.outputKey")
+        else:            
+            self._inputKeys = ["Exposure"]
+			self._outputKeys = ["SourceSet"]
 
-        if self._policy.exists("psfKey"):
-            self._psfKey = self._policy.getString("psfKey")
-        else:
-            self.log.log(Log.WARN, "Using default psfKey=\"PSF\"")
-            self._psfKey = "PSF"
-           
         if self._policy.exists("positiveDetectionKey"):
             self._positiveDetectionKey = \
                     self._policy.getString("positiveDetectionKey")
@@ -173,9 +168,3 @@ class SourceMeasurementStage(Stage):
         else:
             self.log.log(Log.WARN, "Using default negativeDetectionKey=\"NegativeDetectionSet\"")
             self._negativeDetectionKey = "NegativeDetectionSet"
-
-        if self._policy.exists("outputKey"):
-            self._outputKey = self._policy.getString("outputKey")
-        else:
-            self.log.log(Log.WARN, "Using default outputKey=\"SourceSet\"")
-            self._outputKey = "SourceSet"

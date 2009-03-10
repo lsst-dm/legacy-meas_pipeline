@@ -87,98 +87,94 @@ class SourceDetectionStage(Stage):
 
 
     def _detectSources(self):
-        self._validatePolicy()
+        self._validatePolicy()               
         
-        queueLength = self.inputQueue.size()       
-        self.log.log(Log.INFO, ("%d Datasets found in inputQueue" % queueLength))
+		clipboard = self.inputQueue.getNextDataset()
+        exposure = clipboard.get(self._exposureName)
 
-        for i in xrange(queueLength):
-            clipboard = self.inputQueue.getNextDataset()
-            exposure = clipboard.get(self._exposureName)
+        if exposure == None:
+            self.log.log(Log.WARN, "No input exposure - skipping dataset")
+			continue
 
-            if exposure == None:
-                self.log.log(Log.WARN, "No input exposure - skipping dataset")
-                continue
+		psf = clipboard.get(self._psfName)
+		if psf == None:
+			self.log.log(Log.WARN, "No input psf - skipping dataset")
+			continue
 
-            psf = clipboard.get(self._psfName)
-            if psf == None:
-                self.log.log(Log.WARN, "No input psf - skipping dataset")
-                continue
-
-            maskedImage = exposure.getMaskedImage()
-            convoledImage = maskedImage.Factory(maskedImage.getDimensions())
-            origin = afwImg.PointI(maskedImage.getX0(), maskedImage.getY0())
-            convolvedImage.setXY0(origin)
+		maskedImage = exposure.getMaskedImage()
+		convoledImage = maskedImage.Factory(maskedImage.getDimensions())
+		origin = afwImg.PointI(maskedImage.getX0(), maskedImage.getY0())
+		convolvedImage.setXY0(origin)
             
-            #
-            # Do not propagate the convolved CD/INTRP bits
-            # Save them for the original CR/INTRP pixels
-            #
-            mask = maskedImage.getMask()                
-            savedMask = mask.Factory(mask, True)
-            savedBits = savedMask.getPlaneBitMask("CR") | \
-                        savedMask.getPlaneBitMask("BAD") | \
-                        savedMask.getPlaneBitMask("INTRP")
-            savedMask &= savedBits
-            mask &= ~savedBits;
-            del mask
+		#
+		# Do not propagate the convolved CD/INTRP bits
+		# Save them for the original CR/INTRP pixels
+		#
+		mask = maskedImage.getMask()                
+		savedMask = mask.Factory(mask, True)
+		savedBits = savedMask.getPlaneBitMask("CR") | \
+					savedMask.getPlaneBitMask("BAD") | \
+					savedMask.getPlaneBitMask("INTRP")
+		savedMask &= savedBits
+		mask &= ~savedBits;
+		del mask
 
-            # 
-            # Smooth the Image
-            #
-            psf.convolve(convolvedImage, 
-                             maskedImage, 
-                             convolvedImage.getMask().getMaskPlane("EDGE"))
+		# 
+		# Smooth the Image
+		#
+		psf.convolve(convolvedImage, 
+					 maskedImage, 
+					 convolvedImage.getMask().getMaskPlane("EDGE"))
             
-            mask = convolvedImage.getMask()
-            mask |= savedMask
-            del mask
+		mask = convolvedImage.getMask()
+		mask |= savedMask
+		del mask
             
-            #
-            # Only search psf-smooth part of frame
-            #
-            llc = afwImg.PointI(psf.getKernel().getWidth()/2, 
-                                    psf.getKernel().getHeight()/2)
-            urc = afwImg.PointI(convolvedImage.getWidth() - 1,
-                                convolvedImage.getHeight() - 1)
-            urc -= llc
-            bbox = afwImg.BBox(llc, urc)
-            middle = convolvedImage.Factory(convolvedImage, bbox)
+		#
+		# Only search psf-smooth part of frame
+		#
+		llc = afwImg.PointI(psf.getKernel().getWidth()/2, 
+							psf.getKernel().getHeight()/2)
+		urc = afwImg.PointI(convolvedImage.getWidth() - 1,
+							convolvedImage.getHeight() - 1)
+		urc -= llc
+		bbox = afwImg.BBox(llc, urc)
+		middle = convolvedImage.Factory(convolvedImage, bbox)
 
-            if self._negativeThreshold != None:            
-                #detect negative sources
-                dsNegative = self._detectionSetType(middle,
-                                                    self._negativeThreshold,
-                                                    "FP-",
-                                                    self._minPixels)
-                clipboard.put("NegativeDetectionSet", dsPositive)
+		if self._negativeThreshold != None:            
+			#detect negative sources
+			dsNegative = self._detectionSetType(middle,
+												self._negativeThreshold,
+												"FP-",
+												self._minPixels)
+			clipboard.put("NegativeDetectionSet", dsPositive)
 
-            if self._positiveThreshold != None:            
-                #detect positive sources
-                dsPositive = self._detectionSetType(maskedImage,
-                                                    self._positiveThreshold,
-                                                    "FP+",
-                                                    self._minPixels)
-                clipboard.put("PositiveDetectionSet", dsPositive)
+		if self._positiveThreshold != None:            
+			#detect positive sources
+			dsPositive = self._detectionSetType(maskedImage,
+												self._positiveThreshold,
+												"FP+",
+												self._minPixels)
+			clipboard.put("PositiveDetectionSet", dsPositive)
 
-            #
-            # Reinstate the saved bits in the unsmoothed image
-            #
-            savedMask <<= convolvedImage.getMask()
-            mask = maskedImage.getMask()
-            mask |= savedMask
+		#
+		# Reinstate the saved bits in the unsmoothed image
+		#
+		savedMask <<= convolvedImage.getMask()
+		mask = maskedImage.getMask()
+		mask |= savedMask
 
-            #
-            # clean up
-            #
-            del middle
-            del mask
-            del savedMask
+		#
+		# clean up
+		#
+		del middle
+		del mask
+		del savedMask
 
-            # 
-            # Push clipboard to outputQueue
-            #
-            self.outputQueue.addDataSet(clipboard)
+		# 
+		# Push clipboard to outputQueue
+		#
+		self.outputQueue.addDataSet(clipboard)
 
 
     def _validatePolicy(self):
