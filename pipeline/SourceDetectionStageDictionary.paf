@@ -5,27 +5,8 @@
 target: lsst::detection::pipeline::SourceDetectionStage
 
 definitions: {
-    runMode: {        
-        type: "string"
-        description: "determines the run mode of this stage."
-        minOccurs: 0
-        maxOccurs: 1
-        default: "process"
-        allowed: {
-            value:  "preprocess"
-            description: "Initialize the coadd in the master pipeline process
-                          before any (subclass) processing."
-        }
-        allowed: {
-            value: "process"
-            description: "Initialize coadd in each worker slice."
-        }
-        allowed: {
-            value: "postprocess"
-            description: "Initialize the coadd in the master pipeline process 
-                          after any (subclass) processing."
-        }
-    }
+	#the following declaration doesn't work, it is just for documentation
+    runMode: @RunModeDictionary.paf
     exposureKey: {
     	type: "string"
     	description: "specify the clipboard key of the exposure to detect on."
