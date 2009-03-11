@@ -1,0 +1,97 @@
+#<?cfg paf dictionary ?>
+#
+# Dictionary for SourceDetectionStage policies
+#
+target: lsst::detection::pipeline::SourceDetectionStage
+
+definitions: {
+    runMode: {        
+        type: "string"
+        description: "determines the run mode of this stage."
+        minOccurs: 0
+        maxOccurs: 1
+        default: "process"
+        allowed: {
+            value:  "preprocess"
+            description: "Initialize the coadd in the master pipeline process
+                          before any (subclass) processing."
+        }
+        allowed: {
+            value: "process"
+            description: "Initialize coadd in each worker slice."
+        }
+        allowed: {
+            value: "postprocess"
+            description: "Initialize the coadd in the master pipeline process 
+                          after any (subclass) processing."
+        }
+    }
+    exposureKey: {
+    	type: "string"
+    	description: "specify the clipboard key of the exposure to detect on."
+		minOccurs: 0
+		maxOccurs: 1
+		default: "Exposure"
+	}    	
+    psfKey: {
+        type: "string"
+        description: "specify the clipboard key of the psf to use"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "PSF"
+    }
+    minPixelsPerSource: {
+        type: "int"
+        description: "detected sources with fewer than the specified number
+                      of pixels will be ignored"
+        minOccurs: 1
+        maxOccurs: 1
+        min: 0
+    }
+    thresholdValue: {
+        type: "double"
+        description: "value assigned to the threshold object used in detection"
+        minOccurs: 1
+        maxOccurs: 1
+        min: 0
+    }    
+    thresholdType: {
+        type: "string"
+        description: "specified the desired flavor of Threshold"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "value"
+        allowed: {
+            value: "variance"
+            description: "threshold applied to image variance"
+        }
+        allowed: {
+            value: "variance"
+            description: "threshold applied to image std deviation"
+        }
+        allowed: {
+            value: "variance"
+            description: "threshold applied to image value"
+        }
+    }
+    thresholdPolarity: {
+        type: "string"
+        description: "specifies whether to detect positive, or negative sources,
+                      or both"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "positive"
+        allowed: {
+            value: "positive"
+            description: "detect only positive sources"
+        }
+        allowed: {
+            value: "negative"
+            description: "detect only negative sources"
+        }
+        allowed: {
+            value: "both"
+            description: "detect both positive and negative sources"
+        }
+    }
+}
