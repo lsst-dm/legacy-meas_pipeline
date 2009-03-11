@@ -86,129 +86,126 @@ class SourceDetectionStage(Stage):
             self._detectSources()
 
 
-    def _detectSources(self):
-        self._validatePolicy()               
+    def __detectSources__(self):
+        self.__validatePolicy__()               
         
-		clipboard = self.inputQueue.getNextDataset()
-        exposure = clipboard.get(self._exposureName)
-
+        clipboard = self.inputQueue.getNextDataset()
+        exposure = clipboard.get(self.__exposureKey__)
+        psf = clipboard.get(self.__psfKey__)
+       
+        dsPositive, dsNegative = self.__detectSourcesImpl()
+        self.__output__(clipboard, dsPositive, dsNegative)
+    
+    def __detectSourcesImpl__(self, exposure, psf) 
         if exposure == None:
-            self.log.log(Log.WARN, "No input exposure - skipping dataset")
-			continue
-
-		psf = clipboard.get(self._psfName)
-		if psf == None:
-			self.log.log(Log.WARN, "No input psf - skipping dataset")
-			continue
-
-		maskedImage = exposure.getMaskedImage()
-		convoledImage = maskedImage.Factory(maskedImage.getDimensions())
-		origin = afwImg.PointI(maskedImage.getX0(), maskedImage.getY0())
-		convolvedImage.setXY0(origin)
+            self.log.log(Log.FATAL, 
+                    "Cannot perform detection - no input exposure")
+            return 
+        
+        if psf == None:
+            self.log.log(Log.FATAL, "Cannot perform detection - no input psf")
+            return 
+        
+        maskedImage = getMaskedImage()
+        convoledImage = maskedImage.Factory(maskedImage.getDimensions())
+        origin = afwImg.PointI(maskedImage.getX0(), maskedImage.getY0())
+        convolvedImage.setXY0(origin)
             
-		#
-		# Do not propagate the convolved CD/INTRP bits
-		# Save them for the original CR/INTRP pixels
-		#
-		mask = maskedImage.getMask()                
-		savedMask = mask.Factory(mask, True)
-		savedBits = savedMask.getPlaneBitMask("CR") | \
-					savedMask.getPlaneBitMask("BAD") | \
-					savedMask.getPlaneBitMask("INTRP")
-		savedMask &= savedBits
-		mask &= ~savedBits;
-		del mask
-
-		# 
-		# Smooth the Image
-		#
-		psf.convolve(convolvedImage, 
-					 maskedImage, 
-					 convolvedImage.getMask().getMaskPlane("EDGE"))
+        #
+        # Do not propagate the convolved CD/INTRP bits
+        # Save them for the original CR/INTRP pixels
+        #
+        mask = maskedImage.getMask()                
+        savedMask = mask.Factory(mask, True)
+        savedBits = savedMask.getPlaneBitMask("CR") | \
+                    savedMask.getPlaneBitMask("BAD") | \
+                    savedMask.getPlaneBitMask("INTRP")
+        savedMask &= savedBits
+        mask &= ~savedBits;
+        del mask
+        
+        # 
+        # Smooth the Image
+        #
+        psf.convolve(convolvedImage, 
+                     maskedImage, 
+                     convolvedImage.getMask().getMaskPlane("EDGE"))
+        
+        mask = convolvedImage.getMask()
+        mask |= savedMask
+        del mask
             
-		mask = convolvedImage.getMask()
-		mask |= savedMask
-		del mask
-            
-		#
-		# Only search psf-smooth part of frame
-		#
-		llc = afwImg.PointI(psf.getKernel().getWidth()/2, 
-							psf.getKernel().getHeight()/2)
-		urc = afwImg.PointI(convolvedImage.getWidth() - 1,
-							convolvedImage.getHeight() - 1)
-		urc -= llc
-		bbox = afwImg.BBox(llc, urc)
-		middle = convolvedImage.Factory(convolvedImage, bbox)
+        #
+        # Only search psf-smooth part of frame
+        #
+        llc = afwImg.PointI(psf.getKernel().getWidth()/2, 
+                            psf.getKernel().getHeight()/2)
+        urc = afwImg.PointI(convolvedImage.getWidth() - 1,
+                            convolvedImage.getHeight() - 1)
+        urc -= llc
+        bbox = afwImg.BBox(llc, urc)
+        middle = convolvedImage.Factory(convolvedImage, bbox)
+        
+        if self.__negativeThreshold__ != None:            
+            #detect negative sources
+            dsNegative = self.__detectionSetType__(middle,
+                                                self.__negativeThreshold__,
+                                                "FP-",
+                                                self.__minPixels__)
+        
+        if self.__positiveThreshold__ != None:            
+            #detect positive sources
+            dsPositive = self.__detectionSetType__(maskedImage,
+                                                self.__positiveThreshold__,
+                                                "FP+",
+                                                self.__minPixels__)
+        
+        #
+        # Reinstate the saved bits in the unsmoothed image
+        #
+        savedMask <<= convolvedImage.getMask()
+        mask = maskedImage.getMask()
+        mask |= savedMask
 
-		if self._negativeThreshold != None:            
-			#detect negative sources
-			dsNegative = self._detectionSetType(middle,
-												self._negativeThreshold,
-												"FP-",
-												self._minPixels)
-			clipboard.put("NegativeDetectionSet", dsPositive)
+        #
+        # clean up
+        #
+        del middle
+        del mask
+        del savedMask
+       
+        return dsPositive, dsNegative
+        
 
-		if self._positiveThreshold != None:            
-			#detect positive sources
-			dsPositive = self._detectionSetType(maskedImage,
-												self._positiveThreshold,
-												"FP+",
-												self._minPixels)
-			clipboard.put("PositiveDetectionSet", dsPositive)
-
-		#
-		# Reinstate the saved bits in the unsmoothed image
-		#
-		savedMask <<= convolvedImage.getMask()
-		mask = maskedImage.getMask()
-		mask |= savedMask
-
-		#
-		# clean up
-		#
-		del middle
-		del mask
-		del savedMask
-
-		# 
-		# Push clipboard to outputQueue
-		#
-		self.outputQueue.addDataSet(clipboard)
-
-
-    def _validatePolicy(self):
+    def __output__(self, clipboard, dsPositive, dsNegative):
+        if dsPositive != None:
+            if self._policy.exists("positiveDetectionKey"):
+                positiveOutKey = self._policy.getString("positiveDetectionKey")
+            else:
+                positiveOutKey = "PositiveFootprintSet"
+            clipboard.put(positiveOutKey, dsPositive)
+        
+        if dsNegative != None:
+            if self._policy.exists("negativeDetectionKey"):
+                negativeOutKey = self._policy.getString("negativeDetectionKey")
+            else:
+                negativeOutKey = "NegativeFootprintSet"
+            clipboard.put(negativeOutKey, dsNegative)
+        
+        #and push out the clipboard
+        self.outputQueue.addDataSet(clipboard)
+    
+    def __validatePolicy__(self):
         """
         Validates the policy object.
         Returns the name of the exposure on the clipboard.
         """
-        #Required policy components:
+        # Required policy components:
         # minPixelsPerSource: defines the minimum source size
         # thresholdValue: defines the detection threshold
-        self.minPixels = self._policy.getInt("minPixelsPerSource")
+        self.__minPixels__ = self._policy.getInt("minPixelsPerSource")
         thresholdValue = self._policy.getPolicy("thresholdValue")
-
-        if not self._policy.exists("exposurePixelType"):
-            self.log.log(Log.WARN, "Using default \
-                    exposurePixelType=\"float\"")    
-            self._detectionSetType = afwDet.DetectionSetF
-        else:
-            exposurePixelType = self.policy.getString("exposurePixelType")
-            if exposurePixelType == "int":
-                self._detectionSetType = afwDet.DetectionSetI
-            elif exposurePixelType == "double":
-                self._detectionSetType = afwDet.DetectionSetD
-            else:
-                if exposurePixelType != "float":
-                    self.log.log(Log.WARN, ("Illegal pixel type: %s \
-                            specified for policy component exposurePixelType"\
-                            % exposurePixelType))
-                    self.log.log(Log.WARN, "Using default \
-                            exposurePixelType=\"float\"")                                          
-                
-                self._detectionSetType = afwDet.DetectionSetF
-
-        #Look for a threshold type
+        
         #Default to "value"
         if not self._policy.exists("thresholdType"):
             thresholdType = "value"
@@ -216,7 +213,7 @@ class SourceDetectionStage(Stage):
                     thresholdType=\"value\"")
         else:
             thresholdType = self._policy.getString("thresholdType")
-            
+         
         #Look for a threshold polarity.
         #Default to positive
         if not self._policy.exists("thresholdPolarity"):
@@ -225,16 +222,16 @@ class SourceDetectionStage(Stage):
                     thresholdPolarity=\"positive\"")
         else:
             polarity = self._policy.getString("thresholdPolarity")
-
-        self._negativeThreshold = None
+        
+        self.__negativeThreshold__ = None
         if polarity == "negative" or polarity == "both":
             #create a Threshold for negative detections
             policy.set("polarity", False)
-            self._negativeThreshold = afwDet.createThreshold(thresholdValue,\
-                                                            thresholdType,\
-                                                            False)
-
-        self._positiveThreshold = None
+            self.__negativeThreshold__ = afwDet.createThreshold(thresholdValue,\
+                                                             thresholdType,\
+                                                             False)
+        
+        self.__positiveThreshold__ = None
         if polarity != "negative":
             #This conditional catches:
             # polarity == "positive"
@@ -242,18 +239,18 @@ class SourceDetectionStage(Stage):
             # and malformed polarity values
             # create a Threshold for positive detections
             policy.set("polarity", True)
-            self._positiveThreshold = afwDet.createThreshold(thresholdValue,\
-                                                            thresholdType,\
-                                                            True)
-
-        if self._policy.exists("exposureKey") 
-            self._exposureKey = self._policy.getString("exposureKey")
+            self.__positiveThreshold__ = afwDet.createThreshold(thresholdValue,\
+                                                             thresholdType,\
+                                                             True)
+         
+        if self._policy.exists("exposureKey"): 
+            self.__exposureKey__ = self._policy.getString("exposureKey")
         else:
             self.log.log(Log.WARN, "Using default exposureKey=\"Exposure\"")      
-            self._exposureKey = "Exposure"
-
+            self.__exposureKey__ = "Exposure"
+        
         if self._policy.exists("psfKey"):
-            self._psfKey = self._policy.getString("psfKey")
+            self.__psfKey__ = self._policy.getString("psfKey")
         else:
             self.log.log(Log.WARN, "Using default psfKey=\"PSF\"")
-            self._psfKey = "PSF"
+            self.__psfKey__ = "PSF"

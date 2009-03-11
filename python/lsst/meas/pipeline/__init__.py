@@ -1,2 +1,3 @@
 from SourceMeasurementStage import SourceMeasurementStage
-from SourceDetectionStage import sourceDetectionStage
+from SourceDetectionStage import SourceDetectionStage
+from AddAndDetectStage import AddAndDetectStage

@@ -1,8 +1,8 @@
 #<?cfg paf dictionary ?>
 #
-# this is a comment
+# Dictionary for SourceDetectionStage policies
 #
-target: lsst.detection.pipeline.DetectSourcesStage
+target: lsst::detection::pipeline::SourceDetectionStage
 
 definitions: {
     runMode: {        
@@ -39,17 +39,6 @@ definitions: {
         minOccurs: 0
         maxOccurs: 1
         default: "PSF"
-    }
-    exposurePixelType: {
-        type: "string"
-        description: "specifies the pixel type of the exposure to detect on.
-        minOccurs: 0
-        maxOccurs: 1
-        default: "float"
-        allowed: {
-            value: "int", "float", "double"
-            description: "pixel type"
-        }
     }
     minPixelsPerSource: {
         type: "int"
