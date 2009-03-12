@@ -1,0 +1,25 @@
+#<?cfg paf dictionary ?>
+#
+# Dictionary for AddAndDetectStage
+#
+
+target: lsst.meas.pipeline.AddAndDetectStage
+
+definitions: {
+    #the following declaration doesn't work, its just for documentation
+    runMode: @RunModeDictionary.paf
+    exposureKey0: {
+        type: "string"
+        description: "clipboard key for first input exposure"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "Exposure0"
+    }
+    exposureKey1: {
+        type: "string"
+        description: "clipboard key for second input exposure"
+        minOccurs: 0
+        maxOccurs: 1
+        default; "Exposure1"
+    }
+}

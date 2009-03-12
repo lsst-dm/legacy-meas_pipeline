@@ -32,7 +32,6 @@ class SourceDetectionStage(Stage):
     - runMode (string): optional, default "process"    
     - exposureKey (string): optional, default "Exposure"
     - psfKey (string): optional, default "PSF"
-    - exposurePixelType (string): optional, default "float"
     - thresholdType (string): optional, default "value"
     - thresholdPolarity (string): optional, default "positive"
 
@@ -96,7 +95,7 @@ class SourceDetectionStage(Stage):
         dsPositive, dsNegative = self.__detectSourcesImpl()
         self.__output__(clipboard, dsPositive, dsNegative)
     
-    def __detectSourcesImpl__(self, exposure, psf) 
+    def __detectSourcesImpl__(self, exposure, psf): 
         if exposure == None:
             self.log.log(Log.FATAL, 
                     "Cannot perform detection - no input exposure")
@@ -148,14 +147,14 @@ class SourceDetectionStage(Stage):
         
         if self.__negativeThreshold__ != None:            
             #detect negative sources
-            dsNegative = self.__detectionSetType__(middle,
-                                                self.__negativeThreshold__,
-                                                "FP-",
-                                                self.__minPixels__)
+            dsNegative = afwDet.makeDetectionSet(middle,
+                                                 self.__negativeThreshold__,
+                                                 "FP-",
+                                                 self.__minPixels__)
         
-        if self.__positiveThreshold__ != None:            
+        if self.__positiveThreshold__ != None:
             #detect positive sources
-            dsPositive = self.__detectionSetType__(maskedImage,
+            dsPositive = afwDet.makeDetectionSet(maskedImage,
                                                 self.__positiveThreshold__,
                                                 "FP+",
                                                 self.__minPixels__)
