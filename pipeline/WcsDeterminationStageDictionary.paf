@@ -14,13 +14,20 @@ definitions: {
     }
     exposureNames: {
         type: "string"
-        description: "names of exposures on clipboard"
+        description: "array of names of exposures on clipboard"
         minOccurs: 1
     }
-    sourceSetNames: {
+    sourceSetName: {
         type: "string"
         description: "name of SourceSet on clipboard"
         minOccurs: 1
+        maxOccurs: 1
+    }
+    initialWcsName: {
+        type: "string"
+        description: "initial Wcs to warm-start Wcs determination"
+        minOccurs: 1
+        maxOccurs: 1
     }
     
     # Optional entries
