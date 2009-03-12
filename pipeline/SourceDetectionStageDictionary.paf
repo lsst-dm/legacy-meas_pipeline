@@ -2,7 +2,7 @@
 #
 # Dictionary for SourceDetectionStage policies
 #
-target: lsst::detection::pipeline::SourceDetectionStage
+target: lsst.detection.pipeline.SourceDetectionStage
 
 definitions: {
 	#the following declaration doesn't work, it is just for documentation
@@ -10,69 +10,25 @@ definitions: {
     exposureKey: {
     	type: "string"
     	description: "specify the clipboard key of the exposure to detect on."
-		minOccurs: 0
+		minOccurs: 0 
 		maxOccurs: 1
 		default: "Exposure"
 	}    	
-    psfKey: {
-        type: "string"
-        description: "specify the clipboard key of the psf to use"
+    psfPolicy: {
+        type: "policy"
+        dictionary: @PsfDictionary.paf
+        description: "includes all the parameters needed to create a PSF"
         minOccurs: 0
         maxOccurs: 1
-        default: "PSF"
+        default: lsst/meas/algorithms/pipeline/PSF.paf
     }
-    minPixelsPerSource: {
-        type: "int"
-        description: "detected sources with fewer than the specified number
-                      of pixels will be ignored"
-        minOccurs: 1
-        maxOccurs: 1
-        min: 0
-    }
-    thresholdValue: {
-        type: "double"
-        description: "value assigned to the threshold object used in detection"
-        minOccurs: 1
-        maxOccurs: 1
-        min: 0
-    }    
-    thresholdType: {
-        type: "string"
-        description: "specified the desired flavor of Threshold"
-        minOccurs: 0
-        maxOccurs: 1
-        default: "value"
-        allowed: {
-            value: "variance"
-            description: "threshold applied to image variance"
-        }
-        allowed: {
-            value: "variance"
-            description: "threshold applied to image std deviation"
-        }
-        allowed: {
-            value: "variance"
-            description: "threshold applied to image value"
-        }
-    }
-    thresholdPolarity: {
-        type: "string"
-        description: "specifies whether to detect positive, or negative sources,
-                      or both"
-        minOccurs: 0
-        maxOccurs: 1
-        default: "positive"
-        allowed: {
-            value: "positive"
-            description: "detect only positive sources"
-        }
-        allowed: {
-            value: "negative"
-            description: "detect only negative sources"
-        }
-        allowed: {
-            value: "both"
-            description: "detect both positive and negative sources"
-        }
+    detectionPolicy: {
+        type: "policy"
+        dictionary: @DetectionDictionary.paf
+        description: "includes all the parameters needed to perform source
+                      detection on an exposure"
+        minOccurs: 1 
+        macOccurs: 1
+        default: lsst/meas/pipeline/Detection.paf
     }
 }

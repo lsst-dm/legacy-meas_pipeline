@@ -31,7 +31,7 @@ class SourceDetectionStage(Stage):
     - minPixelsPerSource (int): REQUIRED specify minimum source size
     - runMode (string): optional, default "process"    
     - exposureKey (string): optional, default "Exposure"
-    - psfKey (string): optional, default "PSF"
+    - psfPolicy (policy):optional, default lsst/meas/algorithms/pipeline/PSF.paf
     - thresholdType (string): optional, default "value"
     - thresholdPolarity (string): optional, default "positive"
 
@@ -62,7 +62,7 @@ class SourceDetectionStage(Stage):
         if self._policy.exists('runMode') and \
                 self._policy.getString('runMode') == 'preprocess':
             self.log.log(Log.INFO, "Detecting Sources in preprocess")
-            self._detectSources()
+            self.detectSources()
         
 
     def process(self):
@@ -72,7 +72,7 @@ class SourceDetectionStage(Stage):
         if not self._policy.exists('runMode') or \
                 self._policy.getString('runMode') == 'process':
             self.log.log(Log.INFO, "Detecting Sources in process")
-            self._detectSources()
+            self.detectSources()
 
     
     def postprocess(self):
@@ -82,33 +82,28 @@ class SourceDetectionStage(Stage):
         if self._policy.exists('runMode') and \
                 self._policy.getString('runMode') == 'postprocess':
             self.log.log(Log.INFO, "Detecting Sources in postprocess")
-            self._detectSources()
+            self.detectSources()
 
 
-    def __detectSources__(self):
+    def detectSources(self):
         self.__validatePolicy__()               
         
         clipboard = self.inputQueue.getNextDataset()
         exposure = clipboard.get(self.__exposureKey__)
-        psf = clipboard.get(self.__psfKey__)
        
         dsPositive, dsNegative = self.__detectSourcesImpl()
         self.__output__(clipboard, dsPositive, dsNegative)
     
-    def __detectSourcesImpl__(self, exposure, psf): 
+    def __detectSourcesImpl__(self, exposure): 
         if exposure == None:
             self.log.log(Log.FATAL, 
                     "Cannot perform detection - no input exposure")
             return 
         
-        if psf == None:
-            self.log.log(Log.FATAL, "Cannot perform detection - no input psf")
-            return 
-        
+         
         maskedImage = getMaskedImage()
         convoledImage = maskedImage.Factory(maskedImage.getDimensions())
-        origin = afwImg.PointI(maskedImage.getX0(), maskedImage.getY0())
-        convolvedImage.setXY0(origin)
+        convolvedImage.setXY0(maskedImage.getXY0())
             
         #
         # Do not propagate the convolved CD/INTRP bits
@@ -126,7 +121,7 @@ class SourceDetectionStage(Stage):
         # 
         # Smooth the Image
         #
-        psf.convolve(convolvedImage, 
+        __psf__.convolve(convolvedImage, 
                      maskedImage, 
                      convolvedImage.getMask().getMaskPlane("EDGE"))
         
@@ -202,30 +197,18 @@ class SourceDetectionStage(Stage):
         # Required policy components:
         # minPixelsPerSource: defines the minimum source size
         # thresholdValue: defines the detection threshold
-        self.__minPixels__ = self._policy.getInt("minPixelsPerSource")
-        thresholdValue = self._policy.getPolicy("thresholdValue")
+        self.__minPixels__ = self._policy.get("detectionPolicy.minPixels")
+        thresholdValue = self._policy.get("detectionPlicy.thresholdValue")
         
         #Default to "value"
-        if not self._policy.exists("thresholdType"):
-            thresholdType = "value"
-            self.log.log(Log.WARN, "Using default \
-                    thresholdType=\"value\"")
-        else:
-            thresholdType = self._policy.getString("thresholdType")
+        thresholdType = self._policy.get("detectionPolicy.thresholdType")
          
-        #Look for a threshold polarity.
         #Default to positive
-        if not self._policy.exists("thresholdPolarity"):
-            polarity = "positive"
-            self.log.log(Log.WARN, "Using default \
-                    thresholdPolarity=\"positive\"")
-        else:
-            polarity = self._policy.getString("thresholdPolarity")
+        polarity = self._policy.get("detectionPolicy.thresholdPolarity")
         
         self.__negativeThreshold__ = None
         if polarity == "negative" or polarity == "both":
             #create a Threshold for negative detections
-            policy.set("polarity", False)
             self.__negativeThreshold__ = afwDet.createThreshold(thresholdValue,\
                                                              thresholdType,\
                                                              False)
@@ -237,19 +220,21 @@ class SourceDetectionStage(Stage):
             # polarity == "both"
             # and malformed polarity values
             # create a Threshold for positive detections
-            policy.set("polarity", True)
             self.__positiveThreshold__ = afwDet.createThreshold(thresholdValue,\
                                                              thresholdType,\
                                                              True)
          
-        if self._policy.exists("exposureKey"): 
-            self.__exposureKey__ = self._policy.getString("exposureKey")
-        else:
-            self.log.log(Log.WARN, "Using default exposureKey=\"Exposure\"")      
-            self.__exposureKey__ = "Exposure"
-        
-        if self._policy.exists("psfKey"):
-            self.__psfKey__ = self._policy.getString("psfKey")
-        else:
-            self.log.log(Log.WARN, "Using default psfKey=\"PSF\"")
-            self.__psfKey__ = "PSF"
+        psfPolicy = self._policy.getPolicy("psfPolicy")
+
+        args= []
+        args.append(psfPolicy.getString("algorithm"))
+        args.append(psfPolicy.getInt("width"))
+        args.append(psfPolicy.getInt("height"))
+        if psfPolicy.exists("parameter"):
+            parameters = psfPolicy.getDoubleArray("parameter")
+            for param in parameters:
+                args.append(param)
+
+        self.__psf__ = measAlg.createPsf(args)
+
+        self.__exposureKey__ = self._policy.getString("exposureKey")
