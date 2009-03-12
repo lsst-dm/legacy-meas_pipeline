@@ -1,53 +1,39 @@
 from lsst.pex.harness.Stage import Stage
 
-import lsst.pex.harness.Utils
 from lsst.pex.logging import Log
-
-import lsst.daf.base as dafBase
-from lsst.daf.base import *
 
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImg
-
+import lsst.pex.exceptions as pexExcept
 
 class SourceDetectionStage(Stage):
     """
     Description:
         This stage wraps the detection of sources on an exposure.
-        The exposure to detect should be in the clipboard along with a psf
-        to use in smoothing the image. The key for the exposure and the psf
-        can be specified in the policy file. If not specified, default key 
-        values will be used.
+        The exposure to detect should be in the clipboard 
+        The key for the exposure can be specified in the policy file. 
+        If not specified, default key value will be used.
 
-        The required policy components are thresholValue (which specifies
-        the threshold for detection) and minPixelsPerSource (which specifies
-        the minimum size of sources to consider in number of pixels). 
+        The required policy components are detectionPolicy and psfPolicy.
+        These include all the necessary parameters to perform the detection,
+        and create a smoothing psf 
         
-        See below for optional policy components.
-
-    Policy Input: 
-    (see detection/pipeline/SourceDetectionStageDictionary.paf)
-    - thresholdValue (double): REQUIRED specify threshold value
-    - minPixelsPerSource (int): REQUIRED specify minimum source size
-    - runMode (string): optional, default "process"    
-    - exposureKey (string): optional, default "Exposure"
-    - psfPolicy (policy):optional, default lsst/meas/algorithms/pipeline/PSF.paf
-    - thresholdType (string): optional, default "value"
-    - thresholdPolarity (string): optional, default "positive"
+    Policy Dictionaty:
+    lsst/meas/pipeline/SourceDetectionStageDictionary.paf
 
     Clipboard Input:
-    - Exposure with key name specified in policy ("exposureName")
-    - Psf with key name specified in policy ("psfKey")
+    - Exposure with key specified by policy attribute exposureKey
 
     ClipboardOutput:
-    - Exposure from input with same key name
-    - Psf from input with same key name
+    - Exposure from input with same key 
+    - SmoothingPsf (PSF): the psf used to smooth the exposure before detection 
     - PositiveDetectionSet (DetectionSet): if thresholdPolarity policy 
-        is "positive" or "both"
+        is "positive" or "both". Key specified by policy attribute
+        positiveDetectionKey
     - NegativeDetectionSet (DetectionSet): if threholdPolarity policy 
-        is "negative" or "both"
+        is "negative" or "both". Key specified by policy attribute
+        negativeDetectionKey
     """
-
     def __init__(self, stageId = -1, policy = None):
         # call base constructor
         lsst.pex.harness.Stage.Stage.__init__(self,stageId, policy)
@@ -55,52 +41,31 @@ class SourceDetectionStage(Stage):
         self.log = Log(Log.getDefaultLog(), 
                 "lsst.meas.pipeline.SourceDetectionStage")
 
-    def preprocess(self):
-        """
-        Detect sources in the master process before any processing
-        """
-        if self._policy.exists('runMode') and \
-                self._policy.getString('runMode') == 'preprocess':
-            self.log.log(Log.INFO, "Detecting Sources in preprocess")
-            self.detectSources()
-        
-
     def process(self):
         """
         Detect sources in the worker process
         """
-        if not self._policy.exists('runMode') or \
-                self._policy.getString('runMode') == 'process':
-            self.log.log(Log.INFO, "Detecting Sources in process")
-            self.detectSources()
+        self.log.log(Log.INFO, "Detecting Sources in process")
+        self.detectSources()
 
     
-    def postprocess(self):
-        """
-        Detect sources in the master process after any processing
-        """
-        if self._policy.exists('runMode') and \
-                self._policy.getString('runMode') == 'postprocess':
-            self.log.log(Log.INFO, "Detecting Sources in postprocess")
-            self.detectSources()
-
-
     def detectSources(self):
-        self.__validatePolicy__()               
+        self._validatePolicy()               
         
         clipboard = self.inputQueue.getNextDataset()
-        exposure = clipboard.get(self.__exposureKey__)
-       
-        dsPositive, dsNegative = self.__detectSourcesImpl()
-        self.__output__(clipboard, dsPositive, dsNegative)
+
+        self.log.log(Log.DEBUG, "getting exposure from clipboard")
+        exposure = clipboard.get(self._exposureKey)
+        
+        dsPositive, dsNegative = self._detectSourcesImpl(exposure)
+        self._output(clipboard, dsPositive, dsNegative)
     
-    def __detectSourcesImpl__(self, exposure): 
+    def _detectSourcesImpl(self, exposure): 
         if exposure == None:
             self.log.log(Log.FATAL, 
-                    "Cannot perform detection - no input exposure")
-            return 
+                "Cannot perform detection - no input exposure")
+            raise pexExcept.NotFoundException("No exposure for detection")
         
-         
         maskedImage = getMaskedImage()
         convoledImage = maskedImage.Factory(maskedImage.getDimensions())
         convolvedImage.setXY0(maskedImage.getXY0())
@@ -121,7 +86,7 @@ class SourceDetectionStage(Stage):
         # 
         # Smooth the Image
         #
-        __psf__.convolve(convolvedImage, 
+        _psf.convolve(convolvedImage, 
                      maskedImage, 
                      convolvedImage.getMask().getMaskPlane("EDGE"))
         
@@ -140,19 +105,19 @@ class SourceDetectionStage(Stage):
         bbox = afwImg.BBox(llc, urc)
         middle = convolvedImage.Factory(convolvedImage, bbox)
         
-        if self.__negativeThreshold__ != None:            
+        if self._negativeThreshold != None:            
             #detect negative sources
             dsNegative = afwDet.makeDetectionSet(middle,
-                                                 self.__negativeThreshold__,
+                                                 self._negativeThreshold,
                                                  "FP-",
-                                                 self.__minPixels__)
+                                                 self._minPixels)
         
-        if self.__positiveThreshold__ != None:
+        if self._positiveThreshold != None:
             #detect positive sources
             dsPositive = afwDet.makeDetectionSet(maskedImage,
-                                                self.__positiveThreshold__,
+                                                self._positiveThreshold,
                                                 "FP+",
-                                                self.__minPixels__)
+                                                self._minPixels)
         
         #
         # Reinstate the saved bits in the unsmoothed image
@@ -171,7 +136,7 @@ class SourceDetectionStage(Stage):
         return dsPositive, dsNegative
         
 
-    def __output__(self, clipboard, dsPositive, dsNegative):
+    def _output(self, clipboard, dsPositive, dsNegative):
         if dsPositive != None:
             if self._policy.exists("positiveDetectionKey"):
                 positiveOutKey = self._policy.getString("positiveDetectionKey")
@@ -189,15 +154,13 @@ class SourceDetectionStage(Stage):
         #and push out the clipboard
         self.outputQueue.addDataSet(clipboard)
     
-    def __validatePolicy__(self):
+    def _validatePolicy(self):
         """
         Validates the policy object.
         Returns the name of the exposure on the clipboard.
         """
         # Required policy components:
-        # minPixelsPerSource: defines the minimum source size
-        # thresholdValue: defines the detection threshold
-        self.__minPixels__ = self._policy.get("detectionPolicy.minPixels")
+        self._minPixels = self._policy.get("detectionPolicy.minPixels")
         thresholdValue = self._policy.get("detectionPlicy.thresholdValue")
         
         #Default to "value"
@@ -206,21 +169,21 @@ class SourceDetectionStage(Stage):
         #Default to positive
         polarity = self._policy.get("detectionPolicy.thresholdPolarity")
         
-        self.__negativeThreshold__ = None
+        self._negativeThreshold = None
         if polarity == "negative" or polarity == "both":
             #create a Threshold for negative detections
-            self.__negativeThreshold__ = afwDet.createThreshold(thresholdValue,\
+            self._negativeThreshold = afwDet.createThreshold(thresholdValue,\
                                                              thresholdType,\
                                                              False)
         
-        self.__positiveThreshold__ = None
+        self._positiveThreshold = None
         if polarity != "negative":
             #This conditional catches:
             # polarity == "positive"
             # polarity == "both"
             # and malformed polarity values
             # create a Threshold for positive detections
-            self.__positiveThreshold__ = afwDet.createThreshold(thresholdValue,\
+            self._positiveThreshold = afwDet.createThreshold(thresholdValue,\
                                                              thresholdType,\
                                                              True)
          
@@ -235,6 +198,6 @@ class SourceDetectionStage(Stage):
             for param in parameters:
                 args.append(param)
 
-        self.__psf__ = measAlg.createPsf(args)
+        self._psf = measAlg.createPsf(args)
 
-        self.__exposureKey__ = self._policy.getString("exposureKey")
+        self._exposureKey = self._policy.getString("exposureKey")

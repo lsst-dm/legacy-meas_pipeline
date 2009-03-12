@@ -17,9 +17,8 @@ definitions: {
         type: "policy"
         dictionary: @PsfDicionary.paf
         description: "includes all the parameters needed to create a PSF"
-        minOccurs: 0
+        minOccurs: 1 
         maxOccurs: 1
-        default: lsst/meas/algorithms/pipeline/PSF.paf
     }
     detectionPolicy: {
         type: "policy"

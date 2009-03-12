@@ -24,17 +24,15 @@ class SourceMeasurementStage(Stage):
         policy file. If not specified, default keys will be used
 
     Policy Input: 
-    - runMode (string): optional, default "process"  
-    - exposure (policy array): optional, default:
-	    -inputKeys (strin
+    - data: (policy array) list of 
     - psfKey (string): optional, default "PSF"
     - positiveDetectionKey (string): optional, default "PositiveDetectionSet"
     - negativeDetectionKey (string): optional, default "NegativeDetectionSet"
     - outputKey (string): optional, default "SourceSet"
 
     Clipboard Input:
-    - Exposure(s): REQUIRED with key specified in policy ("exposureKey")
-    - Psf: optional with key specified in policy ("psfKey")
+    - Exposure(s): key specified policy by attribute data.exposureKey
+    - Psf: optional with key specified by policy attribute psfKey
     - DetectionSet(s): with key(s) specified in policy 
             ("positiveDetectionKey", "negativeDetectionKey")
 
@@ -42,7 +40,7 @@ class SourceMeasurementStage(Stage):
     - Exposure(s) from input with same key name
     - Psf from input with same key name
     - DetetectionSet(s) from input with same key name(s)
-    - SourceSet with key name specified in policy ("outputKey")
+    - SourceSet with key specified by policy data.outputKey
     """
 
     def __init__(self, stageId = -1, policy = None):
@@ -51,43 +49,21 @@ class SourceMeasurementStage(Stage):
         # initialize a log
         self.log = Log(Log.getDefaultLog(), "SourceMeasurementStage")
     
-    def preprocess(self):
-        """
-        Measure sources in the master process before any processing
-        """
-        if self._policy.exists('runMode') and \
-                self._policy.getString('runMode') == 'preprocess':
-            self.log.log(Log.INFO, "Measuring Sources in preprocess")
-            self.measureSources()
-        
-
     def process(self):
         """
         Measure sources in the worker process
         """
-        if not self._policy.exists('runMode') or \
-                self._policy.getString('runMode') == 'process':
-            self.log.log(Log.INFO, "Measuring Sources in process")
-            self.measureSources()
+        self.log.log(Log.INFO, "Measuring Sources in process")
+        self.measureSources()
     
      
-    def postprocess(self):
-        """
-        Measure sources in the master process after any processing
-        """
-        if self._policy.exists('runMode') and \
-                self._policy.getString('runMode') == 'postprocess':
-            self.log.log(Log.INFO, "Measuring Sources in postprocess")
-            self.measureSources()
-    
-    
     def measureSources(self):
-        self.__validatePolicy__()  	
+        self._validatePolicy()
         clipboard = self.inputQueue.getNextDataset()		
         
         #this may raise exceptions
         try:
-            input = self.__getClipboardData__(clipboard)
+            input = self._getClipboardData(clipboard)
             exposureList, psf, dsPositive, dsNegative = input
         except pexExcept.LsstException, e:
             self.log.log(Log.FATAL, e.what())
@@ -107,15 +83,13 @@ class SourceMeasurementStage(Stage):
             self.log.log(Log.DEBUG, "Negative DetectionSet found")
             for fp in dsNegative.getFootprints():
                 footprintList.append(fp)
-		
-        # loop over all exposure, psf pairs
-        for exposure, outKey in zip(exposureList, self.__outputKeys__):
-            exposure = data 
-            
+        
+        # loop over all exposures
+        for exposure, outKey in zip(exposureList, self._outputKeys):
+            exposure = data
             measureSources = measAlg.makeMeasureSources(exposure,
-           								                self.__measurePolicy__,
-           								                psf)
-            
+                                                        self._measurePolicy, 
+                                                        psf)
             sourceSet = afwDetection.SourceSet()
             sourceId = 0;
             for footprint in footprintList:
@@ -130,19 +104,19 @@ class SourceMeasurementStage(Stage):
                     # although maybe I should log them
                     self.log.log(Log.WARN, e.what())
             
-            #place SourceSet on the clipboard 
-	        clipboard.put(outKey, sourceSet)
+                #place SourceSet on the clipboard 
+                clipboard.put(outKey, sourceSet)
         
-        #pass clipboard to outputQueue	    	
+        #pass clipboard to outputQueue
         self.outputQueue.addDataset(clipboard)
     
 	
-    def __getClipboardData__(self, clipboard):
+    def _getClipboardData(self, clipboard):
         #private helped method for grabbing the clipboard data in a useful way 
         
-        psf = clipboard.get(self.__psfKey__)
+        psf = clipboard.get(self._psfKey)
         exposureList = []
-        for exposureKey in self.__inputKeys__: 
+        for exposureKey in self._inputKeys: 
             exposure = clipboard.get(exposureKey)
             if exposure == None:			
                 raise pexExcept.NotFoundException("exposureKey %"%exposureKey)
@@ -150,21 +124,22 @@ class SourceMeasurementStage(Stage):
         
         dsPositive = clipboard.get(self._positiveDetectionKey)
         dsNegative = clipboard.get(self._negativeDetectionKey)
-        
+        if dsPositve == None and dsNegative ==None:
+            raise pexExcept.NotFoundException("Missing DetectionSet")
         return (exposureList, psf, dsPositive, dsNegative)
 		
-    def __validatePolicy__(self): 
+    def _validatePolicy(self): 
         #private helper method for validating my policy
-        #generates default policy values as needed
-        
-        self.__measurePolicy__ = self._policy.getPolicy("measureObjects")
-        self.__psfKey__ = self._policy.getString("psfKey")
-        self.__inputKeys__ = []
-        self.__outputKeys__ = []
+        # for DC3a expects perfect policies!
+
+        self._measurePolicy = self._policy.getPolicy("measureObjects")
+        self._psfKey = self._policy.getString("psfKey")
+        self._inputKeys = []
+        self._outputKeys = []
         dataPolicyArray = self._policy.getPolicyArray("data")
         for dataPolicy in dataPolicyArray: 
-            self.__inputKeys__.append(dataPolicy.getString("exposureKey"))
-            self.__outputKeys__.append(dataPolicy.getString("outputKey"))
+            self._inputKeys.append(dataPolicy.getString("exposureKey"))
+            self._outputKeys.append(dataPolicy.getString("outputKey"))
 
-        self.__positiveDetectionKey__ = self._policy.get("positiveDetectionKey")
-        self.__negativeDetectionKey__ = self._policy.get("negativeDetectionkey")
+        self._positiveDetectionKey = self._policy.get("positiveDetectionKey")
+        self._negativeDetectionKey = self._policy.get("negativeDetectionkey")

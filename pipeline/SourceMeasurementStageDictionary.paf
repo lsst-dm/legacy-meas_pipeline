@@ -2,7 +2,7 @@
 #
 # this is a comment
 #
-target: lsst.meas.pipeline.MeasureSourcesStage
+target: lsst.meas.pipeline.SourceMeasurementStage
 
 definitions: {
     #the following declaration doesn't work, it is just for documentation
@@ -10,62 +10,40 @@ definitions: {
     measureObjects: {
         type: "policy"        
         description: "policy for configuring measurement algorithms"
+        dictionary: @lsst/meas/algorithms/MeasureSourcesDictionary.paf
         minOccurs: 1
         maxOccurs: 1
-        dictionary: {
-            target: lsst.meas.algorithms.MeasureSources
-            definitions: {
-                centroidAlgorithm: {
-                    type: "string"
-                    description: "specifies the centroiding algorithm to use"
-                    minOccurs: 1
-                    maxOccurs: 1
-                    allowed: {
-                        value: "SDSS"
-                        description: "use the algorithm from SDSS"
-                    }
-                }
-                shapeAlgorithm: {
-                    type: "string"
-                    description: "specified the shape measurement algorithm"
-                    minOccurs: 1
-                    maxOccurs: 1
-                    allowed: {
-                        value: "SDSS"
-                        description: "use the algorithm from SDSS"
-                    }
-                }
-            }
-        }
+    }
+    psfKey: {
+        type: "string"
+        description: "clipboard key of the input psf"
+        minOccurs: 0
+        maxOccurs: 1
+        deafault: "PSF"
     }
     data: {
-    	type: "policy"		
-    	description: "specify the clipboard key of the exposure to measure on."		
-		minOccurs: 0		
-		dictionary:{
-			definitions: {
-				exposureKey :{
-					type: "string"
-					description: "clipboard key of the input exposure"
-					minOccurs: 1
-					maxOccurs: 1
-				}
-                psfKey: {
+        type: "policy"		
+        description: "specify the clipboard key of the exposure to measure on 
+                      and the desired output key for the SourceSet related to 
+                      this exposure."	
+        minOccurs: 1 
+        dictionary:{
+            definitions: {
+                exposureKey : {
                     type: "string"
-                    description: "clipboard key of the input psf"
-                    minOccurs: 0
+                    description: "clipboard key of the input exposure"
+                    minOccurs: 1
                     maxOccurs: 1
-                    deafault: "PSF"
                 }
-				outputKey: {
-					type: "string"
-					description: "clipboard key of the output SourceSet"
-					minOccurs: 1
-					maxOccurs: 1
-				}
-			}
-		}		
-	}    	
+	        outputKey: {
+                    type: "string"
+                    description: "clipboard key of the output SourceSet"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+            }
+        }		
+    }
     positiveDetectionKey: {
         type: "string"
         description: "specify the clipboard key of the positive DetectionSet"

@@ -5,22 +5,21 @@
 target: lsst.detection.pipeline.SourceDetectionStage
 
 definitions: {
-	#the following declaration doesn't work, it is just for documentation
+    #the following declaration doesn't work, it is just for documentation
     runMode: @RunModeDictionary.paf
     exposureKey: {
-    	type: "string"
+        type: "string"
     	description: "specify the clipboard key of the exposure to detect on."
-		minOccurs: 0 
-		maxOccurs: 1
-		default: "Exposure"
-	}    	
+        minOccurs: 0 
+        maxOccurs: 1
+        default: "CalibratedExposure"
+    }    	
     psfPolicy: {
         type: "policy"
         dictionary: @PsfDictionary.paf
         description: "includes all the parameters needed to create a PSF"
-        minOccurs: 0
+        minOccurs: 1 
         maxOccurs: 1
-        default: lsst/meas/algorithms/pipeline/PSF.paf
     }
     detectionPolicy: {
         type: "policy"
@@ -29,6 +28,5 @@ definitions: {
                       detection on an exposure"
         minOccurs: 1 
         macOccurs: 1
-        default: lsst/meas/pipeline/Detection.paf
     }
 }

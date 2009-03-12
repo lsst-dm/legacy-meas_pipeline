@@ -58,22 +58,22 @@ class AddAndDetectStage(SourceDetectionStage):
 
 
     def addAndDetect(self):
-        self.__validatePolicy__()
+        self._validatePolicy()
         clipboard = self.inputQueue.getNextDataset()
 
         exposureList = []
-        for key in self.__exposureKey__:
+        for key in self._exposureKey:
             if not clipboard.contains(key):
                 self.log.log(Log.FATAL, "Input missing - ignoring dataset")
                 return
 
             exposureList.append(clipboard.get(key))
         
-        addedExposure = __addExposures__(exposureList)
-        dsPositive, dsNegative = self.__detectSourcesImpl__(addedExposure)
-        self.__output__(clipboard, dsPositive, dsNegative) 
+        addedExposure = _addExposures(exposureList)
+        dsPositive, dsNegative = self._detectSourcesImpl(addedExposure)
+        self._output(clipboard, dsPositive, dsNegative) 
 
-    def __addExposures__(exposureList):
+    def _addExposures(exposureList):
         exposure0 = exposureList[0]
         image0 = exposure0.getMaskedImage()
 
@@ -89,14 +89,10 @@ class AddAndDetectStage(SourceDetectionStage):
         addedExposure = exposure0.Factory(addedImage, exposure0.getWcs())
         return addedExposure
 
-    def __validatePolicy__(self):
-        SourceDetectionStage.__validatePolicy(self)
+    def _validatePolicy(self):
+        SourceDetectionStage._validatePolicy(self)
         
-        if not self._policy.exists("exposureKey"):
-            self.log.log(Log.WARN, "Using default exposureKey=[Exposure]")
-            self.__exposureKey__ = ["Exposure"]
-        else:
-            self.__exposureKey__ = self._policy.getStringArray("exposureKey")
+        self._exposureKey = self._policy.getStringArray("exposureKey")
 
         
         
