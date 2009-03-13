@@ -34,7 +34,7 @@ class PresentInExposureClassifier(SourceClassifier):
             source.setFlagClassification(self.clearBit(flag))
             self._numMissing += 1
 
-    def finish(self, log = None, clipboard = None):
+    def finish(self, log=None, clipboard=None):
         if log:
             LogRec(log, Log.INFO) << "PresentInExposureClassifer visit statistics" << \
                 { "numPresent": self._numPresent, "numMissing": self._numMissing } << endr
@@ -70,7 +70,7 @@ class PresentInBothExposuresClassifier(SourceClassifier):
             args[1].setFlagClassification(self.clearBit(flag1))
             self._numOnePresent += 1
 
-    def finish(self, log = None, clipboard = None):
+    def finish(self, log=None, clipboard=None):
         if log:
             LogRec(log, Log.INFO) << "PresentInBothExposuresClassifier visit statistics" << \
                 { "numBothPresent": self._numBothPresent, "numOnePresent": self._numOnePresent } << endr
@@ -94,13 +94,15 @@ class ShapeDiffersInExposuresClassifier(SourceClassifier):
         self._shapeNormDiffThreshold = policy.getDouble("shapeNormDiffThreshold")
         assert self._shapeNormDiffThreshold > 0
 
-    def _shapeNorm(ixx, iyy, ixy):
+    def _shapeNorm(self, ixx, iyy, ixy):
         """
         Computes norm of shape parameters
         """
-        e1 = (ixx - iyy)/(ixx + iyy)
-        e2 = 2*ixy/(ixx + iyy)
-        return math.sqrt(e1*e1 + e2*e2)
+        if ixx + iyy != 0.0:
+            e1 = (ixx - iyy)/(ixx + iyy)
+            e2 = 2*ixy/(ixx + iyy)
+            return math.sqrt(e1*e1 + e2*e2)
+        else: return 0.0
 
     def classify(self, *args):
         flag0 = args[0].getFlagClassification()
@@ -113,10 +115,10 @@ class ShapeDiffersInExposuresClassifier(SourceClassifier):
             self._numDifferentShape += 1
         else:
             args[0].setFlagClassification(self.clearBit(flag0))
-            agrs[1].setFlagClassification(self.clearBit(flag1))
+            args[1].setFlagClassification(self.clearBit(flag1))
             self._numSimilarShape += 1
 
-    def finish(self, log = None, clipboard = None):
+    def finish(self, log=None, clipboard=None):
         if log:
             LogRec(log, Log.INFO) << "ShapeDiffersInExposuresClassifier visit statistics" << \
                 { "numDifferentShape": self._numDifferentShape, "numSimilarShape": self._numSimilarShape } << endr
@@ -147,7 +149,7 @@ class PositiveFluxExcursion(SourceClassifier):
              source.setFlagClassification(self.clearBit(flag))
              self._numMissingOrNegative += 1
 
-    def finish(self, log = None, clipboard = None):
+    def finish(self, log=None, clipboard=None):
         if log:
             LogRec(log, Log.INFO) << "PositiveFluxExcursion visit statistics" << \
                 { "numPositive": self._numPositive, "numMissingOrNegative": self._numMissingOrNegative } << endr

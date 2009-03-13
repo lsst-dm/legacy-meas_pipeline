@@ -84,8 +84,8 @@ class SourceClassificationStage(Stage):
             elif self._scope == "pairs":
                 if sourceList1.size() != sourceList2.size():
                     raise RuntimeError("Source lists passed to classifier must have identical length")
-                for i in itertools.izip(sourceList1, sourceList2):
-                    self._classifier.classify(source)
+                for s0, s1 in itertools.izip(sourceList1, sourceList2):
+                    self._classifier.classify(s0, s1)
             else:
                 raise RuntimeError("Unsupported source classifier argument type - check stage policy")
 
@@ -113,6 +113,6 @@ class SourceClassificationStage(Stage):
         for c in classifiers:
             c.invoke(sourceList1, sourceList2)
         for c in classifiers:
-            c.finish()
+            c.finish(self._log)
         self.outputQueue.addDataset(clipboard)
 
