@@ -204,7 +204,7 @@ class SourceDetectionStage(Stage):
 
         self._psf = measAlg.createPsf(args)
 
-        self._exposureKey = self._policy.getString("exposureKey")a
+        self._exposureKey = self._policy.getString("exposureKey")
         self._smoothingPsfKey = "psf"
-        if self._policy.exists("smoothingPsfKey")
+        if self._policy.exists("smoothingPsfKey"):
             self._smoothingPsfKey = self._policy.getString("smoothingPsfKey")
