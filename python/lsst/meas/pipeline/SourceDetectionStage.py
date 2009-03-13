@@ -2,9 +2,11 @@ from lsst.pex.harness.Stage import Stage
 
 from lsst.pex.logging import Log
 
+import lsst.pex.policy as policy
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImg
 import lsst.pex.exceptions as pexExcept
+import lsst.meas.algorithms as measAlg
 
 class SourceDetectionStage(Stage):
     """
@@ -37,7 +39,7 @@ class SourceDetectionStage(Stage):
     """
     def __init__(self, stageId = -1, policy = None):
         # call base constructor
-        lsst.pex.harness.Stage.Stage.__init__(self,stageId, policy)
+        Stage.__init__(self,stageId, policy)
         # initialize a log
         self.log = Log(Log.getDefaultLog(), 
                 "lsst.meas.pipeline.SourceDetectionStage")
@@ -65,10 +67,10 @@ class SourceDetectionStage(Stage):
         if exposure == None:
             self.log.log(Log.FATAL, 
                 "Cannot perform detection - no input exposure")
-            raise pexExcept.NotFoundException("No exposure for detection")
+            raise RuntimeException("No exposure for detection")
         
-        maskedImage = getMaskedImage()
-        convoledImage = maskedImage.Factory(maskedImage.getDimensions())
+        maskedImage = exposure.getMaskedImage()
+        convolvedImage = maskedImage.Factory(maskedImage.getDimensions())
         convolvedImage.setXY0(maskedImage.getXY0())
             
         #
@@ -165,19 +167,15 @@ class SourceDetectionStage(Stage):
         """
         # Required policy components:
         self._minPixels = self._policy.get("detectionPolicy.minPixels")
-        thresholdValue = self._policy.get("detectionPlicy.thresholdValue")
-        
-        #Default to "value"
-        thresholdType = self._policy.get("detectionPolicy.thresholdType")
-         
-        #Default to positive
-        polarity = self._policy.get("detectionPolicy.thresholdPolarity")
+        thresholdValue = self._policy.get("detectionPolicy.thresholdValue")
+        thresholdType = self._policy.getString("detectionPolicy.thresholdType")
+        polarity = self._policy.getString("detectionPolicy.thresholdPolarity")
         
         self._negativeThreshold = None
         if polarity == "negative" or polarity == "both":
             #create a Threshold for negative detections
-            self._negativeThreshold = afwDet.createThreshold(thresholdValue,\
-                                                             thresholdType,\
+            self._negativeThreshold = afwDet.createThreshold(thresholdValue,
+                                                             thresholdType,
                                                              False)
         
         self._positiveThreshold = None
@@ -187,24 +185,32 @@ class SourceDetectionStage(Stage):
             # polarity == "both"
             # and malformed polarity values
             # create a Threshold for positive detections
-            self._positiveThreshold = afwDet.createThreshold(thresholdValue,\
-                                                             thresholdType,\
+            self._positiveThreshold = afwDet.createThreshold(thresholdValue,
+                                                             thresholdType,
                                                              True)
          
         psfPolicy = self._policy.getPolicy("psfPolicy")
 
-        args= []
-        args.append(psfPolicy.getString("algorithm"))
-        args.append(psfPolicy.getInt("width"))
-        args.append(psfPolicy.getInt("height"))
+        algorithm = psfPolicy.getString("algorithm")
+        width = psfPolicy.getInt("width")
+        height = psfPolicy.getInt("height")
         if psfPolicy.exists("parameter"):
             parameters = psfPolicy.getDoubleArray("parameter")
-            for param in parameters:
-                args.append(param)
+            if len(parameters) >= 3:
+                self._psf = measAlg.createPSF(algorithm, width, height,
+                                              parameters[0],
+                                              parameters[1],
+                                              parameters[2])
+            elif len(parameters) == 2:
+                self._psf = measAlg.createPSF(algorithm, width, height,
+                                              parameters[0], parameters[1])
+            elif len(parameters) == 1:
+                self._psf = measAlg.createPSF(algorithm, width, height,
+                                               parameters[0])
+        else:
+            self._psf = measAlg.createPSF(algorithm, width, height)
 
-        self._psf = measAlg.createPsf(args)
-
-        self._exposureKey = self._policy.getString("exposureKey")
+        self._exposureKey = self._policy.get("exposureKey")
         self._smoothingPsfKey = "psf"
         if self._policy.exists("smoothingPsfKey"):
-            self._smoothingPsfKey = self._policy.getString("smoothingPsfKey")
+            self._smoothingPsfKey = self._policy.get("smoothingPsfKey")
