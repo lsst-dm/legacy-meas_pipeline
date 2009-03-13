@@ -24,15 +24,14 @@ class SourceMeasurementStage(Stage):
         policy file. If not specified, default keys will be used
 
     Policy Input: 
-    - data: (policy array) list of 
-    - psfKey (string): optional, default "PSF"
-    - positiveDetectionKey (string): optional, default "PositiveDetectionSet"
-    - negativeDetectionKey (string): optional, default "NegativeDetectionSet"
-    - outputKey (string): optional, default "SourceSet"
+    - data: (policy array) list of (input, output) keys 
+    - psfKey (string): optional, default "psf"
+    - positiveDetectionKey (string): optional, default "positiveDetectionSet"
+    - negativeDetectionKey (string): optional, default "negativeDetectionSet"
 
     Clipboard Input:
     - Exposure(s): key specified policy by attribute data.exposureKey
-    - Psf: optional with key specified by policy attribute psfKey
+    - Psf: with key specified by policy attribute psfKey
     - DetectionSet(s): with key(s) specified in policy 
             ("positiveDetectionKey", "negativeDetectionKey")
 

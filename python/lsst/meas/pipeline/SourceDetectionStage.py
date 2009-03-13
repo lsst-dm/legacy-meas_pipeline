@@ -27,6 +27,7 @@ class SourceDetectionStage(Stage):
     ClipboardOutput:
     - Exposure from input with same key 
     - SmoothingPsf (PSF): the psf used to smooth the exposure before detection 
+        Key specified by policy attribute smoothingPsfKey
     - PositiveDetectionSet (DetectionSet): if thresholdPolarity policy 
         is "positive" or "both". Key specified by policy attribute
         positiveDetectionKey
@@ -86,7 +87,7 @@ class SourceDetectionStage(Stage):
         # 
         # Smooth the Image
         #
-        _psf.convolve(convolvedImage, 
+        self._psf.convolve(convolvedImage, 
                      maskedImage, 
                      convolvedImage.getMask().getMaskPlane("EDGE"))
         
@@ -97,8 +98,8 @@ class SourceDetectionStage(Stage):
         #
         # Only search psf-smooth part of frame
         #
-        llc = afwImg.PointI(psf.getKernel().getWidth()/2, 
-                            psf.getKernel().getHeight()/2)
+        llc = afwImg.PointI(self._psf.getKernel().getWidth()/2, 
+                            self._psf.getKernel().getHeight()/2)
         urc = afwImg.PointI(convolvedImage.getWidth() - 1,
                             convolvedImage.getHeight() - 1)
         urc -= llc
@@ -141,16 +142,19 @@ class SourceDetectionStage(Stage):
             if self._policy.exists("positiveDetectionKey"):
                 positiveOutKey = self._policy.getString("positiveDetectionKey")
             else:
-                positiveOutKey = "PositiveFootprintSet"
+                positiveOutKey = "positiveFootprintSet"
             clipboard.put(positiveOutKey, dsPositive)
         
         if dsNegative != None:
             if self._policy.exists("negativeDetectionKey"):
                 negativeOutKey = self._policy.getString("negativeDetectionKey")
             else:
-                negativeOutKey = "NegativeFootprintSet"
+                negativeOutKey = "negativeFootprintSet"
             clipboard.put(negativeOutKey, dsNegative)
-        
+      
+        if self._psf != None:
+            clipboard.put(self._smoothingPsfKey, self._psf)
+
         #and push out the clipboard
         self.outputQueue.addDataSet(clipboard)
     
@@ -200,4 +204,7 @@ class SourceDetectionStage(Stage):
 
         self._psf = measAlg.createPsf(args)
 
-        self._exposureKey = self._policy.getString("exposureKey")
+        self._exposureKey = self._policy.getString("exposureKey")a
+        self._smoothingPsfKey = "psf"
+        if self._policy.exists("smoothingPsfKey")
+            self._smoothingPsfKey = self._policy.getString("smoothingPsfKey")

@@ -16,7 +16,6 @@ class AddAndDetectStage(SourceDetectionStage):
     - exposureKey: List of exposures to stack for detection
     - detectionPolicy: (optional)
     - psfPolicy: (optional)
-    - runMode: (optional) specify the stage's runmode
     - positiveDetectionKey: (optional) output key for positive DetectionSet
     - negativeDetectionKey: (optional) output key for negative DetectionSet
 

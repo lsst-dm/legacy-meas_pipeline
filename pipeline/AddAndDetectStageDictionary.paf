@@ -6,11 +6,9 @@
 target: lsst.meas.pipeline.AddAndDetectStage
 
 definitions: {
-    #the following declaration doesn't work, its just for documentation
-    runMode: @RunModeDictionary.paf
     exposureKey: {
         type: "string"
-        description: "clipboard key for input exposure"
+        description: "clipboard key for input exposures"
         minOccurs: 1 
     }
     psfPolicy: {
@@ -27,5 +25,26 @@ definitions: {
                       detection on an exposure"
         minOccurs: 1
         maxOccurs: 1
+    }
+    positiveDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the positive DetectionSet"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "positiveFootprintSet"
+    }
+    negativeDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the negative DetectionSet"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "negativeFootprintSet"
+    }
+    smoothingPsfKey: {
+        type: "string"
+        description: "specify the output key for the smoothingPsf used"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "psf"
     }
 }

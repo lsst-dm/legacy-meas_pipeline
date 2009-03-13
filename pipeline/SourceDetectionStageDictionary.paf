@@ -5,14 +5,12 @@
 target: lsst.detection.pipeline.SourceDetectionStage
 
 definitions: {
-    #the following declaration doesn't work, it is just for documentation
-    runMode: @RunModeDictionary.paf
     exposureKey: {
         type: "string"
     	description: "specify the clipboard key of the exposure to detect on."
         minOccurs: 0 
         maxOccurs: 1
-        default: "CalibratedExposure"
+        default: "calibratedExposure"
     }    	
     psfPolicy: {
         type: "policy"
@@ -28,5 +26,26 @@ definitions: {
                       detection on an exposure"
         minOccurs: 1 
         macOccurs: 1
+    }
+    positiveDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the positive DetectionSet"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "positiveFootprintSet"
+    }
+    negativeDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the negative DetectionSet"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "negativeFootprintSet"
+    }
+    smoothingPsfKey: {
+        type: "string"
+        description: "specify the output key for the smoothingPsf used"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "psf"
     }
 }

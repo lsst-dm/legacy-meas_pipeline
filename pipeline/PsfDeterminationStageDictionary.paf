@@ -1,0 +1,34 @@
+#<? cfg paf dictionary ?>
+#
+# 
+target: lsst.meas.pipeline.PsfDeterminationStage
+
+definitions: {
+    data: {
+        type: "policy"
+        description: "list of (exposure, source set, psf) key tuples"
+        minOccurs: 1
+        dictionary: {
+            definitions: {
+                exposureKey: {
+                    type: "string"
+                    description: "specify clipboard key of input Exposure"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+                sourceSetKey: {
+                    type: "string"
+                    description: "specify clipboard key of input SourceSet"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+                outputPsfKey: {
+                    type: "string"
+                    description: "specify clipboard key for output PSF"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+            }
+        }
+    }
+}

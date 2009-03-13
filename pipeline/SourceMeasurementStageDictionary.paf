@@ -5,8 +5,6 @@
 target: lsst.meas.pipeline.SourceMeasurementStage
 
 definitions: {
-    #the following declaration doesn't work, it is just for documentation
-    runMode: @RunModeDictionary.paf
     measureObjects: {
         type: "policy"        
         description: "policy for configuring measurement algorithms"
