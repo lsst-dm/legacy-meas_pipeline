@@ -3,3 +3,6 @@ from SourceDetectionStage import SourceDetectionStage
 from AddAndDetectStage import AddAndDetectStage
 from PsfDeterminationStage import PsfDeterminationStage
 from WcsDeterminationStage import WcsDeterminationStage
+from SourceClassifiers import *
+from SourceClassifier import SourceClassifier
+from SourceClassificationStage import SourceClassificationStage
