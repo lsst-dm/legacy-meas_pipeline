@@ -35,8 +35,8 @@ class DetectStageTestCase(unittest.TestCase):
 
         self.policy.add("detectionPolicy.minPixels", 1)
         self.policy.add("detectionPolicy.thresholdValue", 3.0)
-        self.policy.add("detectionPolicy.thresholdType", "stdev")
-        self.policy.add("detectionPolicy.thresholdPolarity", "both")
+        self.policy.add("detectionPolicy.thresholdType", "value")
+        self.policy.add("detectionPolicy.thresholdPolarity", "positive")
         self.policy.add("smoothingPsfKey", "psfModel")
         self.policy.add("positiveDetectionKey", "positiveFootprintSet")
 
@@ -61,9 +61,8 @@ class DetectStageTestCase(unittest.TestCase):
 
     def testStage(self):
         self.stage.process()
-        clipboard = outQueue.getNextDataset()
+        clipboard = self.outQueue.getNextDataset()
         assert(clipboard.contains(self.policy.getString("positiveDetectionKey")))
-        assert(clipboard.contains(self.policy.getString("negativeDetectionKey")))
         assert(clipboard.contains(self.policy.getString("smoothingPsfKey")))
         assert(clipboard.contains(self.policy.getString("exposureKey")))
         

@@ -44,7 +44,7 @@ class SourceMeasurementStage(Stage):
 
     def __init__(self, stageId = -1, policy = None):
         # call base constructor
-        lsst.pex.harness.Stage.Stage.__init__(stageId, policy)
+        Stage.__init__(self, stageId, policy)
         # initialize a log
         self.log = Log(Log.getDefaultLog(), "SourceMeasurementStage")
     
@@ -53,10 +53,7 @@ class SourceMeasurementStage(Stage):
         Measure sources in the worker process
         """
         self.log.log(Log.INFO, "Measuring Sources in process")
-        self.measureSources()
-    
-     
-    def measureSources(self):
+        
         self._validatePolicy()
         clipboard = self.inputQueue.getNextDataset()		
         
@@ -85,15 +82,14 @@ class SourceMeasurementStage(Stage):
         
         # loop over all exposures
         for exposure, outKey in zip(exposureList, self._outputKeys):
-            exposure = data
             measureSources = measAlg.makeMeasureSources(exposure,
                                                         self._measurePolicy, 
                                                         psf)
-            sourceSet = afwDetection.SourceSet()
+            sourceSet = afwDet.SourceSet()
             sourceId = 0;
             for footprint in footprintList:
                 source = afwDet.Source()
-                sourceList.append(source)
+                sourceSet.append(source)
                 source.setId(sourceId)
                 sourceId += 1
                 try:
@@ -103,8 +99,11 @@ class SourceMeasurementStage(Stage):
                     # although maybe I should log them
                     self.log.log(Log.WARN, e.what())
             
-                #place SourceSet on the clipboard 
-                clipboard.put(outKey, sourceSet)
+            #place SourceSet on the clipboard 
+            clipboard.put(outKey, sourceSet)
+            
+            persistableSourceSet = afwDet.PersistableSourceVector(sourceSet)
+            clipboard.put("persistable_" + outKey, persistableSourceSet) 
         
         #pass clipboard to outputQueue
         self.outputQueue.addDataset(clipboard)
@@ -118,13 +117,13 @@ class SourceMeasurementStage(Stage):
         for exposureKey in self._inputKeys: 
             exposure = clipboard.get(exposureKey)
             if exposure == None:			
-                raise pexExcept.NotFoundException("exposureKey %"%exposureKey)
+                raise Exception("Missing from clipboard: exposureKey %"%exposureKey)
             exposureList.append(exposure)
         
         dsPositive = clipboard.get(self._positiveDetectionKey)
         dsNegative = clipboard.get(self._negativeDetectionKey)
-        if dsPositve == None and dsNegative ==None:
-            raise pexExcept.NotFoundException("Missing DetectionSet")
+        if dsPositive == None and dsNegative ==None:
+            raise Exception("Missing DetectionSet")
         return (exposureList, psf, dsPositive, dsNegative)
 		
     def _validatePolicy(self): 

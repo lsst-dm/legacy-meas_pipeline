@@ -26,37 +26,17 @@ class AddAndDetectStage(SourceDetectionStage):
     - DetectionSet(s)- this stage produces up to 2 DetectionSet outputs
     """
 
-    def preprocess(self):
-        """
-        Detect sources in the master process before any processing
-        """
-        if self._policy.exists('runMode') and \
-                self._policy.getString('runMode') == 'preprocess':
-            self.log.log(Log.INFO, "Detecting Sources in preprocess")
-            self.addAndDetect()
-        
-
+    def __init__(self, stageId=-1, policy=None):
+        SourceDetectionStage.__init__(self, stageId, policy)
+        del self.log
+        self.log = Log(Log.getDefaultLog(),
+                        "lsst.meas.pipeline.AddAndDetectStage")
     def process(self):
         """
         Detect sources in the worker process
         """
-        if not self._policy.exists('runMode') or \
-                self._policy.getString('runMode') == 'process':
-            self.log.log(Log.INFO, "Detecting Sources in process")
-            self.addAndDetect()
+        self.log.log(Log.INFO, "Detecting Sources in process")
 
-    
-    def postprocess(self):
-        """
-        Detect sources in the master process after any processing
-        """
-        if self._policy.exists('runMode') and \
-                self._policy.getString('runMode') == 'postprocess':
-            self.log.log(Log.INFO, "Detecting Sources in postprocess")
-            self.addAndDetect()
-
-
-    def addAndDetect(self):
         self._validatePolicy()
         clipboard = self.inputQueue.getNextDataset()
 
@@ -68,17 +48,17 @@ class AddAndDetectStage(SourceDetectionStage):
 
             exposureList.append(clipboard.get(key))
         
-        addedExposure = _addExposures(exposureList)
+        addedExposure = self._addExposures(exposureList)
         dsPositive, dsNegative = self._detectSourcesImpl(addedExposure)
         self._output(clipboard, dsPositive, dsNegative) 
 
-    def _addExposures(exposureList):
+    def _addExposures(self, exposureList):
         exposure0 = exposureList[0]
         image0 = exposure0.getMaskedImage()
 
-        addedImage = image0.Factory(image0.getDimensions(), 
-                                    image0.getMask().getMaskPlaneDict())
-        addedImage.setXYO(image0.getXY0())
+        addedImage = image0.Factory(image0.getDimensions())
+        origin = image0.getXY0()
+        addedImage.setXY0(origin)
         addedImage <<= image0
 
         for exposure in exposureList[1:]:

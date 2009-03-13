@@ -49,15 +49,10 @@ class SourceDetectionStage(Stage):
         Detect sources in the worker process
         """
         self.log.log(Log.INFO, "Detecting Sources in process")
-        self.detectSources()
-
-    
-    def detectSources(self):
-        self._validatePolicy()               
         
+        self._validatePolicy()               
         clipboard = self.inputQueue.getNextDataset()
 
-        self.log.log(Log.DEBUG, "getting exposure from clipboard")
         exposure = clipboard.get(self._exposureKey)
         
         dsPositive, dsNegative = self._detectSourcesImpl(exposure)
@@ -107,19 +102,22 @@ class SourceDetectionStage(Stage):
         urc -= llc
         bbox = afwImg.BBox(llc, urc)
         middle = convolvedImage.Factory(convolvedImage, bbox)
-        
+       
+        dsNegative = None 
         if self._negativeThreshold != None:            
             #detect negative sources
+            self.log.log(Log.DEBUG, "Do Negative Detection")
             dsNegative = afwDet.makeDetectionSet(middle,
                                                  self._negativeThreshold,
-                                                 "FP-",
+                                                 "DETECTED",
                                                  self._minPixels)
         
+        dsPositive = None
         if self._positiveThreshold != None:
-            #detect positive sources
+            self.log.log(Log.DEBUG, "Do Positive Detection")
             dsPositive = afwDet.makeDetectionSet(maskedImage,
                                                 self._positiveThreshold,
-                                                "FP+",
+                                                "DETECTED",
                                                 self._minPixels)
         
         #
@@ -158,7 +156,7 @@ class SourceDetectionStage(Stage):
             clipboard.put(self._smoothingPsfKey, self._psf)
 
         #and push out the clipboard
-        self.outputQueue.addDataSet(clipboard)
+        self.outputQueue.addDataset(clipboard)
     
     def _validatePolicy(self):
         """
@@ -177,7 +175,8 @@ class SourceDetectionStage(Stage):
             self._negativeThreshold = afwDet.createThreshold(thresholdValue,
                                                              thresholdType,
                                                              False)
-        
+                                
+
         self._positiveThreshold = None
         if polarity != "negative":
             #This conditional catches:
