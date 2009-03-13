@@ -124,7 +124,7 @@ class ShapeDiffersInExposuresClassifier(SourceClassifier):
                 { "numDifferentShape": self._numDifferentShape, "numSimilarShape": self._numSimilarShape } << endr
 
 
-class PositiveFluxExcursion(SourceClassifier):
+class PositiveFluxExcursionClassifier(SourceClassifier):
     """
     Checks whether the flux excursion of a source is positive (for difference
     sources it can be negative).
