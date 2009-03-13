@@ -1,0 +1,32 @@
+#<? cfg paf policy ?>
+#
+# stage policy for lsst.meas.pipeline.SourceClassificationStage
+
+sourceList0ClipboardKey: "sourceSet0"
+sourceList1ClipboardKey: "sourceSet1"
+
+classifier: {
+    bit: 0
+    scope: "both"
+    pythonClass: "lsst.meas.pipeline.PresentInExposureClassifier"
+    parameter.psfFluxThreshold: 1.0
+}
+classifier: {
+    bit: 1
+    scope: "pairs"
+    pythonClass: "lsst.meas.pipeline.PresentInBothExposuresClassifier"
+    parameter.psfFluxThreshold: 1.0
+}
+classifier: {
+    bit: 2
+    scope: "pairs"
+    pythonClass: "lsst.meas.pipeline.ShapeDiffersInExposuresClassifier"
+    parameter.shapeNormDiffThreshold: 1.0
+}
+classifier: {
+    bit: 3
+    scope: "both"
+    pythonClass: "lsst.meas.pipeline.PositiveFluxExcursion"
+    parameter.psfFluxThreshold: 1.0
+}
+

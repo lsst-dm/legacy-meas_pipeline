@@ -36,8 +36,7 @@ env.libs["meas_pipeline"] +=  env.getlibs("daf_base daf_data daf_persistence pex
 #
 # Build/install things
 #
-for d in Split("doc examples lib src tests") + \
-        Split("include/lsst/meas/pipeline python/lsst/meas/pipeline"):
+for d in Split("doc lib src tests python/lsst/meas/pipeline"):
     SConscript(os.path.join(d, "SConscript"))
 
 env['IgnoreFiles'] = r"(~$|\.pyc$|^\.svn$|\.o$)"
