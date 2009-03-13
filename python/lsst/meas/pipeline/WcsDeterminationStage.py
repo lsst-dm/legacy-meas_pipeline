@@ -1,7 +1,5 @@
 from lsst.pex.harness.Stage import Stage
-
 from lsst.pex.logging import Log
-
 # import lsst.pex.harness.Utils
 import lsst.daf.base as dafBase
 import lsst.afw.detection as afwDet
@@ -31,7 +29,7 @@ class WcsDeterminationStage(Stage):
     """
     def __init__(self, stageId = -1, policy = None):
         # call base constructor
-        lsst.pex.harness.Stage.Stage.__init__(self, stageId, policy)
+        Stage.__init__(self, stageId, policy)
         # initialize a log
         self.log = Log(Log.getDefaultLog(), "lsst.meas.pipeline.WcsDeterminationStage")
         self.astromSolver = None
@@ -41,13 +39,10 @@ class WcsDeterminationStage(Stage):
         self.log.log(Log.INFO, "Wcs Determination Stage")
 
         clipboard = self.inputQueue.getNextDataset()
-        exposureNameList = self._policy.getStringArray("exposureNames")
+        exposureNameList = self._policy.getStringArray("exposureNameList")
         sourceSetName = self._policy.getString("sourceSetName")
         initialWcsName = self._policy.getString("initialWcsName")
         self.fluxLimit = self._policy.getDouble("fluxLimit")
-        if len(exposureNameList) != len(sourceSetName):
-            raise RuntimeError("Numer of exposureNames = %s != number of sourceSetNames %s" %
-                (len(exposureNames), len(sourceSetNames)))
         
         # Read in astrometry.net indices, if not already done
         # todo: only read in required portions or mmap the files

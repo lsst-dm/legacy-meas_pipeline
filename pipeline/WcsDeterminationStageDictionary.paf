@@ -12,7 +12,7 @@ definitions: {
         minOccurs: 1
         maxOccurs: 1
     }
-    exposureNames: {
+    exposureNameList: {
         type: "string"
         description: "array of names of exposures on clipboard"
         minOccurs: 1
