@@ -1,3 +1,4 @@
+import itertools
 import pdb
 import sys
 
@@ -105,7 +106,6 @@ class SourceClassificationStage(Stage):
         Classify sources in the worker process
         """
         clipboard = self.inputQueue.getNextDataset()
-        pdb.set_trace()
         sourceList1 = clipboard.get(self._list1Key)
         sourceList2 = clipboard.get(self._list2Key)
         classifiers = [ SourceClassificationStage._Classifier(p, self._log) for p in self._policies ]
