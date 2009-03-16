@@ -43,7 +43,7 @@ class PsfDeterminationStage(Stage):
             clipboard.put(outKey, psf)
             clipboard.put(outputCellSetKey, cellSet)
 
-        self._outputQueue.addDataset(clipboard)
+        self.outputQueue.addDataset(clipboard)
 
     def _impl(self, exposure, sourceList):
         #

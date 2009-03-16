@@ -89,9 +89,10 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         filename = os.path.join(eups.productDir("afwdata"),
                                 "CFHT", "D4", 
                                 "cal-53535-i-797722_1")
-        exp = afwImage.ExposureF(filename)
-
-        clipboard1.put("calibratedExposure0", exp)
+        loadExp = afwImage.ExposureF(filename)
+        bbox = afwImage.BBox(afwImage.PointI(32, 2), 512, 512)
+        testExp = afwImage.ExposureF(loadExp, bbox)
+        clipboard1.put("calibratedExposure0", testExp)
 
         inQueue1 = pexQueue.Queue() 
         inQueue1.addDataset(clipboard1)
@@ -119,7 +120,7 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         del self.psfDeterminationStage
         del self.outQueue1
 
-    def testSingleInputExposure(self):
+    def sanityCheckTest(self):
         self.detectStage1.process()
         self.measStage1.process()
         self.psfDeterminationStage.process()
