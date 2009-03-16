@@ -12,6 +12,7 @@ import unittest
 import random
 import time
 
+import eups
 import lsst.utils.tests as utilsTests
 import lsst.pex.harness.Queue as pexQueue
 import lsst.pex.harness.Clipboard as pexClipboard
@@ -84,10 +85,11 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
 
         
         clipboard1 = pexClipboard.Clipboard() 
-        
-        img = afwImage.MaskedImageF(512, 512)
-        img.set( 10, 1, 1)
-        exp = afwImage.ExposureF(img)
+       
+        filename = os.path.join(eups.productDir("afwdata"),
+                                "CFHT", "D4", 
+                                "cal-53535-i-797722_1")
+        exp = afwImage.ExposureF(filename)
 
         clipboard1.put("calibratedExposure0", exp)
 

@@ -90,5 +90,23 @@ definitions: {
         minOccurs: 1
         maxOccurs: 1
     }
+    sizeCellX: {
+        type: "int"
+        description: "size of cell used to determine PSF. column direction"
+        minOccurs: 1
+        maxOccurs: 1
+        allowed: {
+            min: 0
+        }
+    }
+    sizeCellY: {
+        type: "int"
+        description: "size of cell used to determine PSF. column direction"
+        minOccurs: 1
+        maxOccurs: 1
+        allowed: {
+            min: 0
+        }
+    }
 }
 
