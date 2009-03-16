@@ -1,4 +1,13 @@
+import math
+from math import *
+
+from lsst.pex.logging import Log, Rec
 from lsst.pex.harness.Stage import Stage
+import lsst.pex.policy as policy
+import lsst.afw.image as afwImg
+import lsst.afw.detection as afwDet
+import lsst.afw.math as afwMath
+import lsst.meas.algorithms as algorithms
 
 class PsfDeterminationStage(Stage):
     """
@@ -27,7 +36,7 @@ class PsfDeterminationStage(Stage):
             dataList = self._getClipboardData(clipboard)
         except Exception, e:
             self.log.log(Log.FATAL, str(e))
-            raise e
+            raise 
         
         for exposure, sourceList, outKey, outputCellSetKey in dataList:
             psf, cellSet = self._impl(exposure, sourceList)
@@ -40,7 +49,7 @@ class PsfDeterminationStage(Stage):
         #
         # Create an Image of Ixx v. Iyy, i.e. a 2-D histogram
         #
-        psfHist = PsfShapeHistogram()
+        psfHist = algorithms.PsfShapeHistogram()
 
         for source in sourceList:
             if self._goodPsfCandidate(source):
@@ -142,9 +151,9 @@ class PsfDeterminationStage(Stage):
         
         return (psf, psfCellSet) 
   
-    def _goodPsfCandidate(source):
+    def _goodPsfCandidate(self, source):
         """Should this object be included in the Ixx v. Iyy image?"""
-        if source.getFlagForDetection() & self._badFlags or
+        if source.getFlagForDetection() & self._badFlags or \
            source.getPsfFlux() < self._fluxLim: 
             # ignore flagged or faint objects
             return False
@@ -158,8 +167,8 @@ class PsfDeterminationStage(Stage):
             exposureKey = dataPolicy.getString("exposureKey")
             exposure = clipboard.get(exposureKey)
             if exposure == None:
-                raise Exception("No Exposure with key %"%exposureKey) 
-            sourceSetKey = dataList.getString("sourceSetKey")
+                raise Exception("No Exposure with key %s" %exposureKey) 
+            sourceSetKey = dataPolicy.getString("sourceSetKey")
             sourceSet = clipboard.get(sourceSetKey)
             if sourceSet == None:
                 raise Exception("No SourceSet with key %"%sourceSetKey)
@@ -171,7 +180,7 @@ class PsfDeterminationStage(Stage):
 
     def _validatePolicy(self):
         if self._policy.exists("fluxLim"):
-            self._fluxLim = self.policy.get("fluxLim")
+            self._fluxLim = self._policy.get("fluxLim")
         else:
             self._fluxLim = 1000
         
@@ -179,10 +188,11 @@ class PsfDeterminationStage(Stage):
         self._spatialOrder  = self._policy.getInt("spatialOrder")
         self._nStarPerCell = self._policy.getInt("nStarPerCell")
         self._kernelSize = self._policy.getInt("kernelSize")
-        self._nStarPerCellSpatialFit = 
+        self._nStarPerCellSpatialFit = \
                 self._policy.getInt("nStarPerCellSpatialFit")
         self._tolerance = self._policy.getDouble("tolerance")
-        self._reducedChi2ForPsfCandidates = 
+        self._reducedChi2ForPsfCandidates = \
                 self._policy.getDouble("reducedChi2ForPsfCandidates")
         self._nIterForPsf = self._policy.getInt("nIterForPsf")
-
+        self._sizeCellX = self._policy.getInt("sizeCellX")
+        self._sizeCellY = self._policy.getInt("sizeCellY")

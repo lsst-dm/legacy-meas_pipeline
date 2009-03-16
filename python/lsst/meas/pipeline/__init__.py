@@ -6,3 +6,4 @@ from WcsDeterminationStage import WcsDeterminationStage
 from SourceClassifiers import *
 from SourceClassifier import SourceClassifier
 from SourceClassificationStage import SourceClassificationStage
+from SourceToDiaSourceStage import SourceToDiaSourceStage
