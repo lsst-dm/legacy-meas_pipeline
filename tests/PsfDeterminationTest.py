@@ -33,7 +33,7 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         pass
 
     def testDc3PipePolicies(self):
-        ipsdDir = os.path.join(eups.productDir("ctrl_dc3pipe"),
+        ipsdDir = os.path.join(eups.productDir("ctrl_dc3pipe"),\
                             "pipeline", "IPSD")
         policyPath = os.path.join(ipsdDir, "sourceDetection0_policy.paf")
         policyFile = policy.PolicyFile(policyPath)
