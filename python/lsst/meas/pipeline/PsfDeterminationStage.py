@@ -66,9 +66,6 @@ class PsfDeterminationStage(Stage):
         # We'll split the image into a number of cells, 
         # each of which contributes only one PSF candidate star
         #
-        sizePsfCellX = self._sizeCellX
-        sizePsfCellY = self._sizeCellY
-        
         bbox = afwImg.BBox(mi.getXY0(), mi.getWidth(), mi.getHeight())
         psfCellSet = afwMath.SpatialCellSet(bbox, 
                                             self._sizeCellX, 
