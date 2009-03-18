@@ -5,6 +5,7 @@ from lsst.pex.logging import Log
 import lsst.pex.policy as policy
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImg
+import lsst.afw.math as afwMath
 import lsst.pex.exceptions as pexExcept
 import lsst.meas.algorithms as measAlg
 
@@ -63,11 +64,42 @@ class SourceDetectionStage(Stage):
             self.log.log(Log.FATAL, 
                 "Cannot perform detection - no input exposure")
             raise RuntimeException("No exposure for detection")
-        
+
+        #
+        # We need a better way to make a deep copy than this!
+        #
+        bbox = afwImage.BBox(maskedImage.getXY0(), maskedImage.getWidth(), maskedImage.getHeight())
+        exposure = exposure.Factory(exposure, bbox, True) # a deep copy
+
+        try:
+            key= self._policy.getString("backgroundSubtractedExposureKey")
+        except RuntimeError:
+            key = "backgroundSubtractedExposure"
+        clipboard.put(key, exposure)
+
+        #
+        # Unpack variables
+        #
         maskedImage = exposure.getMaskedImage()
         convolvedImage = maskedImage.Factory(maskedImage.getDimensions())
         convolvedImage.setXY0(maskedImage.getXY0())
             
+        #
+        # Subtract background
+        #
+        if self._backgroundAlgorithm == "afwMath.NATURAL_SPLINE":
+            bctrl = afwMath.BackgroundControl(afwMath.NATURAL_SPLINE)
+        else:
+            raise RuntimeError, "Unknown backgroundPolicy.algorithm: %s" % (self._backgroundAlgorithm)
+
+        binsize = self._backgroundBinsize
+
+        bctrl.setNxSample(int(maskedImage.getWidth()/binsize) + 1);
+        bctrl.setNySample(int(maskedImage.getHeight()/binsize) + 1);
+        backobj = afwMath.makeBackground(maskedImage.getImage(), bctrl)
+
+        img = maskedImage.getImage(); img -= backobj.getImageF(); del img
+
         #
         # Do not propagate the convolved CD/INTRP bits
         # Save them for the original CR/INTRP pixels
@@ -164,6 +196,9 @@ class SourceDetectionStage(Stage):
         Returns the name of the exposure on the clipboard.
         """
         # Required policy components:
+        self._backgroundAlgorithm = self._policy.get("backgroundPolicy.algorithm")
+        self._backgroundBinsize = self._policy.get("backgroundPolicy.binsize")
+
         self._minPixels = self._policy.get("detectionPolicy.minPixels")
         thresholdValue = self._policy.get("detectionPolicy.thresholdValue")
         thresholdType = self._policy.getString("detectionPolicy.thresholdType")
