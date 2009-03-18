@@ -97,7 +97,7 @@ class SourceMeasurementStage(Stage):
                 except Exception, e:
                     # don't worry about measurement exceptions
                     # although maybe I should log them
-                    self.log.log(Log.WARN, e.what())
+                    self.log.log(Log.WARN, str(e))
             
             #place SourceSet on the clipboard 
             clipboard.put(outKey, sourceSet)

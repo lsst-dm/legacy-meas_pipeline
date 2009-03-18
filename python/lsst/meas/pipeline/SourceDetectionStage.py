@@ -56,6 +56,16 @@ class SourceDetectionStage(Stage):
 
         exposure = clipboard.get(self._exposureKey)
         
+        #
+        # We need a better way to make a deep copy than this!
+        #
+        maskedImage = exposure.getMaskedImage()
+        bbox = afwImg.BBox(maskedImage.getXY0(), maskedImage.getWidth(), maskedImage.getHeight())
+        exposure = exposure.Factory(exposure, bbox, True) # a deep copy
+
+        key = self._policy.getString("backgroundSubtractedExposureKey")
+        clipboard.put(key, exposure)
+
         dsPositive, dsNegative = self._detectSourcesImpl(exposure)
         self._output(clipboard, dsPositive, dsNegative)
     
@@ -64,18 +74,6 @@ class SourceDetectionStage(Stage):
             self.log.log(Log.FATAL, 
                 "Cannot perform detection - no input exposure")
             raise RuntimeException("No exposure for detection")
-
-        #
-        # We need a better way to make a deep copy than this!
-        #
-        bbox = afwImage.BBox(maskedImage.getXY0(), maskedImage.getWidth(), maskedImage.getHeight())
-        exposure = exposure.Factory(exposure, bbox, True) # a deep copy
-
-        try:
-            key= self._policy.getString("backgroundSubtractedExposureKey")
-        except RuntimeError:
-            key = "backgroundSubtractedExposure"
-        clipboard.put(key, exposure)
 
         #
         # Unpack variables
@@ -87,7 +85,7 @@ class SourceDetectionStage(Stage):
         #
         # Subtract background
         #
-        if self._backgroundAlgorithm == "afwMath.NATURAL_SPLINE":
+        if self._backgroundAlgorithm == "NATURAL_SPLINE":
             bctrl = afwMath.BackgroundControl(afwMath.NATURAL_SPLINE)
         else:
             raise RuntimeError, "Unknown backgroundPolicy.algorithm: %s" % (self._backgroundAlgorithm)
@@ -166,6 +164,18 @@ class SourceDetectionStage(Stage):
         del mask
         del savedMask
        
+# Debugging output
+#        if dsPositive is not None:
+#            for f in dsPositive.getFootprints():
+#                print "Positive Footprint:"
+#                for s in f.getSpans():
+#                    print "  Span:", s.toString()
+#        if dsNegative is not None:
+#            for f in dsNegative.getFootprints():
+#                print "Negative Footprint:"
+#                for s in f.getSpans():
+#                    print "  Span:", s.toString()
+
         return dsPositive, dsNegative
         
 
