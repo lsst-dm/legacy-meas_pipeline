@@ -48,4 +48,38 @@ definitions: {
         maxOccurs: 1
         default: "psf"
     }
+
+    backgroundPolicy: {
+        type: "policy"
+        description: "Parameters to control background subtraction"
+        minOccurs: 1
+        dictionary: {
+            definitions: {
+                binsize: {
+                    type: "int"
+                    description: "how large a region of the sky should be used for each background point"
+                    minOccurs: 1
+                    maxOccurs: 1
+                    default: 256
+                    allowed: {
+                        min: 10
+                    }
+                }
+                algorithm: {
+                    type: "string"      # really an enum; see afw::math::Background
+                    description: "how to interpolate the background values"
+                    minOccurs: 1
+                    maxOccurs: 1
+                    default:   "NATURAL_SPLINE" # 
+                }
+            }
+        }
+    }
+    
+    backgroundSubtractedExposureKey: {
+        type: "string"
+        description: "specify clipboard key of output background-subtracted Exposure"
+        minOccurs: 1
+        maxOccurs: 1
+    }
 }

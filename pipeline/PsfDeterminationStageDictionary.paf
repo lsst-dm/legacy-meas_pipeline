@@ -39,14 +39,13 @@ definitions: {
     }
     fluxLim: {
         type: "int"
-        descritpion: "specify the minimum psfFlux for good Psf Candidates"
+        description: "specify the minimum psfFlux for good Psf Candidates"
         minOccurs: 0
         maxOccurs: 1
         default: 1000
         allowed: {
             min: 0
         }
-        
     }
     nEigenComponents: {
         type: "int"
@@ -107,6 +106,12 @@ definitions: {
         allowed: {
             min: 0
         }
+    }
+    PsfDeterminationSdqaKey: {
+        type: "string"
+        description: "specify clipboard key of output SDQA"
+        minOccurs: 1
+        maxOccurs: 1
     }
 }
 
