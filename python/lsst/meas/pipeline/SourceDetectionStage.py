@@ -115,8 +115,8 @@ class SourceDetectionStage(Stage):
         # Smooth the Image
         #
         self._psf.convolve(convolvedImage, 
-                     maskedImage, 
-                     convolvedImage.getMask().getMaskPlane("EDGE"))
+                           maskedImage, 
+                           convolvedImage.getMask().getMaskPlane("EDGE"))
         
         mask = convolvedImage.getMask()
         mask |= savedMask
@@ -145,7 +145,7 @@ class SourceDetectionStage(Stage):
         dsPositive = None
         if self._positiveThreshold != None:
             self.log.log(Log.DEBUG, "Do Positive Detection")
-            dsPositive = afwDet.makeDetectionSet(maskedImage,
+            dsPositive = afwDet.makeDetectionSet(middle,
                                                 self._positiveThreshold,
                                                 "DETECTED",
                                                 self._minPixels)
