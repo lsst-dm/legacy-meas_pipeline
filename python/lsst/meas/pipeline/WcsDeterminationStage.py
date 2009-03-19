@@ -3,8 +3,10 @@ from lsst.pex.logging import Log
 # import lsst.pex.harness.Utils
 import lsst.daf.base as dafBase
 import lsst.afw.detection as afwDet
-import lsst.afw.image as afwImgage
+import lsst.afw.image as afwImage
 import lsst.meas.astrom.net as astromNet
+import glob
+import math
 
 class WcsDeterminationStage(Stage):
     """Refine a WCS in an Exposure based on a list of sources
@@ -57,14 +59,20 @@ class WcsDeterminationStage(Stage):
                 self.astromSolver.addIndexFile(indexPath)
 
         # Set parameters and compute Wcs
-        allowDistortion = self._policy.getBoolean("allowDistortion")
+        allowDistortion = self._policy.getBool("allowDistortion")
         matchThreshold = self._policy.getDouble("matchThreshold")
         self.astromSolver.allowDistortion(allowDistortion)
         self.astromSolver.setMatchThreshold(matchThreshold)
         sourceSet = clipboard.get(sourceSetName)
         initialWcs = clipboard.get(initialWcsName)
+        self.ccdId = clipboard.get('ccdId')
+
+        ### TODO: Translate from Amp WCS to CCD WCS
+
         self.log.log(Log.INFO, "Determine Wcs")
         wcs = self.determineWcs(sourceSet, initialWcs)
+
+        ### TODO: Translate from CCD WCS to Amp WCS
 
         # Update exposures
         for exposureName in exposureNameList:
@@ -77,9 +85,9 @@ class WcsDeterminationStage(Stage):
         """Determine Wcs of an Exposure given a SourceSet and an initial Wcs
         """
         # select sufficiently bright sources
-        wcsSourceSet = afwDetection.SourceSet()
+        wcsSourceSet = afwDet.SourceSet()
         for source in sourceSet:
-            if source.getPsfFlux() >= fluxLim:
+            if source.getPsfFlux() >= self.fluxLimit:
                 wcsSourceSet.append(source)
         
         self.astromSolver.setStarlist(wcsSourceSet)
@@ -93,6 +101,9 @@ class WcsDeterminationStage(Stage):
         # Set parity; once we know it, set it to save time
         # values are: 0: not flipped, 1: flipped, 2: unknown
         self.astromSolver.setParity(2)
+
+        ### TODO: This works for CFHT only, and may also be inverted:
+        # self.astromSolver.setParity(1 - int(self.ccdId / 18))
 
         wcs = afwImage.Wcs()
         if self.astromSolver.blindSolve():
