@@ -8,6 +8,7 @@ import lsst.afw.image as afwImg
 import lsst.afw.detection as afwDet
 import lsst.afw.math as afwMath
 import lsst.meas.algorithms as algorithms
+import lsst.meas.algorithms.Psf as Psf
 
 class PsfDeterminationStage(Stage):
     """
@@ -49,7 +50,7 @@ class PsfDeterminationStage(Stage):
         #
         # Create an Image of Ixx v. Iyy, i.e. a 2-D histogram
         #
-        psfHist = algorithms.PsfShapeHistogram()
+        psfHist = Psf.PsfShapeHistogram()
 
         for source in sourceList:
             if self._goodPsfCandidate(source):
