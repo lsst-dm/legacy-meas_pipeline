@@ -12,6 +12,7 @@ import unittest
 import random
 import time
 
+import eups
 import lsst.utils.tests as utilsTests
 import lsst.pex.harness.Queue as pexQueue
 import lsst.pex.harness.Clipboard as pexClipboard
@@ -33,13 +34,15 @@ class MeasureStageTestCase(unittest.TestCase):
        
         clipboard1 = pexClipboard.Clipboard() 
         clipboard2 = pexClipboard.Clipboard()
-        img = afwImage.MaskedImageF(512, 512)
-        img.set( 10, 1, 1)
-        exp = afwImage.ExposureF(img)
+        filename = os.path.join(eups.productDir("afwdata"),
+                                "CFHT", "D4", 
+                                "cal-53535-i-797722_1")
+        bbox = afwImage.BBox(afwImage.PointI(32,32), 512, 512)
+        exposure = afwImage.ExposureF(filename, 0,bbox)
 
-        clipboard1.put("calibratedExposure0", exp)
-        clipboard2.put("calibratedExposure0", exp) 
-        clipboard2.put("calibratedExposure1", exp)
+        clipboard1.put("calibratedExposure0", exposure)
+        clipboard2.put("calibratedExposure0", exposure) 
+        clipboard2.put("calibratedExposure1", exposure)
 
         inQueue1 = pexQueue.Queue() 
         inQueue2 = pexQueue.Queue()

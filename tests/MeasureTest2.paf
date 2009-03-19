@@ -1,9 +1,11 @@
 data: {
     exposureKey: calibratedExposure0
+    psfKey: psfModel
     outputKey: sourceSet0
 }
 data: {
     exposureKey: calibratedExposure1
+    psfKey: psfModel
     outputKey: sourceSet1
 }
 measureObjects: {
@@ -14,4 +16,3 @@ measureObjects: {
 }
 positiveDetectionKey: positiveFootprintSet
 negativeDetectionKey: negativeFootprintSet
-psfKey: psfModel

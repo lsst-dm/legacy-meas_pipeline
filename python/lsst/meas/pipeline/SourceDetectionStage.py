@@ -17,20 +17,17 @@ class SourceDetectionStage(Stage):
         The key for the exposure can be specified in the policy file. 
         If not specified, default key value will be used.
 
-        The required policy components are detectionPolicy and psfPolicy.
-        These include all the necessary parameters to perform the detection,
-        and create a smoothing psf 
-        
     Policy Dictionaty:
     lsst/meas/pipeline/SourceDetectionStageDictionary.paf
 
     Clipboard Input:
     - Exposure with key specified by policy attribute exposureKey
+    - optionally a PSF may be specified by policy attribute psfKey
 
     ClipboardOutput:
     - Exposure from input with same key 
-    - SmoothingPsf (PSF): the psf used to smooth the exposure before detection 
-        Key specified by policy attribute smoothingPsfKey
+    - PSF: the psf used to smooth the exposure before detection 
+        Key specified by policy attribute psfKey
     - PositiveDetectionSet (DetectionSet): if thresholdPolarity policy 
         is "positive" or "both". Key specified by policy attribute
         positiveDetectionKey
@@ -55,21 +52,43 @@ class SourceDetectionStage(Stage):
         clipboard = self.inputQueue.getNextDataset()
 
         exposure = clipboard.get(self._exposureKey)
+        exposure = self._makeBackgroundSubtractedExposure(exposure) 
+
+        psf = self._getOrMakePsf(clipboard)
+        dsPositive, dsNegative = self._detectSourcesImpl(exposure, psf)
         
-        #
-        # We need a better way to make a deep copy than this!
-        #
+        self._output(clipboard, dsPositive, dsNegative, exposure, psf)
+   
+    def _makeBackgroundSubtractedExposure(self, exposure):
+        if self._backgroundAlgorithm == None:
+            return exposure
+
         maskedImage = exposure.getMaskedImage()
-        bbox = afwImg.BBox(maskedImage.getXY0(), maskedImage.getWidth(), maskedImage.getHeight())
-        exposure = exposure.Factory(exposure, bbox, True) # a deep copy
+        #make a deep copy
+        deepCopy = maskedImage.Factory(maskedImage, True) 
+      
+        #
+        # Subtract background
+        #
+        if self._backgroundAlgorithm == "NATURAL_SPLINE":
+            bctrl = afwMath.BackgroundControl(afwMath.NATURAL_SPLINE)
+        else:
+            raise RuntimeError, "Unknown backgroundPolicy.algorithm: %s" % \
+                    (self._backgroundAlgorithm)
 
-        key = self._policy.getString("backgroundSubtractedExposureKey")
-        clipboard.put(key, exposure)
+        binsize = self._backgroundBinsize
 
-        dsPositive, dsNegative = self._detectSourcesImpl(exposure)
-        self._output(clipboard, dsPositive, dsNegative)
+        bctrl.setNxSample(int(deepCopy.getWidth()/binsize) + 1)
+        bctrl.setNySample(int(deepCopy.getHeight()/binsize) + 1)
+        backobj = afwMath.makeBackground(deepCopy.getImage(), bctrl)
+
+        image = deepCopy.getImage() 
+        image -= backobj.getImageF()
+        del image
+
+        return exposure.Factory(deepCopy, afwImg.Wcs(exposure.getWcs()))
     
-    def _detectSourcesImpl(self, exposure): 
+    def _detectSourcesImpl(self, exposure, psf): 
         if exposure == None:
             self.log.log(Log.FATAL, 
                 "Cannot perform detection - no input exposure")
@@ -82,22 +101,6 @@ class SourceDetectionStage(Stage):
         convolvedImage = maskedImage.Factory(maskedImage.getDimensions())
         convolvedImage.setXY0(maskedImage.getXY0())
             
-        #
-        # Subtract background
-        #
-        if self._backgroundAlgorithm == "NATURAL_SPLINE":
-            bctrl = afwMath.BackgroundControl(afwMath.NATURAL_SPLINE)
-        else:
-            raise RuntimeError, "Unknown backgroundPolicy.algorithm: %s" % (self._backgroundAlgorithm)
-
-        binsize = self._backgroundBinsize
-
-        bctrl.setNxSample(int(maskedImage.getWidth()/binsize) + 1);
-        bctrl.setNySample(int(maskedImage.getHeight()/binsize) + 1);
-        backobj = afwMath.makeBackground(maskedImage.getImage(), bctrl)
-
-        img = maskedImage.getImage(); img -= backobj.getImageF(); del img
-
         #
         # Do not propagate the convolved CD/INTRP bits
         # Save them for the original CR/INTRP pixels
@@ -114,7 +117,7 @@ class SourceDetectionStage(Stage):
         # 
         # Smooth the Image
         #
-        self._psf.convolve(convolvedImage, 
+        psf.convolve(convolvedImage, 
                            maskedImage, 
                            convolvedImage.getMask().getMaskPlane("EDGE"))
         
@@ -125,8 +128,8 @@ class SourceDetectionStage(Stage):
         #
         # Only search psf-smooth part of frame
         #
-        llc = afwImg.PointI(self._psf.getKernel().getWidth()/2, 
-                            self._psf.getKernel().getHeight()/2)
+        llc = afwImg.PointI(psf.getKernel().getWidth()/2, 
+                            psf.getKernel().getHeight()/2)
         urc = afwImg.PointI(convolvedImage.getWidth() - 1,
                             convolvedImage.getHeight() - 1)
         urc -= llc
@@ -179,7 +182,7 @@ class SourceDetectionStage(Stage):
         return dsPositive, dsNegative
         
 
-    def _output(self, clipboard, dsPositive, dsNegative):
+    def _output(self, clipboard, dsPositive, dsNegative, exposure, psf):
         if dsPositive != None:
             if self._policy.exists("positiveDetectionKey"):
                 positiveOutKey = self._policy.getString("positiveDetectionKey")
@@ -193,9 +196,12 @@ class SourceDetectionStage(Stage):
             else:
                 negativeOutKey = "negativeFootprintSet"
             clipboard.put(negativeOutKey, dsNegative)
-      
-        if self._psf != None:
-            clipboard.put(self._smoothingPsfKey, self._psf)
+    
+        if self._backgroundAlgorithm != None and exposure != None:
+            key = self._policy.getString("backgroundSubtractedExposureKey")
+            clipboard.put(key, exposure)
+
+        clipboard.put(self._policy.get("psfKey"), psf)
 
         #and push out the clipboard
         self.outputQueue.addDataset(clipboard)
@@ -205,9 +211,13 @@ class SourceDetectionStage(Stage):
         Validates the policy object.
         Returns the name of the exposure on the clipboard.
         """
-        # Required policy components:
-        self._backgroundAlgorithm = self._policy.get("backgroundPolicy.algorithm")
-        self._backgroundBinsize = self._policy.get("backgroundPolicy.binsize")
+        if self._policy.exists("backgroundPolicy"):
+            self._backgroundAlgorithm = \
+                    self._policy.get("backgroundPolicy.algorithm")
+            self._backgroundBinsize = \
+                    self._policy.get("backgroundPolicy.binsize")
+        else:
+            self._backgroundAlgorithm = None
 
         self._minPixels = self._policy.get("detectionPolicy.minPixels")
         thresholdValue = self._policy.get("detectionPolicy.thresholdValue")
@@ -221,7 +231,6 @@ class SourceDetectionStage(Stage):
                                                              thresholdType,
                                                              False)
                                 
-
         self._positiveThreshold = None
         if polarity != "negative":
             #This conditional catches:
@@ -232,29 +241,23 @@ class SourceDetectionStage(Stage):
             self._positiveThreshold = afwDet.createThreshold(thresholdValue,
                                                              thresholdType,
                                                              True)
-         
-        psfPolicy = self._policy.getPolicy("psfPolicy")
-
-        algorithm = psfPolicy.getString("algorithm")
-        width = psfPolicy.getInt("width")
-        height = psfPolicy.getInt("height")
-        if psfPolicy.exists("parameter"):
-            parameters = psfPolicy.getDoubleArray("parameter")
-            if len(parameters) >= 3:
-                self._psf = measAlg.createPSF(algorithm, width, height,
-                                              parameters[0],
-                                              parameters[1],
-                                              parameters[2])
-            elif len(parameters) == 2:
-                self._psf = measAlg.createPSF(algorithm, width, height,
-                                              parameters[0], parameters[1])
-            elif len(parameters) == 1:
-                self._psf = measAlg.createPSF(algorithm, width, height,
-                                               parameters[0])
-        else:
-            self._psf = measAlg.createPSF(algorithm, width, height)
-
+        
         self._exposureKey = self._policy.get("exposureKey")
-        self._smoothingPsfKey = "psf"
-        if self._policy.exists("smoothingPsfKey"):
-            self._smoothingPsfKey = self._policy.get("smoothingPsfKey")
+        
+    def _getOrMakePsf(self, clipboard):
+        psfKey = self._policy.get("psfKey")
+        psf = clipboard.get(psfKey)
+        if psf != None:
+            return psf
+        else:
+            self.log.log(Log.WARN, "psfKey %s not found on clipboard"%psfKey)
+
+        psfPolicy = self._policy.getPolicy("psfPolicy")
+        params = []        
+        params.append(psfPolicy.getString("algorithm"))
+        params.append(psfPolicy.getInt("width"))
+        params.append(psfPolicy.getInt("height"))
+        if psfPolicy.exists("parameter"):
+            params += psfPolicy.getDoubleArray("parameter")
+        
+        return measAlg.createPSF(*params)

@@ -24,8 +24,7 @@ class SourceMeasurementStage(Stage):
         policy file. If not specified, default keys will be used
 
     Policy Input: 
-    - data: (policy array) list of (input, output) keys 
-    - psfKey (string): optional, default "psf"
+    - data: (policy array) list of (input, psf, output) keys 
     - positiveDetectionKey (string): optional, default "positiveDetectionSet"
     - negativeDetectionKey (string): optional, default "negativeDetectionSet"
 
@@ -60,7 +59,7 @@ class SourceMeasurementStage(Stage):
         #this may raise exceptions
         try:
             input = self._getClipboardData(clipboard)
-            exposureList, psf, dsPositive, dsNegative = input
+            exposureAndPsfList, dsPositive, dsNegative = input
         except pexExcept.LsstException, e:
             self.log.log(Log.FATAL, e.what())
          
@@ -81,7 +80,7 @@ class SourceMeasurementStage(Stage):
                 footprintList.append(fp)
         
         # loop over all exposures
-        for exposure, outKey in zip(exposureList, self._outputKeys):
+        for (exposure,psf), outKey in zip(exposureAndPsfList, self._outputKeys):
             measureSources = measAlg.makeMeasureSources(exposure,
                                                         self._measurePolicy, 
                                                         psf)
@@ -111,32 +110,37 @@ class SourceMeasurementStage(Stage):
 	
     def _getClipboardData(self, clipboard):
         #private helped method for grabbing the clipboard data in a useful way 
-        
-        psf = clipboard.get(self._psfKey)
-        exposureList = []
-        for exposureKey in self._inputKeys: 
+        exposureAndPsfList = []
+        for exposureKey, psfKey in self._inputKeys: 
             exposure = clipboard.get(exposureKey)
             if exposure == None:			
-                raise Exception("Missing from clipboard: exposureKey %"%exposureKey)
-            exposureList.append(exposure)
+                raise Exception("Missing from clipboard: exposureKey %"\
+                        %exposureKey)
+            psf = clipboard.get(psfKey)
+            if exposure == None:			
+                raise Exception("Missing from clipboard: psfKey %"\
+                        %psfKey)
+            
+            exposureAndPsfList.append((exposure, psf))
         
         dsPositive = clipboard.get(self._positiveDetectionKey)
         dsNegative = clipboard.get(self._negativeDetectionKey)
         if dsPositive == None and dsNegative ==None:
-            raise Exception("Missing DetectionSet")
-        return (exposureList, psf, dsPositive, dsNegative)
+            raise Exception("Missing input DetectionSet")
+        return (exposureAndPsfList, dsPositive, dsNegative)
 		
     def _validatePolicy(self): 
         #private helper method for validating my policy
         # for DC3a expects perfect policies!
 
         self._measurePolicy = self._policy.getPolicy("measureObjects")
-        self._psfKey = self._policy.getString("psfKey")
         self._inputKeys = []
         self._outputKeys = []
         dataPolicyArray = self._policy.getPolicyArray("data")
         for dataPolicy in dataPolicyArray: 
-            self._inputKeys.append(dataPolicy.getString("exposureKey"))
+            exposureKey = dataPolicy.getString("exposureKey")
+            psfKey = dataPolicy.getString("psfKey")
+            self._inputKeys.append((exposureKey, psfKey))
             self._outputKeys.append(dataPolicy.getString("outputKey"))
 
         self._positiveDetectionKey = self._policy.get("positiveDetectionKey")

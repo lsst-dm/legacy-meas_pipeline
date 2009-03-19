@@ -51,10 +51,13 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         filename = os.path.join(eups.productDir("afwdata"),
                                 "CFHT", "D4", 
                                 "cal-53535-i-797722_1")
-        loadExp = afwImage.ExposureF(filename)
-        #test only a portion of the exposure to speed up testing
-        bbox = afwImage.BBox(afwImage.PointI(32, 2), 512, 512)
-        testExp = afwImage.ExposureF(loadExp, bbox)
+        
+        # test only a portion of the exposure to speed up testing
+        bbox = afwImage.BBox(afwImage.PointI(32, 32), 512, 512)        
+        testExp = afwImage.ExposureF(filename, 0, bbox)
+
+        # test full image
+        # testExp = afImage.ExposureF(filename)
 
         clipboard = pexClipboard.Clipboard() 
         clipboard.put(detectPolicy.get('exposureKey'), testExp)
@@ -96,7 +99,6 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         del measureToPsfQueue
         del outQueue
         del clipboard
-        del loadExp
         del testExp
 
 def suite():

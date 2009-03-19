@@ -21,6 +21,7 @@ class AddAndDetectStage(SourceDetectionStage):
 
     Clipboard Input:
     - Expsure for every exposureKey in policy
+    - optional PSF
 
     Clipboard output:
     - DetectionSet(s)- this stage produces up to 2 DetectionSet outputs
@@ -49,8 +50,10 @@ class AddAndDetectStage(SourceDetectionStage):
             exposureList.append(clipboard.get(key))
         
         addedExposure = self._addExposures(exposureList)
-        dsPositive, dsNegative = self._detectSourcesImpl(addedExposure)
-        self._output(clipboard, dsPositive, dsNegative) 
+
+        psf = self._getOrMakePsf(clipboard)
+        dsPositive, dsNegative = self._detectSourcesImpl(addedExposure, psf)
+        self._output(clipboard, dsPositive, dsNegative, None, psf) 
 
     def _addExposures(self, exposureList):
         exposure0 = exposureList[0]

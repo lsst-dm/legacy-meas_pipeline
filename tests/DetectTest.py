@@ -12,10 +12,12 @@ import unittest
 import random
 import time
 
+import eups
 import lsst.utils.tests as utilsTests
 import lsst.pex.harness.Queue as pexQueue
 import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as policy
+from lsst.pex.logging import Trace
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
@@ -26,46 +28,54 @@ class DetectStageTestCase(unittest.TestCase):
     """A test case for SourceDetectionStage.py"""
 
     def setUp(self):
-        self.policy = policy.Policy()
-        self.policy.add("exposureKey", "calibratedExposure0")
-        self.policy.add("psfPolicy.algorithm", "DoubleGaussian")
-        self.policy.add("psfPolicy.width", 15)
-        self.policy.add("psfPolicy.height", 15)
-        self.policy.add("psfPolicy.parameter", 5.0/(2*sqrt(2*log(2))))
+        pass
 
-        self.policy.add("detectionPolicy.minPixels", 1)
-        self.policy.add("detectionPolicy.thresholdValue", 3.0)
-        self.policy.add("detectionPolicy.thresholdType", "value")
-        self.policy.add("detectionPolicy.thresholdPolarity", "positive")
-        self.policy.add("smoothingPsfKey", "psfModel")
-        self.policy.add("positiveDetectionKey", "positiveFootprintSet")
+    def tearDown(self):
+        pass
 
+    def testDc3PipePolicy(self):
+        ipsdDir = os.path.join(eups.productDir("ctrl_dc3pipe"),\
+                            "pipeline", "IPSD")
+        policyPath = os.path.join(ipsdDir, "sourceDetection0_policy.paf")
+        policyFile = policy.PolicyFile(policyPath)
+        stagePolicy = policy.Policy(policyFile)
+        
         clipboard = pexClipboard.Clipboard() 
-        img = afwImage.MaskedImageF(512, 512)
-        img.set( 10, 1, 1)
-        exp = afwImage.ExposureF(img)
-        clipboard.put(self.policy.getString("exposureKey"), exp)
+        
+        filename = os.path.join(eups.productDir("afwdata"),
+                                "CFHT", "D4", 
+                                "cal-53535-i-797722_1")
+        bbox = afwImage.BBox(afwImage.PointI(32,32), 512, 512)
+        exposure = afwImage.ExposureF(filename, 0,bbox)
+        clipboard.put(stagePolicy.getString("exposureKey"), exposure)
        
         inQueue = pexQueue.Queue()
         inQueue.addDataset(clipboard)
-        self.outQueue = pexQueue.Queue()
-        self.stage = measPipe.SourceDetectionStage(1, self.policy)
-        self.stage.initialize(self.outQueue, inQueue)
-        self.stage.setUniverseSize(1)
-        self.stage.setRun("StageUnitTest")
-
-    def tearDown(self):
-        del self.stage
-        del self.outQueue
-        del self.policy
-
-    def testStage(self):
-        self.stage.process()
-        clipboard = self.outQueue.getNextDataset()
-        assert(clipboard.contains(self.policy.getString("positiveDetectionKey")))
-        assert(clipboard.contains(self.policy.getString("smoothingPsfKey")))
-        assert(clipboard.contains(self.policy.getString("exposureKey")))
+        outQueue = pexQueue.Queue()
+        stage = measPipe.SourceDetectionStage(1, stagePolicy)
+        stage.initialize(outQueue, inQueue)
+        stage.setUniverseSize(1)
         
+        stage.process()
+
+        clipboard = outQueue.getNextDataset()
+        detectionKey = stagePolicy.getString("positiveDetectionKey")
+        assert(clipboard.contains(detectionKey))
+        detectionSet = clipboard.get(detectionKey)
+        fpList = detectionSet.getFootprints()
+        assert(fpList.size() > 0) 
+        psfKey = stagePolicy.getString("psfKey")
+        assert(clipboard.contains(psfKey))
+        exposureKey = stagePolicy.getString("exposureKey")
+        assert(clipboard.contains(exposureKey))
+        
+        
+        del stagePolicy
+        del clipboard
+        del stage
+        del inQueue
+        del outQueue
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
 

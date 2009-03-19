@@ -70,14 +70,14 @@ class AddDetectStageTestCase(unittest.TestCase):
         self.stage1.process()
         clipboard = self.outQueue1.getNextDataset()
         assert(clipboard.contains(self.policy1.getString("positiveDetectionKey")))
-        assert(clipboard.contains(self.policy1.getString("smoothingPsfKey")))
+        assert(clipboard.contains(self.policy1.getString("psfKey")))
         assert(clipboard.contains(self.policy1.getString("exposureKey")))
        
     def testMultipleInputExposure(self):
         self.stage2.process()
         clipboard = self.outQueue2.getNextDataset()
         assert(clipboard.contains(self.policy2.getString("positiveDetectionKey")))
-        assert(clipboard.contains(self.policy2.getString("smoothingPsfKey")))
+        assert(clipboard.contains(self.policy2.getString("psfKey")))
         assert(clipboard.contains(self.policy2.getString("exposureKey")))
 
 def suite():

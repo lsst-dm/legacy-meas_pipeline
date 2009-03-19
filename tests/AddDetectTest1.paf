@@ -12,7 +12,7 @@ detectionPolicy: {
     thresholdType: value
     thresholdPolarity: positive
 }
-smoothingPsfKey: psfModel
+psfKey: psfModel
 positiveDetectionKey: positiveFootprintSet
 backgroundPolicy: {
     algorithm:  "NATURAL_SPLINE"
