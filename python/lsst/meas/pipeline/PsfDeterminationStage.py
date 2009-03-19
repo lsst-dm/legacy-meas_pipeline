@@ -9,6 +9,7 @@ import lsst.afw.detection as afwDet
 import lsst.afw.math as afwMath
 import lsst.meas.algorithms as algorithms
 import lsst.meas.algorithms.Psf as Psf
+import lsst.sdqa as sdqa
 
 class PsfDeterminationStage(Stage):
     """
@@ -39,14 +40,19 @@ class PsfDeterminationStage(Stage):
             self.log.log(Log.FATAL, str(e))
             raise 
         
+        sdqaRatings = sdqa.SdqaRatingSet()
+
         for exposure, sourceList, outKey, outputCellSetKey in dataList:
-            psf, cellSet = self._impl(exposure, sourceList)
+            psf, cellSet = self._impl(exposure, sourceList, sdqaRating)
             clipboard.put(outKey, psf)
             clipboard.put(outputCellSetKey, cellSet)
 
+        sdqaKey = self._policy.getString("PsfDeterminationSdqaKey")
+        clipboard.put(self._sdqaKey, sdqa.PersistableSdqaRatingVector(sdqaRatings))
+
         self.outputQueue.addDataset(clipboard)
 
-    def _impl(self, exposure, sourceList):
+    def _impl(self, exposure, sourceList, sdqaRating):
         #
         # Create an Image of Ixx v. Iyy, i.e. a 2-D histogram
         #
@@ -146,6 +152,24 @@ class PsfDeterminationStage(Stage):
                         cand.setStatus(afwMath.SpatialCellCandidate.BAD)
                 
                 cell.setIgnoreBad(True)
+        #
+        # Generate some stuff for SDQA
+        #
+        # Count PSF stars
+        #
+        numGoodStars = 0
+        numAvailStars = 0
+        for cell in psfCellSet.getCellList():
+            numGoodStars += cell.size()
+
+        for cell in psfCellSet.getCellList():
+            for cand in cell.begin(False):  # don't ignore BAD stars
+                numAvailStars += 1
+
+        sdqaRatings.append(sdqa.SdqaRating("phot.psf.spatialChi2", chi2,  -1, sdqa.SdqaRating.CCD))
+        sdqaRatings.append(sdqa.SdqaRating("phot.psf.numGoodStars", numGoodStars,  0, sdqa.SdqaRating.CCD))
+        sdqaRatings.append(sdqa.SdqaRating("phot.psf.numAvailStars", numAvailStars,  0, sdqa.SdqaRating.CCD))
+        sdqaRatings.append(sdqa.SdqaRating("phot.psf.spatialLowOrdFlag", 0,  0, sdqa.SdqaRating.CCD))
         
         return (psf, psfCellSet) 
   
