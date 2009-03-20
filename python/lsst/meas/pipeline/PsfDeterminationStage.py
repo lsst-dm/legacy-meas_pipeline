@@ -43,16 +43,16 @@ class PsfDeterminationStage(Stage):
         sdqaRatings = sdqa.SdqaRatingSet()
 
         for exposure, sourceList, outKey, outputCellSetKey in dataList:
-            psf, cellSet = self._impl(exposure, sourceList, sdqaRating)
+            psf, cellSet = self._impl(exposure, sourceList, sdqaRatings)
             clipboard.put(outKey, psf)
             clipboard.put(outputCellSetKey, cellSet)
 
         sdqaKey = self._policy.getString("PsfDeterminationSdqaKey")
-        clipboard.put(self._sdqaKey, sdqa.PersistableSdqaRatingVector(sdqaRatings))
+        clipboard.put(sdqaKey, sdqa.PersistableSdqaRatingVector(sdqaRatings))
 
         self.outputQueue.addDataset(clipboard)
 
-    def _impl(self, exposure, sourceList, sdqaRating):
+    def _impl(self, exposure, sourceList, sdqaRatings):
         #
         # Create an Image of Ixx v. Iyy, i.e. a 2-D histogram
         #
