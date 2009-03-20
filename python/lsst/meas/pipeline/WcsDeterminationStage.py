@@ -34,49 +34,49 @@ class WcsDeterminationStage(Stage):
         Stage.__init__(self, stageId, policy)
         # initialize a log
         self.log = Log(Log.getDefaultLog(), "lsst.meas.pipeline.WcsDeterminationStage")
-        self.astromSolver = None
+        self.astromSolver = astromNet.GlobalAstrometrySolution()
+        #Read in the indices (i.e the files containing the positions of known asterisms
+        #and add them to the astromSolver object
+        astrometryIndicesGlob = self._policy.getString("astrometryIndicesGlob")
+        indexPathList = glob.glob(astrometryIndicesGlob)
+        for indexPath in indexPathList:
+            self.log.log(Log.INFO, "Reading astrometry index file %s" % (indexPath,))
+            self.astromSolver.addIndexFile(indexPath)
     
     def process(self):
         """Determine Wcs"""
         self.log.log(Log.INFO, "Wcs Determination Stage")
 
         clipboard = self.inputQueue.getNextDataset()
-        exposureNameList = self._policy.getStringArray("exposureNameList")
-        sourceSetName = self._policy.getString("sourceSetName")
-        initialWcsName = self._policy.getString("initialWcsName")
+        exposureKeyList = self._policy.getStringArray("exposureKeyList")
+        sourceSetKey = self._policy.getString("sourceSetKey")
+        ampBBoxKey = self._policy.getString("ampBBoxKey")
         self.fluxLimit = self._policy.getDouble("fluxLimit")
         
-        # Read in astrometry.net indices, if not already done
-        # todo: only read in required portions or mmap the files
-        if self.astromSolver == None:
-            self.astromSolver = astromNet.GlobalAstrometrySolution()
-            #Read in the indices (i.e the files containing the positions of known asterisms
-            #and add them to the astromSolver object
-            astrometryIndicesGlob = self._policy.getString("astrometryIndicesGlob")
-            indexPathList = glob.glob(astrometryIndicesGlob)
-            for indexPath in indexPathList:
-                self.log.log(Log.INFO, "Reading astrometry index file %s" % (indexPath,))
-                self.astromSolver.addIndexFile(indexPath)
-
         # Set parameters and compute Wcs
         allowDistortion = self._policy.getBool("allowDistortion")
         matchThreshold = self._policy.getDouble("matchThreshold")
         self.astromSolver.allowDistortion(allowDistortion)
         self.astromSolver.setMatchThreshold(matchThreshold)
-        sourceSet = clipboard.get(sourceSetName)
-        initialWcs = clipboard.get(initialWcsName)
-        self.ccdId = clipboard.get('ccdId')
 
-        ### TODO: Translate from Amp WCS to CCD WCS
+        sourceSet = clipboard.get(sourceSetKey)
+
+        # Shift WCS from amp coordinates to CCD coordinates
+        initialWcsKey = self._policy.getString("initialWcsKey")
+        ampBBox = clipboard.get(ampBBoxKey)
+        initialWcs = clipboard.get(initialWcsKey)
+        newWcs = initialWcs.clone()
+        newWcs.shiftReferencePixel(ampBBox.getX0(), ampBBox.getY0())
 
         self.log.log(Log.INFO, "Determine Wcs")
-        wcs = self.determineWcs(sourceSet, initialWcs)
+        wcs = self.determineWcs(sourceSet, newWcs)
 
-        ### TODO: Translate from CCD WCS to Amp WCS
+        # Shift WCS from CCD coordinates to amp coordinates
+        wcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
 
         # Update exposures
-        for exposureName in exposureNameList:
-            exposure = clipboard.get(exposureName)
+        for exposureKey in exposureKeyList:
+            exposure = clipboard.get(exposureKey)
             exposure.setWcs(wcs)
 
         self.outputQueue.addDataSet(clipboard)
@@ -101,9 +101,6 @@ class WcsDeterminationStage(Stage):
         # Set parity; once we know it, set it to save time
         # values are: 0: not flipped, 1: flipped, 2: unknown
         self.astromSolver.setParity(2)
-
-        ### TODO: This works for CFHT only, and may also be inverted:
-        # self.astromSolver.setParity(1 - int(self.ccdId / 18))
 
         wcs = afwImage.Wcs()
         if self.astromSolver.blindSolve():
