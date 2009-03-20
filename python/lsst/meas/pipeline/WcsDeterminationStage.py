@@ -5,8 +5,10 @@ import lsst.daf.base as dafBase
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
 import lsst.meas.astrom.net as astromNet
+import lsst.pex.exceptions as exceptions
 import glob
 import math
+import sys
 
 class WcsDeterminationStage(Stage):
     """Refine a WCS in an Exposure based on a list of sources
@@ -87,25 +89,19 @@ class WcsDeterminationStage(Stage):
         # select sufficiently bright sources
         wcsSourceSet = afwDet.SourceSet()
         for source in sourceSet:
-            if source.getPsfFlux() >= self.fluxLimit:
+            #This test previously checked for fluxes brighter than self.fluxlimit
+            #but that variable isn't defined so I insist on >0 instead.
+            if source.getPsfFlux() >= 0: 
                 wcsSourceSet.append(source)
         
-        self.astromSolver.setStarlist(wcsSourceSet)
-        self.astromSolver.setNumberStars(len(wcsSourceSet))
 
-        approxPixelScale = 3600.0 * math.sqrt(initialWcs.pixArea(initialWcs.getOriginRaDec()))
-        pixelScaleRangeFactor = self._policy.getDouble("pixelScaleRangeFactor")
-        self.astromSolver.setMinimumImageScale(approxPixelScale / pixelScaleRangeFactor)
-        self.astromSolver.setMaximumImageScale(approxPixelScale * pixelScaleRangeFactor)
+        try:
+            outWcs = self.astromSolver.solve(wcsSourceSet, initialWcs)
+        except exceptions.LsstCppException:
+            err= sys.exc_info()[1]
+            self.log.log(Log.WARN, err.message.what())
+            self.log.log(Log.WARN, "Failed to find WCS solution; leaving raw Wcs unchanged")
+            outWcs = initialWcs
         
-        # Set parity; once we know it, set it to save time
-        # values are: 0: not flipped, 1: flipped, 2: unknown
-        self.astromSolver.setParity(2)
+        return outWcs
 
-        wcs = afwImage.Wcs()
-        if self.astromSolver.blindSolve():
-            exposure.setWcs(wcs)
-        else:
-            # \todo: raise an exception once the Wcs determining code is known to be reliable
-            self.log.log(Log.ERROR, "Failed to find WCS solution; leaving raw Wcs unchanged")
-        return wcs
