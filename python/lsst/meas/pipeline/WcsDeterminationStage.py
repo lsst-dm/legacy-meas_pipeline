@@ -69,6 +69,7 @@ class WcsDeterminationStage(Stage):
         sourceSet = clipboard.get(sourceSetKey)
 
         # Shift WCS from amp coordinates to CCD coordinates
+        # Use first Exposure's WCS as the initial guess
         initialWcs = clipboard.get(exposureKeyList[0]).getWcs().clone()
         ampBBox = clipboard.get(ampBBoxKey)
         initialWcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
@@ -82,15 +83,6 @@ class WcsDeterminationStage(Stage):
         # Update exposures
         for exposureKey in exposureKeyList:
             exposure = clipboard.get(exposureKey)
-            twcs = exposure.getWcs()
-            print "Original: ", twcs.getOriginRaDec().getX(), \
-                    twcs.getOriginRaDec().getY(), \
-                    twcs.getOriginXY().getX(), \
-                    twcs.getOriginXY().getY()
-            print "New: ", wcs.getOriginRaDec().getX(), \
-                    wcs.getOriginRaDec().getY(), \
-                    wcs.getOriginXY().getX(), \
-                    wcs.getOriginXY().getY()
             exposure.setWcs(wcs)
 
         self.outputQueue.addDataset(clipboard)
