@@ -40,11 +40,8 @@ class WcsDeterminationStage(Stage):
 
         # Do nothing else in the master
 
-        # Comment this out for now since SimpleStageTester needs to do
-        # initialization in all cases.
-
-        # if self.getRank() == -1:
-        #     return
+        if self.getRank() == -1:
+            return
 
         self.astromSolver = astromNet.GlobalAstrometrySolution()
         #Read in the indices (i.e the files containing the positions of known asterisms
