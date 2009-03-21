@@ -35,12 +35,17 @@ class WcsDeterminationStage(Stage):
         # call base version
         Stage.initialize(self, outQueue, inQueue)
 
-        # Do nothing else in the master
-        if self.getRank() == -1:
-            return
-
         # initialize a log
         self.log = Log(Log.getDefaultLog(), "lsst.meas.pipeline.WcsDeterminationStage")
+
+        # Do nothing else in the master
+
+        # Comment this out for now since SimpleStageTester needs to do
+        # initialization in all cases.
+
+        # if self.getRank() == -1:
+        #     return
+
         self.astromSolver = astromNet.GlobalAstrometrySolution()
         #Read in the indices (i.e the files containing the positions of known asterisms
         #and add them to the astromSolver object
@@ -67,18 +72,20 @@ class WcsDeterminationStage(Stage):
         self.astromSolver.setMatchThreshold(matchThreshold)
 
         sourceSet = clipboard.get(sourceSetKey)
+        if isinstance(sourceSet, afwDet.PersistableSourceVector):
+            sourceSet = sourceSet.getSources()
 
         # Shift WCS from amp coordinates to CCD coordinates
         # Use first Exposure's WCS as the initial guess
         initialWcs = clipboard.get(exposureKeyList[0]).getWcs().clone()
         ampBBox = clipboard.get(ampBBoxKey)
-        initialWcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
+        initialWcs.shiftReferencePixel(+ampBBox.getX0(), +ampBBox.getY0())
 
         self.log.log(Log.INFO, "Determine Wcs")
         wcs = self.determineWcs(sourceSet, initialWcs)
 
         # Shift WCS from CCD coordinates to amp coordinates
-        wcs.shiftReferencePixel(+ampBBox.getX0(), +ampBBox.getY0())
+        wcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
 
         # Update exposures
         for exposureKey in exposureKeyList:
