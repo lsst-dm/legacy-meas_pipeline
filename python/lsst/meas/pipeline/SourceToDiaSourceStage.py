@@ -56,17 +56,18 @@ class SourceToDiaSourceStage(Stage):
                 diaSource.setRaFluxErr(raErr); diaSource.setDecFluxErr(decErr)
 
                 (ra, dec, raErr, decErr) = self.raDecWithErrs(
-                        diaSource.getXPeak(), diaSource.getYPeak(),
-                        diaSource.getXPeakErr(), diaSource.getYPeakErr())
-                diaSource.setRaPeak(ra); diaSource.setDecPeak(dec)
-                diaSource.setRaPeakErr(raErr); diaSource.setDecPeakErr(decErr)
-
-                (ra, dec, raErr, decErr) = self.raDecWithErrs(
                         diaSource.getXAstrom(), diaSource.getYAstrom(),
                         diaSource.getXAstromErr(), diaSource.getYAstromErr())
                 diaSource.setRaAstrom(ra); diaSource.setDecAstrom(dec)
                 diaSource.setRaAstromErr(raErr); diaSource.setDecAstromErr(decErr)
 
+                # No errors for XPeak, YPeak
+                raDec = self.ccdWcs.xyToRaDec(
+                        diaSource.getXPeak(), diaSource.getYPeak())
+                diaSource.setRaPeak(raDec.getX())
+                diaSource.setDecPeak(raDec.getY())
+
+                # Simple RA/decl == Astrom versions
                 diaSource.setRa(diaSource.getRaAstrom())
                 diaSource.setRaErrForDetection(diaSource.getRaAstromErr())
                 diaSource.setDec(diaSource.getDecAstrom())
