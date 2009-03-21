@@ -1,3 +1,6 @@
+import glob
+import math
+import sys
 from lsst.pex.harness.Stage import Stage
 from lsst.pex.logging import Log
 # import lsst.pex.harness.Utils
@@ -6,9 +9,6 @@ import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
 import lsst.meas.astrom.net as astromNet
 import lsst.pex.exceptions as exceptions
-import glob
-import math
-import sys
 
 class WcsDeterminationStage(Stage):
     """Refine a WCS in an Exposure based on a list of sources
@@ -64,22 +64,31 @@ class WcsDeterminationStage(Stage):
         sourceSetKey = self._policy.getString("sourceSetKey")
         ampBBoxKey = self._policy.getString("ampBBoxKey")
         self.fluxLimit = self._policy.getDouble("fluxLimit")
-        
-        # Set parameters and compute Wcs
+        self.pixelScaleRangeFactor = self._policy.getDouble("pixelScaleRangeFactor")
+
+        self.astromSolver.reset()
+
+        # Set parameters
         allowDistortion = self._policy.getBool("allowDistortion")
         matchThreshold = self._policy.getDouble("matchThreshold")
         self.astromSolver.allowDistortion(allowDistortion)
         self.astromSolver.setMatchThreshold(matchThreshold)
 
+        # Shouldn't this be on the clipboard instead? But in any case,
+        # we need it to determine best guess RA/Dec of center of CCD
+        self.ccdWidth = self._policy.getInt("ccdDimensions.width")
+        self.ccdHeight = self._policy.getInt("ccdDimensions.height")
+
         sourceSet = clipboard.get(sourceSetKey)
         if isinstance(sourceSet, afwDet.PersistableSourceVector):
             sourceSet = sourceSet.getSources()
-
-        # Shift WCS from amp coordinates to CCD coordinates
-        # Use first Exposure's WCS as the initial guess
+        
         initialWcs = clipboard.get(exposureKeyList[0]).getWcs().clone()
         ampBBox = clipboard.get(ampBBoxKey)
-        initialWcs.shiftReferencePixel(+ampBBox.getX0(), +ampBBox.getY0())
+        
+        # Shift WCS from amp coordinates to CCD coordinates
+        # Use first Exposure's WCS as the initial guess
+        initialWcs.shiftReferencePixel(ampBBox.getX0(), ampBBox.getY0())
 
         self.log.log(Log.INFO, "Determine Wcs")
         wcs = self.determineWcs(sourceSet, initialWcs)
@@ -103,9 +112,32 @@ class WcsDeterminationStage(Stage):
             if source.getPsfFlux() >= self.fluxLimit: 
                 wcsSourceSet.append(source)
         
+        self.solver.setStarlist(wcsSourceSet)
+
+        # find RA/Dec of center of image (need not be exact)
+        ccdCtrPos = afwImage.PointD(
+            afwImage.indexToPosition(self.ccdWidth / 2),
+            afwImage.indexToPosition(self.ccdHeight / 2),
+        )
+        predRaDecCtr = initialWcs.xyToRaDec(ccdCtrPos)
+        
+        # Determinate predicted image scale in arcseconds/pixel
+        pixelAreaDegSq = initialWcs.pixArea(ccdCtrPos) # in degrees^2
+        imageScale = math.sqrt(pixelAreaDegSq) * 3600.0
+    
+        self.solver.setMinimumImageScale(imageScale / self.pixelScaleRangeFactor)
+        self.solver.setMaximumImageScale(imageScale * self.pixelScaleRangeFactor)
+    
+        if False: # set True once you trust the Wcs isFlipped function or remove the conditional
+            if initialWcs.isFlipped():
+                self.solver.setParity(FLIPPED_PARITY)
+            else:
+                self.solver.setParity(NORMAL_PARITY)
+        else:
+            self.solver.setParity(UNKNOWN_PARITY)
 
         try:
-            outWcs = self.astromSolver.solve(wcsSourceSet, initialWcs)
+            outWcs = self.astromSolver.solve(predRaDecCtr.getX(), predRaDecCtr.getY())
         except exceptions.LsstCppException:
             err= sys.exc_info()[1]
             self.log.log(Log.WARN, err.message.what())
