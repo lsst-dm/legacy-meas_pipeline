@@ -93,9 +93,7 @@ class WcsDeterminationStage(Stage):
         # select sufficiently bright sources
         wcsSourceSet = afwDet.SourceSet()
         for source in sourceSet:
-            #This test previously checked for fluxes brighter than self.fluxlimit
-            #but that variable isn't defined so I insist on >0 instead.
-            if source.getPsfFlux() >= 0: 
+            if source.getPsfFlux() >= self.fluxLimit: 
                 wcsSourceSet.append(source)
         
 
