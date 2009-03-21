@@ -20,27 +20,26 @@ class SourceToDiaSourceStage(Stage):
     Clipboard Input:
     - SourceSet with key specified by policy attribute inputKey
     - PersistableSourceVector with key "persistable_"+inputKey 
+    - CCD-based WCS with key specified by policy attribute ccdWcsKey
 
     ClipboardOutput:
     - DiaSourceSet with key outputKey.
     - PersistableDiaSourceVector with key "persistable_"+outputKey
     """
-    def __init__(self, stageId = -1, policy = None):
-        # call base constructor
-        Stage.__init__(self,stageId, policy)
-        # initialize a log
-        self.log = Log(Log.getDefaultLog(), 
-                "lsst.meas.pipeline.SourceToDiaSourceStage")
-
     def process(self):
         """
         Converting to DiaSource in the worker process
         """
+        self.log = Log(Log.getDefaultLog(), 
+                "lsst.meas.pipeline.SourceToDiaSourceStage")
+
         self.log.log(Log.INFO, "Executing in process")
        
         clipboard = self.inputQueue.getNextDataset()
-        keys = self._getPolicyKeys()        
-        
+        ccdWcsKey = self._policy.get("ccdWcsKey")
+        self.ccdWcs = clipboard.get(ccdWcsKey)
+        keys = self._getPolicyKeys()
+
         for inKey, outKey in keys:
             sourceSet = clipboard.get(inKey)
             if sourceSet == None:
@@ -48,7 +47,33 @@ class SourceToDiaSourceStage(Stage):
 
             diaSourceSet = afwDet.DiaSourceSet()
             for source in sourceSet:
-                diaSourceSet.append(afwDet.makeDiaSourceFromSource(source))
+                diaSource = afwDet.makeDiaSourceFromSource(source)
+
+                (ra, dec, raErr, decErr) = self.raDecWithErrs(
+                        diaSource.getXFlux(), diaSource.getYFlux(),
+                        diaSource.getXFluxErr(), diaSource.getYFluxErr())
+                diaSource.setRaFlux(ra); diaSource.setDecFlux(dec)
+                diaSource.setRaFluxErr(raErr); diaSource.setDecFluxErr(decErr)
+
+                (ra, dec, raErr, decErr) = self.raDecWithErrs(
+                        diaSource.getXPeak(), diaSource.getYPeak(),
+                        diaSource.getXPeakErr(), diaSource.getYPeakErr())
+                diaSource.setRaPeak(ra); diaSource.setDecPeak(dec)
+                diaSource.setRaPeakErr(raErr); diaSource.setDecPeakErr(decErr)
+
+                (ra, dec, raErr, decErr) = self.raDecWithErrs(
+                        diaSource.getXAstrom(), diaSource.getYAstrom(),
+                        diaSource.getXAstromErr(), diaSource.getYAstromErr())
+                diaSource.setRaAstrom(ra); diaSource.setDecAstrom(dec)
+                diaSource.setRaAstromErr(raErr); diaSource.setDecAstromErr(decErr)
+
+                diaSource.setRa(diaSource.getRaAstrom())
+                diaSource.setRaErrForDetection(diaSource.getRaAstromErr())
+                diaSource.setDec(diaSource.getDecAstrom())
+                diaSource.setDecErrForDetection(diaSource.getDecAstromErr())
+
+                diaSourceSet.append(diaSource)
+
             persistableSet = afwDet.PersistableDiaSourceVector(diaSourceSet)
 
             clipboard.put(outKey, diaSourceSet)
@@ -68,4 +93,10 @@ class SourceToDiaSourceStage(Stage):
 
         return keys
 
-
+    def raDecWithErrs(self, x, y, xErr, yErr):
+        raDec = self.ccdWcs.xyToRaDec(x, y)
+        ra = raDec.getX(); dec = raDec.getY()
+        raDecWithErr = self.ccdWcs.xyToRaDec(x + xErr, y + yErr)
+        raErr = raDecWithErr.getX() - ra
+        decErr = raDecWithErr.getY() - dec
+        return (ra, dec, raErr, decErr)

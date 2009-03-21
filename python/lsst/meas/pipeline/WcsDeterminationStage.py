@@ -60,9 +60,12 @@ class WcsDeterminationStage(Stage):
         self.log.log(Log.INFO, "Wcs Determination Stage")
 
         clipboard = self.inputQueue.getNextDataset()
+
         exposureKeyList = self._policy.getStringArray("exposureKeyList")
         sourceSetKey = self._policy.getString("sourceSetKey")
         ampBBoxKey = self._policy.getString("ampBBoxKey")
+        outputWcsKey = self._policy.getString("outputCcdWcsKey")
+
         self.fluxLimit = self._policy.getDouble("fluxLimit")
         self.pixelScaleRangeFactor = self._policy.getDouble("pixelScaleRangeFactor")
 
@@ -93,6 +96,8 @@ class WcsDeterminationStage(Stage):
 
         self.log.log(Log.INFO, "Determine Wcs")
         wcs = self.determineWcs(sourceSet, initialWcs)
+
+        clipboard.put(outputWcsKey, wcs)
 
         # Shift WCS from CCD coordinates to amp coordinates
         wcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
