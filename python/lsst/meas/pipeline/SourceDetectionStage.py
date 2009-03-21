@@ -9,6 +9,14 @@ import lsst.afw.math as afwMath
 import lsst.pex.exceptions as pexExcept
 import lsst.meas.algorithms as measAlg
 
+import lsst.afw.display.ds9 as ds9
+import lsst.afw.display.utils as displayUtils
+
+try:
+    type(display)
+except NameError:
+    display = False
+
 class SourceDetectionStage(Stage):
     """
     Description:
@@ -65,7 +73,8 @@ class SourceDetectionStage(Stage):
 
         maskedImage = exposure.getMaskedImage()
         #make a deep copy
-        deepCopy = maskedImage.Factory(maskedImage, True) 
+        deepCopy = maskedImage.Factory(maskedImage, True)
+        deepCopy.setXY0(maskedImage.getXY0())
       
         #
         # Subtract background
@@ -100,6 +109,9 @@ class SourceDetectionStage(Stage):
         maskedImage = exposure.getMaskedImage()
         convolvedImage = maskedImage.Factory(maskedImage.getDimensions())
         convolvedImage.setXY0(maskedImage.getXY0())
+
+        if display:
+            ds9.mtv(maskedImage)
             
         #
         # Do not propagate the convolved CD/INTRP bits
@@ -152,7 +164,24 @@ class SourceDetectionStage(Stage):
                                                 self._positiveThreshold,
                                                 "DETECTED",
                                                 self._minPixels)
-        
+        #
+        # ds only searched the middle but it belongs to the entire MaskedImage
+        #
+        dsPositive.setRegion(afwImg.BBox(afwImg.PointI(maskedImage.getX0(), maskedImage.getY0()),
+                                           maskedImage.getWidth(), maskedImage.getHeight()));
+        if dsNegative:
+            dsNegative.setRegion(afwImg.BBox(afwImg.PointI(maskedImage.getX0(), maskedImage.getY0()),
+                                             maskedImage.getWidth(), maskedImage.getHeight()));
+        #
+        # We want to grow the detections into the edge by at least one pixel so that it sees the EDGE bit
+        #
+        grow, isotropic = 1, False
+        dsPositive = afwDet.DetectionSetF(dsPositive, grow, isotropic)
+        dsPositive.setMask(maskedImage.getMask(), "DETECTED")
+
+        if dsNegative:
+            dsNegative = afwDet.DetectionSetF(dsNegative, grow, isotropic)
+            dsNegative.setMask(maskedImage.getMask(), "DETECTED")
         #
         # Reinstate the saved bits in the unsmoothed image
         #
