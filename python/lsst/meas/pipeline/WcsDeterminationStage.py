@@ -31,9 +31,14 @@ class WcsDeterminationStage(Stage):
     \todo After DC3 we should not assume the input exposure has a Wcs;
     the associated minimal data (center RA/Dec, etc.) should come in as separate metadata.
     """
-    def __init__(self, stageId = -1, policy = None):
-        # call base constructor
-        Stage.__init__(self, stageId, policy)
+    def initialize(self, outQueue, inQueue):
+        # call base version
+        Stage.initialize(self, outQueue, inQueue)
+
+        # Do nothing else in the master
+        if self.getRank() == -1:
+            return
+
         # initialize a log
         self.log = Log(Log.getDefaultLog(), "lsst.meas.pipeline.WcsDeterminationStage")
         self.astromSolver = astromNet.GlobalAstrometrySolution()
@@ -64,24 +69,31 @@ class WcsDeterminationStage(Stage):
         sourceSet = clipboard.get(sourceSetKey)
 
         # Shift WCS from amp coordinates to CCD coordinates
-        initialWcsKey = self._policy.getString("initialWcsKey")
+        initialWcs = clipboard.get(exposureKeyList[0]).getWcs().clone()
         ampBBox = clipboard.get(ampBBoxKey)
-        initialWcs = clipboard.get(initialWcsKey)
-        newWcs = initialWcs.clone()
-        newWcs.shiftReferencePixel(ampBBox.getX0(), ampBBox.getY0())
+        initialWcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
 
         self.log.log(Log.INFO, "Determine Wcs")
-        wcs = self.determineWcs(sourceSet, newWcs)
+        wcs = self.determineWcs(sourceSet, initialWcs)
 
         # Shift WCS from CCD coordinates to amp coordinates
-        wcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
+        wcs.shiftReferencePixel(+ampBBox.getX0(), +ampBBox.getY0())
 
         # Update exposures
         for exposureKey in exposureKeyList:
             exposure = clipboard.get(exposureKey)
+            twcs = exposure.getWcs()
+            print "Original: ", twcs.getOriginRaDec().getX(), \
+                    twcs.getOriginRaDec().getY(), \
+                    twcs.getOriginXY().getX(), \
+                    twcs.getOriginXY().getY()
+            print "New: ", wcs.getOriginRaDec().getX(), \
+                    wcs.getOriginRaDec().getY(), \
+                    wcs.getOriginXY().getX(), \
+                    wcs.getOriginXY().getY()
             exposure.setWcs(wcs)
 
-        self.outputQueue.addDataSet(clipboard)
+        self.outputQueue.addDataset(clipboard)
     
     def determineWcs(self, sourceSet, initialWcs):
         """Determine Wcs of an Exposure given a SourceSet and an initial Wcs

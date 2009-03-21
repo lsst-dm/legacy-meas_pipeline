@@ -199,7 +199,8 @@ class SourceDetectionStage(Stage):
     
         if self._backgroundAlgorithm != None and exposure != None:
             key = self._policy.getString("backgroundSubtractedExposureKey")
-            clipboard.put(key, exposure)
+            if key:
+                clipboard.put(key, exposure)
 
         clipboard.put(self._policy.get("psfKey"), psf)
 
@@ -245,12 +246,14 @@ class SourceDetectionStage(Stage):
         self._exposureKey = self._policy.get("exposureKey")
         
     def _getOrMakePsf(self, clipboard):
-        psfKey = self._policy.get("psfKey")
-        psf = clipboard.get(psfKey)
-        if psf != None:
-            return psf
-        else:
-            self.log.log(Log.WARN, "psfKey %s not found on clipboard"%psfKey)
+        psfKey = self._policy.get("inputPsfKey")
+        if psfKey:
+            psf = clipboard.get(psfKey)
+            if psf != None:
+                return psf
+            else:
+                self.log.log(Log.WARN,
+                        "inputPsfKey %s not found on clipboard"%psfKey)
 
         psfPolicy = self._policy.getPolicy("psfPolicy")
         params = []        
