@@ -66,6 +66,7 @@ class WcsDeterminationStage(Stage):
         self.fluxLimit = self._policy.getDouble("fluxLimit")
         self.pixelScaleRangeFactor = self._policy.getDouble("pixelScaleRangeFactor")
 
+        self.log.log(Log.INFO, "Reset solver")
         self.astromSolver.reset()
 
         # Set parameters
@@ -112,6 +113,8 @@ class WcsDeterminationStage(Stage):
             if source.getPsfFlux() >= self.fluxLimit: 
                 wcsSourceSet.append(source)
         
+        self.log.log(Log.INFO, "Using %s sources with flux > %s; initial list had %s sources" % \
+            (len(wcsSourceSet), self.fluxLimit), len(sourceSet))
         self.solver.setStarlist(wcsSourceSet)
 
         # find RA/Dec of center of image (need not be exact)
@@ -120,20 +123,29 @@ class WcsDeterminationStage(Stage):
             afwImage.indexToPosition(self.ccdHeight / 2),
         )
         predRaDecCtr = initialWcs.xyToRaDec(ccdCtrPos)
+        self.log.log(Log.INFO, "Predicted RA/Dec at CCD center = %s, %s deg" % \
+            (predRaDecCtr.getX(), predRaDecCtr.getY()))
         
         # Determinate predicted image scale in arcseconds/pixel
         pixelAreaDegSq = initialWcs.pixArea(ccdCtrPos) # in degrees^2
         imageScale = math.sqrt(pixelAreaDegSq) * 3600.0
+        self.log.log(Log.INFO, "Predicted image scale = %s arcsec/pixel" % (imageScale,))
     
-        self.solver.setMinimumImageScale(imageScale / self.pixelScaleRangeFactor)
-        self.solver.setMaximumImageScale(imageScale * self.pixelScaleRangeFactor)
+        minImageScale = imageScale / self.pixelScaleRangeFactor
+        maxImageScale = imageScale * self.pixelScaleRangeFactor
+        self.solver.setMinimumImageScale(minImageScale)
+        self.solver.setMaximumImageScale(maxImageScale)
+        self.log.log(Log.INFO, "Set image scale min=%s; max=%s" % (minImageScale, maxImageScale))
     
         if False: # set True once you trust the Wcs isFlipped function or remove the conditional
             if initialWcs.isFlipped():
+                self.log.log(Log.INFO, "Set flipped parity")
                 self.solver.setParity(FLIPPED_PARITY)
             else:
+                self.log.log(Log.INFO, "Set normal parity")
                 self.solver.setParity(NORMAL_PARITY)
         else:
+            self.log.log(Log.INFO, "Set unknown parity")
             self.solver.setParity(UNKNOWN_PARITY)
 
         try:
