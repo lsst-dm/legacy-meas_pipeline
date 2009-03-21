@@ -1,16 +1,16 @@
 
 class SourceClassifier:
     """
-    Base class for source classifiers. A SourceClassifier is initialized with a policy, and the position of
-    a flag bit it is allowed to set/clear. Once created, classify() is called on the SourceClassifier instance
-    some number of times - each time either a single source or a tuple containing two sources is supplied as
-    the argument.
+    Base class for source classifiers. A SourceClassifier is initialized with a policy, and the positions of
+    the flag bits it is allowed to set/clear. Once created, classify() is called on the SourceClassifier instance
+    some number of times - each time one or more sources (typically a pair of measurements on the two exposures
+    in an LSST visit) are supplied as arguments.
 
     Finally, the finish() method is called on the classifier so that it can log summary statistics and/or
     place SDQA ratings onto a stage clipboard.
     """
-    def __init__(self, bit, policy):
-        self._bit = bit
+    def __init__(self, bits, policy):
+        self._bits = bits
         self._policy = policy
 
     def classify(self, *args):
@@ -33,27 +33,27 @@ class SourceClassifier:
         """
         return self._policy
 
-    def getMask(self):
+    def getMask(self, n=0):
         """
-        Return a mask for the bit this classifier sets/clears
+        Return a mask for the n-th bit this classifier sets/clears
         """
-        return 1 << self._bit
+        return 1 << self._bits[n]
 
-    def getBit(self):
+    def getBit(self, n=0):
         """
-        Return the index of the bit this classifier sets/clears
+        Return the index of the n-th bit this classifier sets/clears
         """
-        return self._bit
+        return self._bits[n]
 
-    def setBit(self, flag):
+    def setBit(self, flag, n=0):
         """
-        Set the classifier bit in the given integer
+        Set the n-th classifier bit in the given integer
         """
-        return flag | self.getMask()
+        return flag | self.getMask(n)
 
-    def clearBit(self, flag):
+    def clearBit(self, flag, n=0):
         """
-        Clear the classifier bit in the given integer
+        Clear the n-th classifier bit in the given integer
         """
-        return flag ^ (flag & self.getMask())
+        return flag ^ (flag & self.getMask(n))
 

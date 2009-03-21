@@ -6,26 +6,20 @@ sourceList0ClipboardKey: "sourceSet0"
 sourceList1ClipboardKey: "sourceSet1"
 
 classifier: {
-    bit: 0
-    scope: "both"
-    pythonClass: "lsst.meas.pipeline.PresentInExposureClassifier"
-    parameter.psfFluxThreshold: 1.0
-}
-classifier: {
-    bit: 1
+    bits: 0 1
     scope: "pairs"
     pythonClass: "lsst.meas.pipeline.PresentInBothExposuresClassifier"
     parameter.psfFluxThreshold: 1.0
 }
 classifier: {
-    bit: 2
+    bits: 2
     scope: "pairs"
     pythonClass: "lsst.meas.pipeline.ShapeDiffersInExposuresClassifier"
     parameter.shapeNormDiffThreshold: 1.0
 }
 classifier: {
-    bit: 3
-    scope: "both"
+    bits: 3 4
+    scope: "pairs"
     pythonClass: "lsst.meas.pipeline.PositiveFluxExcursionClassifier"
     parameter.psfFluxThreshold: 1.0
 }

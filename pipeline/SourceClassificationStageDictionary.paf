@@ -26,11 +26,11 @@ definitions: {
 
         dictionary: {
             definitions: {
-                bit : {
+                bits : {
                     type: "int"
-                    description: "index of flag bit computed by classifier"
+                    description: "array of flag bit indexes computed by classifier"
                     minOccurs: 1
-                    maxOccurs: 1
+                    maxOccurs: 64
                     min: 0
                     max: 63
                 }

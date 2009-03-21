@@ -19,11 +19,11 @@ class SourceClassificationStage(Stage):
     from a single detection on the addition of a visits two difference images.
     The clipboard key names of these two lists is configurable via policy.
 
-    The stage policy is additionally expected to contain a "Classifiers" key that
-    describes up to 64 binary classifiers (which set source flag bits). Each of
+    The stage policy is additionally expected to contain a "Classifiers" key
+    that describes up to 64 classifiers (which set source flag bits). Each of
     these must contain the following child keys:
-    - "bit"          index of the flag bit computed by the binary classifier (0-63)
-    - "pythonClass"  the name of a python class to compute flag values with
+    - "bits"         array of flag bits computed by the classifier (0-63)
+    - "pythonClass"  the name of the python class for the classifier
     - "arguments"    "first":  process the first source list only
                      "second": process the second source list only
                      "both":   process both source lists
@@ -33,14 +33,14 @@ class SourceClassificationStage(Stage):
     Note that classifiers are run in the order in which they appear in the
     stage policy file.
 
-    See pipeline/SourceClassificationStageDictionary.paf in the meas_pipeline
-    package for the details (including classifier specific parameters).
+    See pipeline/SourceClassificationStageDictionary.paf for the details
+    (including classifier specific parameters).
 
     Clipboard Input:
     - First difference source list (name determined by "sourceList1ClipboardKey" policy key)
     - Second difference source list (name determined by "sourceList2ClipboardKey" policy key)
 
-    ClipboardOutput:
+    Clipboard Output:
     - the input clipboard is passed to the next stage with no structural
       modifications. Only individual sources are modified by this stage.
     """
@@ -50,7 +50,7 @@ class SourceClassificationStage(Stage):
         Helper class for importing and running source classifiers.
         """
         def __init__(self, policy, log):
-            self._bit = policy.getInt("bit")
+            bits = policy.getIntArray("bits")
             pythonClass = policy.getString("pythonClass")
             components = pythonClass.split('.')
             className = components.pop()
@@ -68,8 +68,12 @@ class SourceClassificationStage(Stage):
             if not issubclass(self._pythonClass, SourceClassifier):
                 raise RuntimeError("%s is not a subclass of SourceClassifier - check stage policy" % pythonClass)
             # Create classifier, specifying a flag bit position
-            self._classifier = self._pythonClass(self._bit, subpolicy)
-            LogRec(log, Log.INFO) << "Registered SourceClassifier" << { "bit": self._bit, "pythonClass": pythonClass } << endr
+            self._classifier = self._pythonClass(bits, subpolicy)
+            rec = LogRec(log, Log.INFO)
+            rec << "Registered SourceClassifier" << { "pythonClass": pythonClass }
+            for bit in bits:
+                rec << { "bit": bit }
+            rec << endr
 
         def invoke(self, sourceList1, sourceList2):
             if self._scope == "first":
