@@ -114,8 +114,8 @@ class WcsDeterminationStage(Stage):
                 wcsSourceSet.append(source)
         
         self.log.log(Log.INFO, "Using %s sources with flux > %s; initial list had %s sources" % \
-            (len(wcsSourceSet), self.fluxLimit), len(sourceSet))
-        self.solver.setStarlist(wcsSourceSet)
+            (len(wcsSourceSet), self.fluxLimit, len(sourceSet)))
+        self.astromSolver.setStarlist(wcsSourceSet)
 
         # find RA/Dec of center of image (need not be exact)
         ccdCtrPos = afwImage.PointD(
@@ -133,28 +133,30 @@ class WcsDeterminationStage(Stage):
     
         minImageScale = imageScale / self.pixelScaleRangeFactor
         maxImageScale = imageScale * self.pixelScaleRangeFactor
-        self.solver.setMinimumImageScale(minImageScale)
-        self.solver.setMaximumImageScale(maxImageScale)
+        self.astromSolver.setMinimumImageScale(minImageScale)
+        self.astromSolver.setMaximumImageScale(maxImageScale)
         self.log.log(Log.INFO, "Set image scale min=%s; max=%s" % (minImageScale, maxImageScale))
     
         if False: # set True once you trust the Wcs isFlipped function or remove the conditional
             if initialWcs.isFlipped():
                 self.log.log(Log.INFO, "Set flipped parity")
-                self.solver.setParity(FLIPPED_PARITY)
+                self.astromSolver.setParity(astromNet.FLIPPED_PARITY)
             else:
                 self.log.log(Log.INFO, "Set normal parity")
-                self.solver.setParity(NORMAL_PARITY)
+                self.astromSolver.setParity(astromNet.NORMAL_PARITY)
         else:
             self.log.log(Log.INFO, "Set unknown parity")
-            self.solver.setParity(UNKNOWN_PARITY)
+            self.astromSolver.setParity(astromNet.UNKNOWN_PARITY)
 
         try:
-            outWcs = self.astromSolver.solve(predRaDecCtr.getX(), predRaDecCtr.getY())
+            solved = self.astromSolver.solve(predRaDecCtr.getX(), predRaDecCtr.getY())
         except exceptions.LsstCppException:
             err= sys.exc_info()[1]
             self.log.log(Log.WARN, err.message.what())
-            self.log.log(Log.WARN, "Failed to find WCS solution; leaving raw Wcs unchanged")
-            outWcs = initialWcs
-        
-        return outWcs
+            solved = False
 
+        if solved:
+            return self.astromSolver.getWcs()
+        else:
+            self.log.log(Log.WARN, "Failed to find WCS solution; leaving raw Wcs unchanged")
+            return initialWcs
