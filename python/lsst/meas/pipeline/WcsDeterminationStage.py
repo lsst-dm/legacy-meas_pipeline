@@ -65,8 +65,8 @@ class WcsDeterminationStage(Stage):
 
         self.fluxLimit = self._policy.getDouble("fluxLimit")
         self.pixelScaleRangeFactor = self._policy.getDouble("pixelScaleRangeFactor")
-        self.outputRaDecSys = self._policy.getString("outputRaDecSys")
-        self.outputEquinox = self._policy.getDouble("outputEquinox")
+        outputRaDecSys = self._policy.getString("outputRaDecSys")
+        outputEquinox = self._policy.getDouble("outputEquinox")
 
         self.log.log(Log.INFO, "Reset solver")
         self.astromSolver.reset()
