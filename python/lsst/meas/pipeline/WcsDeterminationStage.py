@@ -156,9 +156,9 @@ class WcsDeterminationStage(Stage):
             err= sys.exc_info()[1]
             self.log.log(Log.WARN, err.message.what())
             solved = False
-
+            
         if solved:
-            return self.astromSolver.getWcs()
+            return self.astromSolver.getDistortedWcs()
         else:
             self.log.log(Log.WARN, "Failed to find WCS solution; leaving raw Wcs unchanged")
             return initialWcs
