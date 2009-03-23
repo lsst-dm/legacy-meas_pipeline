@@ -65,6 +65,8 @@ class WcsDeterminationStage(Stage):
 
         self.fluxLimit = self._policy.getDouble("fluxLimit")
         self.pixelScaleRangeFactor = self._policy.getDouble("pixelScaleRangeFactor")
+        self.outputRaDecSys = self._policy.getString("outputRaDecSys")
+        self.outputEquinox = self._policy.getDouble("outputEquinox")
 
         self.log.log(Log.INFO, "Reset solver")
         self.astromSolver.reset()
@@ -98,6 +100,12 @@ class WcsDeterminationStage(Stage):
 
         # Shift WCS from CCD coordinates to amp coordinates
         wcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
+        # Fix up RADECSYS and EQUINOX in Wcs
+        # Ugly hack for now
+        ps = wcs.getFitsMetadata()
+        ps.set("RADECSYS", outputRaDecSys)
+        ps.set("EQUINOX", outputEquinox)
+        wcs = afwImage.Wcs(ps)
 
         # Update exposures
         for exposureKey in exposureKeyList:
@@ -109,10 +117,11 @@ class WcsDeterminationStage(Stage):
     def determineWcs(self, sourceSet, initialWcs):
         """Determine Wcs of an Exposure given a SourceSet and an initial Wcs
         """
-        # select sufficiently bright sources
+        # select sufficiently bright sources that are not flagged
         wcsSourceSet = afwDet.SourceSet()
         for source in sourceSet:
-            if source.getPsfFlux() >= self.fluxLimit: 
+            if source.getPsfFlux() >= self.fluxLimit and \
+                source.getFlagForDetection() == 0:
                 wcsSourceSet.append(source)
         
         self.log.log(Log.INFO, "Using %s sources with flux > %s; initial list had %s sources" % \
