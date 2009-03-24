@@ -110,7 +110,7 @@ class WcsDeterminationStage(Stage):
         # Update exposures
         for exposureKey in exposureKeyList:
             exposure = clipboard.get(exposureKey)
-            exposure.setWcs(wcs)
+            exposure.setWcs(wcs.clone())
 
         self.outputQueue.addDataset(clipboard)
     
