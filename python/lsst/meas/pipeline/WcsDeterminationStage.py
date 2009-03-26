@@ -3,6 +3,7 @@ import math
 import sys
 from lsst.pex.harness.Stage import Stage
 from lsst.pex.logging import Log
+from lsst.pex.policy import Policy
 # import lsst.pex.harness.Utils
 import lsst.daf.base as dafBase
 import lsst.afw.detection as afwDet
@@ -43,10 +44,14 @@ class WcsDeterminationStage(Stage):
         if self.getRank() == -1:
             return
 
-        self.astromSolver = astromNet.GlobalAstrometrySolution()
-        #Read in the indices (i.e the files containing the positions of known asterisms
-        #and add them to the astromSolver object
-        astrometryIndicesGlob = self._policy.getString("astrometryIndicesGlob")
+        path = self._policy.getString("astrometryIndexMetadata")
+        self.astromSolver = astromNet.GlobalAstrometrySolution(path)
+
+        # Read in the indices (i.e the files containing the positions of known
+        # asterisms and add them to the astromSolver object
+
+        pol = Policy(path)
+        astrometryIndicesGlob = pol.getString("astrometryIndicesGlob")
         indexPathList = glob.glob(astrometryIndicesGlob)
         for indexPath in indexPathList:
             self.log.log(Log.INFO, "Reading astrometry index file %s" % (indexPath,))
