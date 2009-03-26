@@ -34,8 +34,8 @@ class DetectStageTestCase(unittest.TestCase):
         pass
 
     def testDc3PipePolicy(self):
-        ipsdDir = os.path.join(eups.productDir("ctrl_dc3pipe"),\
-                            "pipeline", "IPSD")
+        ipsdDir = os.path.join(eups.productDir("meas_pipeline"),\
+                            "tests")
         policyPath = os.path.join(ipsdDir, "sourceDetection0_policy.paf")
         policyFile = policy.PolicyFile(policyPath)
         stagePolicy = policy.Policy(policyFile)

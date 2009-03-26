@@ -13,6 +13,7 @@ import random
 import time
 
 import lsst.utils.tests as utilsTests
+import lsst.daf.base as dafBase
 import lsst.pex.harness.Queue as pexQueue
 import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as policy
@@ -35,6 +36,7 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
         stagePolicy = policy.Policy()
         stagePolicy.add("data", dataPolicy1)
         stagePolicy.add("data", dataPolicy2)
+        stagePolicy.add("ccdWcsKey", "ccdWcs")
 
         self.sourceSet = afwDet.SourceSet()
         self.sourceSet.append(afwDet.Source())
@@ -43,9 +45,15 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
         self.sourceSet.append(afwDet.Source())
         self.sourceSet.append(afwDet.Source())
         
+        metadata = dafBase.PropertySet()
+        metadata.set('CRPIX1',  0.0)
+        metadata.set('CRPIX2',  0.0)
+        wcs = afwImage.Wcs(metadata)
+
         clipboard = pexClipboard.Clipboard()
         clipboard.put("sourceSet0", self.sourceSet)
         clipboard.put("sourceSet1", self.sourceSet) 
+        clipboard.put("ccdWcs", wcs)
 
         inQueue = pexQueue.Queue()
         inQueue.addDataset(clipboard)
