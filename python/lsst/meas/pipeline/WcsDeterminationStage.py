@@ -47,16 +47,6 @@ class WcsDeterminationStage(Stage):
         path = self._policy.getString("astrometryIndexMetadata")
         self.astromSolver = astromNet.GlobalAstrometrySolution(path)
 
-        # Read in the indices (i.e the files containing the positions of known
-        # asterisms and add them to the astromSolver object
-
-        pol = Policy(path)
-        astrometryIndicesGlob = pol.getString("astrometryIndicesGlob")
-        indexPathList = glob.glob(astrometryIndicesGlob)
-        for indexPath in indexPathList:
-            self.log.log(Log.INFO, "Reading astrometry index file %s" % (indexPath,))
-            self.astromSolver.addIndexFile(indexPath)
-    
     def process(self):
         """Determine Wcs"""
         self.log.log(Log.INFO, "Wcs Determination Stage")
@@ -70,9 +60,6 @@ class WcsDeterminationStage(Stage):
 
         self.fluxLimit = self._policy.getDouble("fluxLimit")
         self.pixelScaleRangeFactor = self._policy.getDouble("pixelScaleRangeFactor")
-        outputRaDecSys = self._policy.getString("outputRaDecSys")
-        outputEquinox = self._policy.getDouble("outputEquinox")
-
         self.log.log(Log.INFO, "Reset solver")
         self.astromSolver.reset()
 
