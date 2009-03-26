@@ -105,12 +105,6 @@ class WcsDeterminationStage(Stage):
 
         # Shift WCS from CCD coordinates to amp coordinates
         wcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
-        # Fix up RADECSYS and EQUINOX in Wcs
-        # Ugly hack for now
-        ps = wcs.getFitsMetadata()
-        ps.set("RADECSYS", outputRaDecSys)
-        ps.set("EQUINOX", outputEquinox)
-        wcs = afwImage.Wcs(ps)
 
         # Update exposures
         for exposureKey in exposureKeyList:
