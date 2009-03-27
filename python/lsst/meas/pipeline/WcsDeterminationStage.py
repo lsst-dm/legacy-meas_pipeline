@@ -119,8 +119,11 @@ class WcsDeterminationStage(Stage):
             afwImage.indexToPosition(self.ccdWidth / 2),
             afwImage.indexToPosition(self.ccdHeight / 2),
         )
-        predRaDecCtr = initialWcs.xyToRaDec(ccdCtrPos)
-        self.log.log(Log.INFO, "Predicted RA/Dec at CCD center = %s, %s deg" % \
+        # Use RA/decl of WCS origin, not CCD center, as it seems to lead to
+        # faster solutions.  TODO: figure out what the right input is.
+        # predRaDecCtr = initialWcs.xyToRaDec(ccdCtrPos)
+        predRaDecCtr = initialWcs.getOriginRaDec()
+        self.log.log(Log.INFO, "RA/Dec at initial WCS origin = %s, %s deg" % \
             (predRaDecCtr.getX(), predRaDecCtr.getY()))
         
         # Determinate predicted image scale in arcseconds/pixel
