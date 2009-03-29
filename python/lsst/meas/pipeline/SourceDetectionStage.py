@@ -113,30 +113,12 @@ class SourceDetectionStage(Stage):
         if display:
             ds9.mtv(maskedImage)
             
-        #
-        # Do not propagate the convolved CD/INTRP bits
-        # Save them for the original CR/INTRP pixels
-        #
-        mask = maskedImage.getMask()                
-        savedMask = mask.Factory(mask, True)
-        savedBits = savedMask.getPlaneBitMask("CR") | \
-                    savedMask.getPlaneBitMask("BAD") | \
-                    savedMask.getPlaneBitMask("INTRP")
-        savedMask &= savedBits
-        mask &= ~savedBits;
-        del mask
-        
         # 
         # Smooth the Image
         #
         psf.convolve(convolvedImage, 
                            maskedImage, 
                            convolvedImage.getMask().getMaskPlane("EDGE"))
-        
-        mask = convolvedImage.getMask()
-        mask |= savedMask
-        del mask
-            
         #
         # Only search psf-smooth part of frame
         #
@@ -154,8 +136,10 @@ class SourceDetectionStage(Stage):
             self.log.log(Log.DEBUG, "Do Negative Detection")
             dsNegative = afwDet.makeDetectionSet(middle,
                                                  self._negativeThreshold,
-                                                 "DETECTED",
+                                                 "DETECTED_NEGATIVE",
                                                  self._minPixels)
+            if not ds9.getMaskPlaneColor("DETECTED_NEGATIVE"):
+                ds9.setMaskPlaneColor("DETECTED_NEGATIVE", ds9.CYAN)
         
         dsPositive = None
         if self._positiveThreshold != None:
@@ -181,35 +165,13 @@ class SourceDetectionStage(Stage):
 
         if dsNegative:
             dsNegative = afwDet.DetectionSetF(dsNegative, grow, isotropic)
-            dsNegative.setMask(maskedImage.getMask(), "DETECTED")
-        #
-        # Reinstate the saved bits in the unsmoothed image
-        #
-        savedMask <<= convolvedImage.getMask()
-        mask = maskedImage.getMask()
-        mask |= savedMask
-
+            dsNegative.setMask(maskedImage.getMask(), "DETECTED_NEGATIVE")
         #
         # clean up
         #
         del middle
-        del mask
-        del savedMask
-       
-# Debugging output
-#        if dsPositive is not None:
-#            for f in dsPositive.getFootprints():
-#                print "Positive Footprint:"
-#                for s in f.getSpans():
-#                    print "  Span:", s.toString()
-#        if dsNegative is not None:
-#            for f in dsNegative.getFootprints():
-#                print "Negative Footprint:"
-#                for s in f.getSpans():
-#                    print "  Span:", s.toString()
 
         return dsPositive, dsNegative
-        
 
     def _output(self, clipboard, dsPositive, dsNegative, exposure, psf):
         if dsPositive != None:
