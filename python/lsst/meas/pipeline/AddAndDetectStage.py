@@ -53,16 +53,22 @@ class AddAndDetectStage(SourceDetectionStage):
 
         psf = self._getOrMakePsf(clipboard)
         dsPositive, dsNegative = self._detectSourcesImpl(addedExposure, psf)
+        #
+        # Copy addedExposure's mask bits to the individual exposures
+        #
+        for e in exposureList:
+            msk = e.getMaskedImage().getMask()
+            msk |= addedExposure.getMaskedImage().getMask()
+            del msk
+
         self._output(clipboard, dsPositive, dsNegative, None, psf) 
 
     def _addExposures(self, exposureList):
         exposure0 = exposureList[0]
         image0 = exposure0.getMaskedImage()
 
-        addedImage = image0.Factory(image0.getDimensions())
-        origin = image0.getXY0()
-        addedImage.setXY0(origin)
-        addedImage <<= image0
+        addedImage = image0.Factory(image0, True)
+        addedImage.setXY0(image0.getXY0())
 
         for exposure in exposureList[1:]:
             image = exposure.getMaskedImage()
