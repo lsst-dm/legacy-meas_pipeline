@@ -68,35 +68,43 @@ class SourceMeasurementStage(Stage):
         # detection sets.             
         #
         # For now, assume they are disjoint sets, so merge is trivial
-        #   
-        footprintList = afwDet.FootprintContainerT()
+        #
+        footprintLists = []
         if dsPositive != None:
             self.log.log(Log.DEBUG, "Positive DetectionSet found")
-            for fp in dsPositive.getFootprints():
-                footprintList.append(fp)
+            isNegative = False
+            footprintLists.append([dsPositive.getFootprints(), isNegative])
+
         if dsNegative != None:
             self.log.log(Log.DEBUG, "Negative DetectionSet found")
-            for fp in dsNegative.getFootprints():
-                footprintList.append(fp)
+            isNegative = True
+            footprintLists.append([dsNegative.getFootprints(), isNegative])
         
         # loop over all exposures
         for (exposure,psf), outKey in zip(exposureAndPsfList, self._outputKeys):
-            measureSources = measAlg.makeMeasureSources(exposure,
-                                                        self._measurePolicy, 
-                                                        psf)
+            measureSources = measAlg.makeMeasureSources(exposure, self._measurePolicy, psf)
+
             sourceSet = afwDet.SourceSet()
             sourceId = 0;
-            for footprint in footprintList:
-                source = afwDet.Source()
-                sourceSet.append(source)
-                source.setId(sourceId)
-                sourceId += 1
-                try:
-                    measureSources.apply(source, footprint)
-                except Exception, e:
-                    # don't worry about measurement exceptions
-                    # although maybe I should log them
-                    self.log.log(Log.WARN, str(e))
+            for footprintList, isNegative in footprintLists:
+                for footprint in footprintList:
+                    source = afwDet.Source()
+                    sourceSet.append(source)
+                    source.setId(sourceId)
+                    sourceId += 1
+
+                    detectionBits = measAlg.Flags.BINNED1
+                    if isNegative:
+                        detectionBits = measAlg.Flags.DETECT_NEGATIVE
+
+                    source.setFlagForDetection(source.getFlagForDetection() | detectionBits);
+
+                    try:
+                        measureSources.apply(source, footprint)
+                    except Exception, e:
+                        # don't worry about measurement exceptions
+                        # although maybe I should log them
+                        self.log.log(Log.WARN, str(e))
             
             #place SourceSet on the clipboard 
             clipboard.put(outKey, sourceSet)
@@ -144,4 +152,4 @@ class SourceMeasurementStage(Stage):
             self._outputKeys.append(dataPolicy.getString("outputKey"))
 
         self._positiveDetectionKey = self._policy.get("positiveDetectionKey")
-        self._negativeDetectionKey = self._policy.get("negativeDetectionkey")
+        self._negativeDetectionKey = self._policy.get("negativeDetectionKey")
