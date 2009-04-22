@@ -2,6 +2,7 @@ import glob
 import math
 import sys
 import eups
+import os
 from lsst.pex.harness.Stage import Stage
 from lsst.pex.logging import Log
 from lsst.pex.policy import Policy
@@ -117,6 +118,18 @@ class WcsDeterminationStage(Stage):
             (len(wcsSourceSet), self.fluxLimit, len(sourceSet)))
         self.astromSolver.setStarlist(wcsSourceSet)
 
+        num = self._policy.getInt("brightestNStars")
+        self.log.log(Log.INFO, "Setting number of stars in solver to %i" %(num))
+
+        try:
+            self.astromSolver.setNumBrightObjects(num)
+        except exceptions.LsstCppException:
+            import sys
+            err= sys.exc_info()[1]
+            self.log.log(Log.WARN, err.message.what())
+            self.log.log(Log.WARN, "Fewer than %i stars available for solution. Using %i instead" %(num, wcsSourceSet.size()))
+
+
         # find RA/Dec of center of image (need not be exact)
         ccdCtrPos = afwImage.PointD(
             afwImage.indexToPosition(self.ccdWidth / 2),
@@ -140,7 +153,7 @@ class WcsDeterminationStage(Stage):
         self.astromSolver.setMaximumImageScale(maxImageScale)
         self.log.log(Log.INFO, "Set image scale min=%s; max=%s" % (minImageScale, maxImageScale))
     
-        if False: # set True once you trust the Wcs isFlipped function or remove the conditional
+        if True: # set True once you trust the Wcs isFlipped function or remove the conditional
             if initialWcs.isFlipped():
                 self.log.log(Log.INFO, "Set flipped parity")
                 self.astromSolver.setParity(astromNet.FLIPPED_PARITY)
