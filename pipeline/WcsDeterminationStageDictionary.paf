@@ -50,6 +50,12 @@ definitions: {
         minOccurs: 0
         maxOccurs: 1
     }
+    brightestNStars: {
+        type: "int"
+        description: "maximum number of bright stars to use"
+        minOccurs: 0
+        maxOccurs: 1
+    }
     allowDistortion: {
         type: "boolean"
         description: "Inform the solver that the image may suffer from some distortion. Leave this on if a purely linear wcs solution will get the postions of some stars wrong by more than 1 pixel."
