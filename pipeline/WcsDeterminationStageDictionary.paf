@@ -6,20 +6,26 @@ target: lsst.meas.pipeline.WcsDeterminationStage
 
 definitions: {
     # Required entries
-    astrometryIndicesGlob: {
+    exposureKeyList: {
         type: "string"
-        description: "glob expression for astrometry.net index files"
+        description: "array of keys of exposures on clipboard"
+        minOccurs: 1
+    }
+    sourceSetKey: {
+        type: "string"
+        description: "key of SourceSet on clipboard"
         minOccurs: 1
         maxOccurs: 1
     }
-    exposureNameList: {
+    ampBBoxKey: {
         type: "string"
-        description: "array of names of exposures on clipboard"
+        description: "key of amplifier bounding box on clipboard"
         minOccurs: 1
+        maxOccurs: 1
     }
-    sourceSetName: {
+    outputCcdWcsKey: {
         type: "string"
-        description: "name of SourceSet on clipboard"
+        description: "key of resulting WCS in CCD coordinates"
         minOccurs: 1
         maxOccurs: 1
     }
@@ -29,12 +35,18 @@ definitions: {
         minOccurs: 1
         maxOccurs: 1
     }
-    
+    ccdDimensions: {
+        type: "policy"
+        description: "dimensions of the CCD"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+
     # Optional entries
     fluxLimit: {
         type: "double"
         description: "minimum flux of sources for WCS determination"
-        default: 1000.0
+        default: 20000.0
         minOccurs: 0
         maxOccurs: 1
     }

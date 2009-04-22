@@ -1,6 +1,7 @@
 import glob
 import math
 import sys
+import eups
 from lsst.pex.harness.Stage import Stage
 from lsst.pex.logging import Log
 from lsst.pex.policy import Policy
@@ -44,7 +45,9 @@ class WcsDeterminationStage(Stage):
         if self.getRank() == -1:
             return
 
-        path = self._policy.getString("astrometryIndexMetadata")
+        path = os.path.join(
+                eups.productDir("astrometry_net_data"),
+                "metadata.paf")
         self.astromSolver = astromNet.GlobalAstrometrySolution(path)
 
     def process(self):
