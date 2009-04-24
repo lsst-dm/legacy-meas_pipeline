@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os, sys
-import eups
 
 from lsst.pex.harness.Stage import Stage
 

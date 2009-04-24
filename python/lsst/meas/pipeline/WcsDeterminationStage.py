@@ -1,7 +1,7 @@
 import glob
 import math
 import sys
-import eups
+import lsst.utils as utils
 import os
 from lsst.pex.harness.Stage import Stage
 from lsst.pex.logging import Log
@@ -47,7 +47,7 @@ class WcsDeterminationStage(Stage):
             return
 
         path = os.path.join(
-                eups.productDir("astrometry_net_data"),
+                utils.productDir("astrometry_net_data"),
                 "metadata.paf")
         self.astromSolver = astromNet.GlobalAstrometrySolution(path)
 
