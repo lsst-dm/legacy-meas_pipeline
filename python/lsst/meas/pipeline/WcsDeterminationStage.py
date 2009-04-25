@@ -12,6 +12,7 @@ import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
 import lsst.meas.astrom.net as astromNet
 import lsst.pex.exceptions as exceptions
+import lsst.meas.algorithms as measAlg
 
 class WcsDeterminationStage(Stage):
     """Refine a WCS in an Exposure based on a list of sources
@@ -111,7 +112,7 @@ class WcsDeterminationStage(Stage):
         wcsSourceSet = afwDet.SourceSet()
         for source in sourceSet:
             if source.getPsfFlux() >= self.fluxLimit and \
-                source.getFlagForDetection() == 0:
+                source.getFlagForDetection() == measAlg.Flags.BINNED1:
                 wcsSourceSet.append(source)
         
         self.log.log(Log.INFO, "Using %s sources with flux > %s; initial list had %s sources" % \
