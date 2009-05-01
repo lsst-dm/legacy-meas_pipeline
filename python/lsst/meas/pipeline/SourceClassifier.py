@@ -1,5 +1,5 @@
 
-class SourceClassifier:
+class SourceClassifier(object):
     """
     Base class for source classifiers. A SourceClassifier is initialized with a policy, and the positions of
     the flag bits it is allowed to set/clear. Once created, classify() is called on the SourceClassifier instance

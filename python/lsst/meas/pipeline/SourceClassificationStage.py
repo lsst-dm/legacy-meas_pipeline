@@ -45,7 +45,7 @@ class SourceClassificationStage(Stage):
       modifications. Only individual sources are modified by this stage.
     """
 
-    class _Classifier:
+    class _Classifier(object):
         """
         Helper class for importing and running source classifiers.
         """
