@@ -1,6 +1,8 @@
 setupRequired(pex_harness >= 3.2.10)
 setupRequired(meas_algorithms >= 3.0.7)
 setupRequired(meas_astrom >= 3.0.6)
+setupRequired(ip_isr >= 3.3.8)
+setupRequired(ip_diffim >= 3.3.8)
 
 envAppend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
 envAppend(DYLD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
