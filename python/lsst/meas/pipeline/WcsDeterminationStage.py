@@ -92,7 +92,7 @@ class WcsDeterminationStage(Stage):
 
         self.log.log(Log.INFO, "Determine Wcs")
         wcs = self.determineWcs(sourceSet, initialWcs)
-
+        self.log.log(Log.INFO, wcs.getFitsMetadata().toString())
         clipboard.put(outputWcsKey, wcs)
 
         # Shift WCS from CCD coordinates to amp coordinates
@@ -170,6 +170,7 @@ class WcsDeterminationStage(Stage):
             solved = False
             
         if solved:
+            self.log.log(Log.WARN, "Found new wcs")
             return self.astromSolver.getDistortedWcs()
         else:
             self.log.log(Log.WARN, "Failed to find WCS solution; leaving raw Wcs unchanged")
