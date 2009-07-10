@@ -94,7 +94,7 @@ class SourceMeasurementStage(Stage):
 
                     detectionBits = measAlg.Flags.BINNED1
                     if isNegative:
-                        detectionBits = measAlg.Flags.DETECT_NEGATIVE
+                        detectionBits |= measAlg.Flags.DETECT_NEGATIVE
 
                     source.setFlagForDetection(source.getFlagForDetection() | detectionBits);
 
