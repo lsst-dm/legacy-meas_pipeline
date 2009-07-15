@@ -37,6 +37,7 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
         stagePolicy.add("data", dataPolicy1)
         stagePolicy.add("data", dataPolicy2)
         stagePolicy.add("ccdWcsKey", "ccdWcs")
+        stagePolicy.add("ampBBoxKey", "ampBBox")
 
         self.sourceSet = afwDet.SourceSet()
         self.sourceSet.append(afwDet.Source())
@@ -49,11 +50,13 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
         metadata.set('CRPIX1',  0.0)
         metadata.set('CRPIX2',  0.0)
         wcs = afwImage.Wcs(metadata)
+        ampBBox = afwImage.BBox(afwImage.PointI(0, 0), 1, 1)
 
         clipboard = pexClipboard.Clipboard()
         clipboard.put("sourceSet0", self.sourceSet)
         clipboard.put("sourceSet1", self.sourceSet) 
         clipboard.put("ccdWcs", wcs)
+        clipboard.put("ampBBox", ampBBox)
 
         inQueue = pexQueue.Queue()
         inQueue.addDataset(clipboard)
