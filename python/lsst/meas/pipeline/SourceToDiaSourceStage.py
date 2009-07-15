@@ -37,7 +37,9 @@ class SourceToDiaSourceStage(Stage):
        
         clipboard = self.inputQueue.getNextDataset()
         ccdWcsKey = self._policy.get("ccdWcsKey")
+        ampBBoxKey = self._policy.getString("ampBBoxKey")
         self.ccdWcs = clipboard.get(ccdWcsKey)
+        self.ampBBox = clipboard.get(ampBBoxKey)
         keys = self._getPolicyKeys()
 
         for inKey, outKey in keys:
@@ -95,9 +97,14 @@ class SourceToDiaSourceStage(Stage):
         return keys
 
     def raDecWithErrs(self, x, y, xErr, yErr):
-        raDec = self.ccdWcs.xyToRaDec(x, y)
+        # ccdWcs is determined from a CCDs worth of WcsSources (by each slice in the CCD),
+        # but is shifted to amp relative coordinates. XY coords are CCD relative, so transform
+        # to the amp coordinate system before using the WCS.
+        ampX = x - self.ampBBox.getX0()
+        ampY = y - self.ampBBox.getY0()
+        raDec = self.ccdWcs.xyToRaDec(ampX, ampY)
         ra = raDec.getX(); dec = raDec.getY()
-        raDecWithErr = self.ccdWcs.xyToRaDec(x + xErr, y + yErr)
+        raDecWithErr = self.ccdWcs.xyToRaDec(ampX + xErr, ampY + yErr)
         raErr = raDecWithErr.getX() - ra
         decErr = raDecWithErr.getY() - dec
         return (ra, dec, raErr, decErr)
