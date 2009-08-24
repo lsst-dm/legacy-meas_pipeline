@@ -2,11 +2,19 @@
 
 import lsst.pex.policy as policy
 import lsst.pex.exceptions as pexExcept
-from lsst.pex.logging import Log, Rec
+from lsst.pex.logging import Log
 import lsst.afw.image as afwImg
 import lsst.afw.math as afwMath
 import lsst.meas.algorithms as measAlg
 from SourceDetectionStage import SourceDetectionStage
+
+import lsst.afw.display.ds9 as ds9
+import lsst.afw.display.utils as displayUtils
+
+try:
+    type(display)
+except NameError:
+    display = False
 
 class AddAndDetectStage(SourceDetectionStage):
     """
@@ -31,10 +39,10 @@ class AddAndDetectStage(SourceDetectionStage):
         """
         Detect sources in the worker process
         """
-        log = pexLog.Log(pexLog.Log.getDefaultLog(),
+        log = Log(Log.getDefaultLog(),
                 "lsst.meas.piepeline.AddAndDetectStage")
 
-        log.log(log.INFO, "Detecting Sources in process")
+        log.log(Log.INFO, "Detecting Sources in process")
         clipboard = self.inputQueue.getNextDataset()
 
         try:
@@ -49,7 +57,7 @@ class AddAndDetectStage(SourceDetectionStage):
         exposureKeyList = self._policy.getArray("exposureKey")
         for key in exposureKeyList:
             if not clipboard.contains(key):
-                log.log(log.FATAL, "Input missing - ignoring dataset")
+                log.log(Log.FATAL, "Input missing - ignoring dataset")
                 return
             exposureList.append(clipboard.get(key))
         #
@@ -85,7 +93,7 @@ class AddAndDetectStage(SourceDetectionStage):
         #
         # output the detection sets, and psf to the clipboard
         # 
-        self._output(dsPositive, dsNegative, psf)
+        self._output(clipboard, dsPositive, dsNegative, psf)
 
     def _addExposures(self, exposureList):
         exposure0 = exposureList[0]

@@ -1,6 +1,6 @@
 from lsst.pex.harness.Stage import Stage
 
-import lsst.pex.logging as pexLog
+from lsst.pex.logging import Log
 
 import lsst.pex.policy as policy
 import lsst.afw.detection as afwDet
@@ -44,11 +44,10 @@ class SourceDetectionStage(Stage):
         negativeDetectionKey
     """
     def process(self):
-        log = pexLog.Log(pexLog.Log.getDefaultLog(), 
+        log = Log(Log.getDefaultLog(), 
             "lsst.meas.pipeline.SourceDetectionStage")
         log.log(Log.INFO, "Detecting Sources in process")
         
-        self._validatePolicy()               
         clipboard = self.inputQueue.getNextDataset()
 
         exposure = clipboard.get(self._policy.get("exposureKey"))
@@ -82,10 +81,10 @@ class SourceDetectionStage(Stage):
                 psf, 
                 self._policy.get("detectionPolicy"))
 
-        self._output(dsPositive, dsNegative, psf)
+        self._output(clipboard, dsPositive, dsNegative, psf)
 
 
-    def _output(self, dsPositive, dsNegative, psf):
+    def _output(self, clipboard, dsPositive, dsNegative, psf):
         #
         # output the detection sets to the clipboard
         # 
@@ -112,7 +111,7 @@ class SourceDetectionStage(Stage):
             if psf != None:
                 return psf
 
-        if not self._policy.exists("psfPolicy")
+        if not self._policy.exists("psfPolicy"):
             raise RuntimeError("SourceDetection Failed: missing a PSF")
 
         psfPolicy = self._policy.getPolicy("psfPolicy")

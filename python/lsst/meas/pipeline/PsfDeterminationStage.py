@@ -43,7 +43,7 @@ class PsfDeterminationStage(Stage):
         sdqaRatings = sdqa.SdqaRatingSet()
 
         for exposure, sourceList, outKey, outputCellSetKey in dataList:
-            psf, cellSet = self._impl(exposure, sourceList, sdqaRatings)
+            psf, cellSet = Psf.getPsf(exposure, sourceList, self._policy, sdqaRatings)
             clipboard.put(outKey, psf)
             clipboard.put(outputCellSetKey, cellSet)
 
@@ -52,10 +52,6 @@ class PsfDeterminationStage(Stage):
 
         self.outputQueue.addDataset(clipboard)
 
-    def _impl(self, exposure, sourceList, sdqaRatings):
-
-        return Psf.getPsf(exposure, sourceList, self._policy, sdqaRatings)
-  
     def _getClipboardData(self, clipboard):
         dataList = []
         dataPolicyList = self._policy.getPolicyArray("data")
