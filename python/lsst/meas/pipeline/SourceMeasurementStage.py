@@ -57,54 +57,17 @@ class SourceMeasurementStage(Stage):
         
         #this may raise exceptions
         try:
-            input = self._getClipboardData(clipboard)
-            exposureAndPsfList, dsPositive, dsNegative = input
+            data, fpPositive, fpNegative = self._getClipboardData(clipboard)
         except pexExcept.LsstException, e:
             self.log.log(Log.FATAL, e.what())
          
-        #
-        # Need to do something smart about merging positive and negative
-        # detection sets.             
-        #
-        # For now, assume they are disjoint sets, so merge is trivial
-        #
-        footprintLists = []
-        if dsPositive != None:
-            self.log.log(Log.DEBUG, "Positive DetectionSet found")
-            isNegative = False
-            footprintLists.append([dsPositive.getFootprints(), isNegative])
-
-        if dsNegative != None:
-            self.log.log(Log.DEBUG, "Negative DetectionSet found")
-            isNegative = True
-            footprintLists.append([dsNegative.getFootprints(), isNegative])
-        
+        moPolicy = self._policy.get("measureObjects")
         # loop over all exposures
-        for (exposure,psf), outKey in zip(exposureAndPsfList, self._outputKeys):
-            measureSources = measAlg.makeMeasureSources(exposure, self._measurePolicy, psf)
+        for (measureFunctor, outKey) in data:
+            sourceSet = measAlg.makeSourceSet(
+                    measureFunctor,
+                    fpPositive, fpNegative)
 
-            sourceSet = afwDet.SourceSet()
-            sourceId = 0;
-            for footprintList, isNegative in footprintLists:
-                for footprint in footprintList:
-                    source = afwDet.Source()
-                    sourceSet.append(source)
-                    source.setId(sourceId)
-                    sourceId += 1
-
-                    detectionBits = measAlg.Flags.BINNED1
-                    if isNegative:
-                        detectionBits |= measAlg.Flags.DETECT_NEGATIVE
-
-                    source.setFlagForDetection(source.getFlagForDetection() | detectionBits);
-
-                    try:
-                        measureSources.apply(source, footprint)
-                    except Exception, e:
-                        # don't worry about measurement exceptions
-                        # although maybe I should log them
-                        self.log.log(Log.WARN, str(e))
-            
             #place SourceSet on the clipboard 
             clipboard.put(outKey, sourceSet)
             
@@ -116,39 +79,53 @@ class SourceMeasurementStage(Stage):
     
 	
     def _getClipboardData(self, clipboard):
-        #private helped method for grabbing the clipboard data in a useful way 
-        exposureAndPsfList = []
-        for exposureKey, psfKey in self._inputKeys: 
+        """
+        private helper method for grabbing the clipboard data in a useful way
+        """
+        moPolicy = self._policy.get("measureObjects")
+        
+        data = []
+        dataPolicyArray = self._policy.getArray("data")
+        for dataPolicy in dataPolicyArray:             
+            exposureKey = dataPolicy.get("exposureKey")
+            psfKey = dataPolicy.get("psfKey")            
+            outputKey = dataPolicy.get("outputKey")
             exposure = clipboard.get(exposureKey)
             if exposure == None:			
                 raise Exception("Missing from clipboard: exposureKey %"\
                         %exposureKey)
             psf = clipboard.get(psfKey)
-            if exposure == None:			
+            if psf == None:			
                 raise Exception("Missing from clipboard: psfKey %"\
                         %psfKey)
-            
-            exposureAndPsfList.append((exposure, psf))
-        
-        dsPositive = clipboard.get(self._positiveDetectionKey)
-        dsNegative = clipboard.get(self._negativeDetectionKey)
+
+            measureSources = measAlg.makeMeasureSources(exposure, moPolicy, psf)
+            data.append((measureSources, outputKey))
+
+        positiveDetectionKey = self._policy.get("positiveDetectionKey")
+        negativeDetectionKey = self._policy.get("negativeDetectionKey")
+        dsPositive = clipboard.get(positiveDetectionKey)
+        dsNegative = clipboard.get(negativeDetectionKey)
+                
         if dsPositive == None and dsNegative ==None:
             raise Exception("Missing input DetectionSet")
-        return (exposureAndPsfList, dsPositive, dsNegative)
+        
+        return (data, dsPositive.getFootprints(), dsNegative.getFootprints())
+
 		
     def _validatePolicy(self): 
         #private helper method for validating my policy
         # for DC3a expects perfect policies!
 
-        self._measurePolicy = self._policy.getPolicy("measureObjects")
+        self._measurePolicy = self._policy.get("measureObjects")
+
         self._inputKeys = []
         self._outputKeys = []
-        dataPolicyArray = self._policy.getPolicyArray("data")
+        dataPolicyArray = self._policy.getArray("data")
         for dataPolicy in dataPolicyArray: 
-            exposureKey = dataPolicy.getString("exposureKey")
-            psfKey = dataPolicy.getString("psfKey")
+            exposureKey = dataPolicy.get("exposureKey")
+            psfKey = dataPolicy.get("psfKey")
             self._inputKeys.append((exposureKey, psfKey))
-            self._outputKeys.append(dataPolicy.getString("outputKey"))
+            self._outputKeys.append(dataPolicy.get("outputKey"))
 
-        self._positiveDetectionKey = self._policy.get("positiveDetectionKey")
-        self._negativeDetectionKey = self._policy.get("negativeDetectionKey")
+

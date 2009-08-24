@@ -1,6 +1,6 @@
 from lsst.pex.harness.Stage import Stage
 
-from lsst.pex.logging import Log
+import lsst.pex.logging as pexLog
 
 import lsst.pex.policy as policy
 import lsst.afw.detection as afwDet
@@ -43,204 +43,77 @@ class SourceDetectionStage(Stage):
         is "negative" or "both". Key specified by policy attribute
         negativeDetectionKey
     """
-    def __init__(self, stageId = -1, policy = None):
-        # call base constructor
-        Stage.__init__(self,stageId, policy)
-        # initialize a log
-        self.log = Log(Log.getDefaultLog(), 
-                "lsst.meas.pipeline.SourceDetectionStage")
-
     def process(self):
-        """
-        Detect sources in the worker process
-        """
-        self.log.log(Log.INFO, "Detecting Sources in process")
+        log = pexLog.Log(pexLog.Log.getDefaultLog(), 
+            "lsst.meas.pipeline.SourceDetectionStage")
+        log.log(Log.INFO, "Detecting Sources in process")
         
         self._validatePolicy()               
         clipboard = self.inputQueue.getNextDataset()
 
-        exposure = clipboard.get(self._exposureKey)
-        exposure = self._makeBackgroundSubtractedExposure(exposure) 
-
-        psf = self._getOrMakePsf(clipboard)
-        dsPositive, dsNegative = self._detectSourcesImpl(exposure, psf)
-        
-        self._output(clipboard, dsPositive, dsNegative, exposure, psf)
-   
-    def _makeBackgroundSubtractedExposure(self, exposure):
-        if self._backgroundAlgorithm == None:
-            return exposure
-
-        maskedImage = exposure.getMaskedImage()
-        #make a deep copy
-        deepCopy = maskedImage.Factory(maskedImage, True)
-        deepCopy.setXY0(maskedImage.getXY0())
-      
+        exposure = clipboard.get(self._policy.get("exposureKey"))
+        exposure = measAlg.makeBackgroundSubtractedExposure(
+                exposure,
+                self._policy.get("backgroundPolicy"))
         #
-        # Subtract background
-        #
-        if self._backgroundAlgorithm == "NATURAL_SPLINE":
-            bctrl = afwMath.BackgroundControl(afwMath.NATURAL_SPLINE)
-        else:
-            raise RuntimeError, "Unknown backgroundPolicy.algorithm: %s" % \
-                    (self._backgroundAlgorithm)
-
-        binsize = self._backgroundBinsize
-
-        bctrl.setNxSample(int(deepCopy.getWidth()/binsize) + 1)
-        bctrl.setNySample(int(deepCopy.getHeight()/binsize) + 1)
-        backobj = afwMath.makeBackground(deepCopy.getImage(), bctrl)
-
-        image = deepCopy.getImage() 
-        image -= backobj.getImageF()
-        del image
-
-        return exposure.Factory(deepCopy, afwImg.Wcs(exposure.getWcs()))
-    
-    def _detectSourcesImpl(self, exposure, psf): 
-        if exposure == None:
-            self.log.log(Log.FATAL, 
-                "Cannot perform detection - no input exposure")
-            raise RuntimeException("No exposure for detection")
-
-        #
-        # Unpack variables
-        #
-        maskedImage = exposure.getMaskedImage()
-        convolvedImage = maskedImage.Factory(maskedImage.getDimensions())
-        convolvedImage.setXY0(maskedImage.getXY0())
-
-        if display:
-            ds9.mtv(maskedImage)
-            
+        # Write the background-subtracted exposure out to the clipboard
         # 
-        # Smooth the Image
-        #
-        psf.convolve(convolvedImage, 
-                           maskedImage, 
-                           convolvedImage.getMask().getMaskPlane("EDGE"))
-        #
-        # Only search psf-smooth part of frame
-        #
-        llc = afwImg.PointI(psf.getKernel().getWidth()/2, 
-                            psf.getKernel().getHeight()/2)
-        urc = afwImg.PointI(convolvedImage.getWidth() - 1,
-                            convolvedImage.getHeight() - 1)
-        urc -= llc
-        bbox = afwImg.BBox(llc, urc)
-        middle = convolvedImage.Factory(convolvedImage, bbox)
-       
-        dsNegative = None 
-        if self._negativeThreshold != None:            
-            #detect negative sources
-            self.log.log(Log.DEBUG, "Do Negative Detection")
-            dsNegative = afwDet.makeDetectionSet(middle,
-                                                 self._negativeThreshold,
-                                                 "DETECTED_NEGATIVE",
-                                                 self._minPixels)
-            if not ds9.getMaskPlaneColor("DETECTED_NEGATIVE"):
-                ds9.setMaskPlaneColor("DETECTED_NEGATIVE", ds9.CYAN)
+        if self._policy.exists("backgroundSubtractedExposureKey"):
+            key = self._policy.getString("backgroundSubtractedExposureKey")
+            clipboard.put(key, exposure)
         
-        dsPositive = None
-        if self._positiveThreshold != None:
-            self.log.log(Log.DEBUG, "Do Positive Detection")
-            dsPositive = afwDet.makeDetectionSet(middle,
-                                                self._positiveThreshold,
-                                                "DETECTED",
-                                                self._minPixels)
-        #
-        # ds only searched the middle but it belongs to the entire MaskedImage
-        #
-        dsPositive.setRegion(afwImg.BBox(afwImg.PointI(maskedImage.getX0(), maskedImage.getY0()),
-                                           maskedImage.getWidth(), maskedImage.getHeight()));
-        if dsNegative:
-            dsNegative.setRegion(afwImg.BBox(afwImg.PointI(maskedImage.getX0(), maskedImage.getY0()),
-                                             maskedImage.getWidth(), maskedImage.getHeight()));
-        #
-        # We want to grow the detections into the edge by at least one pixel so that it sees the EDGE bit
-        #
-        grow, isotropic = 1, False
-        dsPositive = afwDet.DetectionSetF(dsPositive, grow, isotropic)
-        dsPositive.setMask(maskedImage.getMask(), "DETECTED")
+        if display:
+            maskedImage = exposure.getMaskedImage()
+            ds9.mtv(maskedImage)
+            del maskedImage
 
-        if dsNegative:
-            dsNegative = afwDet.DetectionSetF(dsNegative, grow, isotropic)
-            dsNegative.setMask(maskedImage.getMask(), "DETECTED_NEGATIVE")
-        #
-        # clean up
-        #
-        del middle
+        if not ds9.getMaskPlaneColor("DETECTED_NEGATIVE"):
+            ds9.setMaskPlaneColor("DETECTED_NEGATIVE", ds9.CYAN)
 
-        return dsPositive, dsNegative
+        try:
+            psf = self._getOrMakePsf(clipboard)
+        except RuntimeError:
+            log.log(Log.FATAL, "Source detection failed: missing a PSF")
+            return
+            
 
-    def _output(self, clipboard, dsPositive, dsNegative, exposure, psf):
-        if dsPositive != None:
-            if self._policy.exists("positiveDetectionKey"):
+        dsPositive, dsNegative = measAlg.detectSources(
+                exposure, 
+                psf, 
+                self._policy.get("detectionPolicy"))
+
+        self._output(dsPositive, dsNegative, psf)
+
+
+    def _output(self, dsPositive, dsNegative, psf):
+        #
+        # output the detection sets to the clipboard
+        # 
+        if self._policy.exists("positiveDetectionKey") and dsPositive != None:
                 positiveOutKey = self._policy.getString("positiveDetectionKey")
                 clipboard.put(positiveOutKey, dsPositive)
         
-        if dsNegative != None:
-            if self._policy.exists("negativeDetectionKey"):
+        if self._policy.exists("negativeDetectionKey") and dsNegative != None:
                 negativeOutKey = self._policy.getString("negativeDetectionKey")
                 clipboard.put(negativeOutKey, dsNegative)
     
-        if self._backgroundAlgorithm != None and exposure != None:
-            if self._policy.exists("backgroundSubtractedExposureKey"):
-                key = self._policy.getString("backgroundSubtractedExposureKey")
-                clipboard.put(key, exposure)
-
+        #
+        # Output the psf used out to clipboard
+        #
         clipboard.put(self._policy.get("psfKey"), psf)
 
         #and push out the clipboard
         self.outputQueue.addDataset(clipboard)
     
-    def _validatePolicy(self):
-        """
-        Validates the policy object.
-        Returns the name of the exposure on the clipboard.
-        """
-        if self._policy.exists("backgroundPolicy"):
-            self._backgroundAlgorithm = \
-                    self._policy.get("backgroundPolicy.algorithm")
-            self._backgroundBinsize = \
-                    self._policy.get("backgroundPolicy.binsize")
-        else:
-            self._backgroundAlgorithm = None
-
-        self._minPixels = self._policy.get("detectionPolicy.minPixels")
-        thresholdValue = self._policy.get("detectionPolicy.thresholdValue")
-        thresholdType = self._policy.getString("detectionPolicy.thresholdType")
-        polarity = self._policy.getString("detectionPolicy.thresholdPolarity")
-        
-        self._negativeThreshold = None
-        if polarity == "negative" or polarity == "both":
-            #create a Threshold for negative detections
-            self._negativeThreshold = afwDet.createThreshold(thresholdValue,
-                                                             thresholdType,
-                                                             False)
-                                
-        self._positiveThreshold = None
-        if polarity != "negative":
-            #This conditional catches:
-            # polarity == "positive"
-            # polarity == "both"
-            # and malformed polarity values
-            # create a Threshold for positive detections
-            self._positiveThreshold = afwDet.createThreshold(thresholdValue,
-                                                             thresholdType,
-                                                             True)
-        
-        self._exposureKey = self._policy.get("exposureKey")
-        
     def _getOrMakePsf(self, clipboard):
         if self._policy.exists("inputPsfKey"):
             psfKey = self._policy.get("inputPsfKey")
             psf = clipboard.get(psfKey)
             if psf != None:
                 return psf
-            else:
-                self.log.log(Log.WARN,
-                        "inputPsfKey %s not found on clipboard"%psfKey)
+
+        if not self._policy.exists("psfPolicy")
+            raise RuntimeError("SourceDetection Failed: missing a PSF")
 
         psfPolicy = self._policy.getPolicy("psfPolicy")
         params = []        

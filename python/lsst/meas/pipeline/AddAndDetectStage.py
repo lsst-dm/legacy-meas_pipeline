@@ -5,6 +5,7 @@ import lsst.pex.exceptions as pexExcept
 from lsst.pex.logging import Log, Rec
 import lsst.afw.image as afwImg
 import lsst.afw.math as afwMath
+import lsst.meas.algorithms as measAlg
 from SourceDetectionStage import SourceDetectionStage
 
 class AddAndDetectStage(SourceDetectionStage):
@@ -26,33 +27,52 @@ class AddAndDetectStage(SourceDetectionStage):
     Clipboard output:
     - DetectionSet(s)- this stage produces up to 2 DetectionSet outputs
     """
-
-    def __init__(self, stageId=-1, policy=None):
-        SourceDetectionStage.__init__(self, stageId, policy)
-        del self.log
-        self.log = Log(Log.getDefaultLog(),
-                        "lsst.meas.pipeline.AddAndDetectStage")
     def process(self):
         """
         Detect sources in the worker process
         """
-        self.log.log(Log.INFO, "Detecting Sources in process")
+        log = pexLog.Log(pexLog.Log.getDefaultLog(),
+                "lsst.meas.piepeline.AddAndDetectStage")
 
-        self._validatePolicy()
+        log.log(log.INFO, "Detecting Sources in process")
         clipboard = self.inputQueue.getNextDataset()
 
+        try:
+            psf = self._getOrMakePsf(clipboard)
+        except RuntimeError:
+            log.log(Log.FATAL, "Source detection failed: missing a PSF")
+            return
+        # 
+        # retrieve all listed exposures from the clipboard
+        #
         exposureList = []
-        for key in self._exposureKey:
+        exposureKeyList = self._policy.getArray("exposureKey")
+        for key in exposureKeyList:
             if not clipboard.contains(key):
-                self.log.log(Log.FATAL, "Input missing - ignoring dataset")
+                log.log(log.FATAL, "Input missing - ignoring dataset")
                 return
-
             exposureList.append(clipboard.get(key))
-        
+        #
+        # Add all exposures
+        #
         addedExposure = self._addExposures(exposureList)
+        
+        if display:
+            maskedImage = addedExposure.getMaskedImage()
+            ds9.mtv(maskedImage)
+            del maskedImage
 
-        psf = self._getOrMakePsf(clipboard)
-        dsPositive, dsNegative = self._detectSourcesImpl(addedExposure, psf)
+        if not ds9.getMaskPlaneColor("DETECTED_NEGATIVE"):
+            ds9.setMaskPlaneColor("DETECTED_NEGATIVE", ds9.CYAN)
+
+    
+        #
+        # perform detection
+        #
+        dsPositive, dsNegative = measAlg.detectSources(
+                addedExposure, 
+                psf,
+                self._policy.get("detectionPolicy"))
         #
         # Copy addedExposure's mask bits to the individual exposures
         #
@@ -61,7 +81,11 @@ class AddAndDetectStage(SourceDetectionStage):
             msk |= addedExposure.getMaskedImage().getMask()
             del msk
 
-        self._output(clipboard, dsPositive, dsNegative, None, psf) 
+        
+        #
+        # output the detection sets, and psf to the clipboard
+        # 
+        self._output(dsPositive, dsNegative, psf)
 
     def _addExposures(self, exposureList):
         exposure0 = exposureList[0]
@@ -76,12 +100,3 @@ class AddAndDetectStage(SourceDetectionStage):
 
         addedExposure = exposure0.Factory(addedImage, exposure0.getWcs())
         return addedExposure
-
-    def _validatePolicy(self):
-        SourceDetectionStage._validatePolicy(self)
-        
-        self._exposureKey = self._policy.getStringArray("exposureKey")
-
-        
-        
-
