@@ -33,6 +33,10 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         pass
 
     def testDc3PipePolicies(self):
+        if not eups.productDir("afwdata"):
+            print >> sys.stderr, "afwdata is not setting up; skipping test"
+            return
+
         ipsdDir = os.path.join(eups.productDir("meas_pipeline"),\
                             "tests")
         policyPath = os.path.join(ipsdDir, "sourceDetection0_policy.paf")

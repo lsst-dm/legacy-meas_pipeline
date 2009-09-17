@@ -98,7 +98,11 @@ def suite():
     utilsTests.init()
 
     suites = []
-    suites += unittest.makeSuite(MeasureStageTestCase)
+
+    if not eups.productDir("afwdata"):
+        print >> sys.stderr, "afwdata is not setting up; skipping test"
+    else:
+        suites += unittest.makeSuite(MeasureStageTestCase)
     suites += unittest.makeSuite(utilsTests.MemoryTestCase)
     return unittest.TestSuite(suites)
 

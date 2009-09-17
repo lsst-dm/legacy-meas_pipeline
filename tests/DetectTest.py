@@ -34,6 +34,10 @@ class DetectStageTestCase(unittest.TestCase):
         pass
 
     def testDc3PipePolicy(self):
+        if not eups.productDir("afwdata"):
+            print >> sys.stderr, "afwdata is not setting up; skipping test"
+            return
+
         ipsdDir = os.path.join(eups.productDir("meas_pipeline"),\
                             "tests")
         policyPath = os.path.join(ipsdDir, "sourceDetection0_policy.paf")
@@ -41,7 +45,6 @@ class DetectStageTestCase(unittest.TestCase):
         stagePolicy = policy.Policy(policyFile)
         
         clipboard = pexClipboard.Clipboard() 
-        
         filename = os.path.join(eups.productDir("afwdata"),
                                 "CFHT", "D4", 
                                 "cal-53535-i-797722_1")
