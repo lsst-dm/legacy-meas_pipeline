@@ -36,10 +36,10 @@ class SourceDetectionStage(Stage):
     - Exposure from input with same key 
     - PSF: the psf used to smooth the exposure before detection 
         Key specified by policy attribute psfKey
-    - PositiveDetectionSet (DetectionSet): if thresholdPolarity policy 
+    - PositiveFootprintSet (DetectionSet): if thresholdPolarity policy 
         is "positive" or "both". Key specified by policy attribute
         positiveDetectionKey
-    - NegativeDetectionSet (DetectionSet): if threholdPolarity policy 
+    - NegativeFootprintSet (DetectionSet): if threholdPolarity policy 
         is "negative" or "both". Key specified by policy attribute
         negativeDetectionKey
     """
