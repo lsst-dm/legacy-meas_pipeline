@@ -13,9 +13,10 @@ import random
 import time
 
 import lsst.utils.tests as utilsTests
-import lsst.pex.harness.Queue as pexQueue
-import lsst.pex.harness.Clipboard as pexClipboard
-import lsst.pex.policy as policy
+import lsst.pex.harness as pexHarness
+import lsst.pex.harness.SimpleStageTester
+import lsst.pex.harness.Clipboard as Clipboard
+import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
@@ -26,59 +27,41 @@ class AddDetectStageTestCase(unittest.TestCase):
     """A test case for SourceDetectionStage.py"""
 
     def setUp(self):
-        self.policy1 = policy.Policy("tests/AddDetectTest1.paf")
-
-        self.policy2 = policy.Policy("tests/AddDetectTest2.paf")
-        
-        clipboard1 = pexClipboard.Clipboard() 
-        clipboard2 = pexClipboard.Clipboard()
         img = afwImage.MaskedImageF(512, 512)
         img.set( 10, 1, 1)
-        exp = afwImage.ExposureF(img)
-
-        clipboard1.put("calibratedExposure0", exp)
-        clipboard2.put("calibratedExposure0", exp) 
-        clipboard2.put("calibratedExposure1", exp)
-
-        inQueue1 = pexQueue.Queue() 
-        inQueue2 = pexQueue.Queue()
-        inQueue1.addDataset(clipboard1)
-        inQueue2.addDataset(clipboard2)
-        self.outQueue1 = pexQueue.Queue()
-        self.outQueue2 = pexQueue.Queue()
-        
-        self.stage1 = measPipe.AddAndDetectStage(1, self.policy1)
-        self.stage1.initialize(self.outQueue1, inQueue1)
-        self.stage1.setUniverseSize(1)
-        self.stage1.setRun("SingleExposureTest")
-
-        self.stage2 = measPipe.AddAndDetectStage(1, self.policy2)
-        self.stage2.initialize(self.outQueue2, inQueue2)
-        self.stage2.setUniverseSize(1)
-        self.stage2.setRun("MultipleExposureTest")
-
+        self.exposure = afwImage.ExposureF(img)
+        del img
 
     def tearDown(self):
-        del self.stage1
-        del self.stage2
-        del self.outQueue1
-        del self.outQueue2
-        del self.policy1
-        del self.policy2
+        del self.exposure
 
     def testSingleInputExposure(self):
-        self.stage1.process()
-        clipboard = self.outQueue1.getNextDataset()
-        assert(clipboard.contains(self.policy1.getString("positiveDetectionKey")))
-        assert(clipboard.contains(self.policy1.getString("psfKey")))
-        assert(clipboard.contains(self.policy1.getString("exposureKey")))
+        policy = pexPolicy.Policy("tests/AddDetectTest1.paf")
+        stage = measPipe.AddAndDetectStage(1, policy)
+        tester = pexHarness.SimpleStageTester.test(stage)
+
+        tester.setDebugVerbosity(5)
+
+        clipboard = dict(calibratedExposure0=self.exposure)
+        outWorker = tester.runWorker(clipboard)
+    
+        assert(outWorker.contains(policy.getString("positiveDetectionKey")))        
+        assert(outWorker.contains(policy.getString("psfKey")))
+        assert(outWorker.contains(policy.getString("exposureKey")))
        
     def testMultipleInputExposure(self):
-        self.stage2.process()
-        clipboard = self.outQueue2.getNextDataset()
-        assert(clipboard.contains(self.policy2.getString("positiveDetectionKey")))
-        assert(clipboard.contains(self.policy2.getString("psfKey")))
-        assert(clipboard.contains(self.policy2.getString("exposureKey")))
+        policy = pexPolicy.Policy("tests/AddDetectTest2.paf")
+        stage = measPipe.AddAndDetectStage(1, policy)
+        tester = pexHarness.SimpleStageTester.test(stage)
+
+        tester.setDebugVerbosity(5)
+
+        clipboard = dict(calibratedExposure0=self.exposure, calibratedExposure1=self.exposure)
+        outWorker = tester.runWorker(clipboard)
+    
+        assert(outWorker.contains(policy.getString("positiveDetectionKey")))        
+        assert(outWorker.contains(policy.getString("psfKey")))
+        assert(outWorker.contains(policy.getString("exposureKey")))
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

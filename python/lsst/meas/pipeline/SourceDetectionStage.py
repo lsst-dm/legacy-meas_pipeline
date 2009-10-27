@@ -134,7 +134,7 @@ class SourceDetectionStage(Stage):
         if self._negativeThreshold != None:            
             #detect negative sources
             self.log.log(Log.DEBUG, "Do Negative Detection")
-            dsNegative = afwDet.makeDetectionSet(middle,
+            dsNegative = afwDet.makeFootprintSet(middle,
                                                  self._negativeThreshold,
                                                  "DETECTED_NEGATIVE",
                                                  self._minPixels)
@@ -144,7 +144,7 @@ class SourceDetectionStage(Stage):
         dsPositive = None
         if self._positiveThreshold != None:
             self.log.log(Log.DEBUG, "Do Positive Detection")
-            dsPositive = afwDet.makeDetectionSet(middle,
+            dsPositive = afwDet.makeFootprintSet(middle,
                                                 self._positiveThreshold,
                                                 "DETECTED",
                                                 self._minPixels)
@@ -160,11 +160,11 @@ class SourceDetectionStage(Stage):
         # We want to grow the detections into the edge by at least one pixel so that it sees the EDGE bit
         #
         grow, isotropic = 1, False
-        dsPositive = afwDet.DetectionSetF(dsPositive, grow, isotropic)
+        dsPositive = afwDet.FootprintSetF(dsPositive, grow, isotropic)
         dsPositive.setMask(maskedImage.getMask(), "DETECTED")
 
         if dsNegative:
-            dsNegative = afwDet.DetectionSetF(dsNegative, grow, isotropic)
+            dsNegative = afwDet.FootprintSetF(dsNegative, grow, isotropic)
             dsNegative.setMask(maskedImage.getMask(), "DETECTED_NEGATIVE")
         #
         # clean up

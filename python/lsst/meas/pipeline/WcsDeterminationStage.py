@@ -6,7 +6,6 @@ import os
 from lsst.pex.harness.Stage import Stage
 from lsst.pex.logging import Log
 from lsst.pex.policy import Policy
-# import lsst.pex.harness.Utils
 import lsst.daf.base as dafBase
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage

@@ -46,10 +46,9 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
         self.sourceSet.append(afwDet.Source())
         self.sourceSet.append(afwDet.Source())
         
-        metadata = dafBase.PropertySet()
-        metadata.set('CRPIX1',  0.0)
-        metadata.set('CRPIX2',  0.0)
-        wcs = afwImage.Wcs(metadata)
+
+        point = afwImage.PointD(0.0, 0.0)
+        wcs = afwImage.createWcs(point, point, 1, 0, 0, 1);
         ampBBox = afwImage.BBox(afwImage.PointI(0, 0), 1, 1)
 
         clipboard = pexClipboard.Clipboard()
