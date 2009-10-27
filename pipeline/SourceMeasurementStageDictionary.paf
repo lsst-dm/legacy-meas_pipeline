@@ -44,14 +44,14 @@ definitions: {
     }
     positiveDetectionKey: {
         type: "string"
-        description: "specify the clipboard key of the positive DetectionSet"
+        description: "specify the clipboard key of the positive FootprintSet"
         minOccurs: 0
         maxOccurs: 1
         default: "PositiveFootprintSet"
     }
     negativeDetectionKey: {
         type: "string"
-        description: "specify the clipboard key of the negative DetectionSet"
+        description: "specify the clipboard key of the negative FootprintSet"
         minOccurs: 0
         maxOccurs: 1
         default: "NegativeFootprintSet"

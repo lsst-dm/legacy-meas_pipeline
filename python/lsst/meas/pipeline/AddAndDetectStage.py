@@ -16,15 +16,15 @@ class AddAndDetectStage(SourceDetectionStage):
     - exposureKey: List of exposures to stack for detection
     - detectionPolicy: (optional)
     - psfPolicy: (optional)
-    - positiveDetectionKey: (optional) output key for positive DetectionSet
-    - negativeDetectionKey: (optional) output key for negative DetectionSet
+    - positiveDetectionKey: (optional) output key for positive FootprintSet
+    - negativeDetectionKey: (optional) output key for negative FootprintSet
 
     Clipboard Input:
     - Expsure for every exposureKey in policy
     - optional PSF
 
     Clipboard output:
-    - DetectionSet(s)- this stage produces up to 2 DetectionSet outputs
+    - FootprintSet(s)- this stage produces up to 2 DetectionSet outputs
     """
 
     def __init__(self, stageId=-1, policy=None):

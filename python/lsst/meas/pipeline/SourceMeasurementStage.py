@@ -18,19 +18,19 @@ class SourceMeasurementStage(Stage):
     Description:
         This stage wraps the measurement of sources on an exposure.
         The exposures to measure on should be in the clipboard along with the
-        DetectionSet(s) to measure on those exposures. The keys for the
-        exposures, and the DetectionSet(s) can be specified in the 
+        FootprintSet(s) to measure on those exposures. The keys for the
+        exposures, and the FootprintSet(s) can be specified in the 
         policy file. If not specified, default keys will be used
 
     Policy Input: 
     - data: (policy array) list of (input, psf, output) keys 
-    - positiveDetectionKey (string): optional, default "positiveDetectionSet"
-    - negativeDetectionKey (string): optional, default "negativeDetectionSet"
+    - positiveDetectionKey (string): optional, default "positiveFootprintSet"
+    - negativeDetectionKey (string): optional, default "negativeFootprintSet"
 
     Clipboard Input:
     - Exposure(s): key specified policy by attribute data.exposureKey
     - Psf: with key specified by policy attribute psfKey
-    - DetectionSet(s): with key(s) specified in policy 
+    - FootprintSet(s): with key(s) specified in policy 
             ("positiveDetectionKey", "negativeDetectionKey")
 
     Clipboard Output:
@@ -70,12 +70,12 @@ class SourceMeasurementStage(Stage):
         #
         footprintLists = []
         if dsPositive != None:
-            self.log.log(Log.DEBUG, "Positive DetectionSet found")
+            self.log.log(Log.DEBUG, "Positive FootprintSet found")
             isNegative = False
             footprintLists.append([dsPositive.getFootprints(), isNegative])
 
         if dsNegative != None:
-            self.log.log(Log.DEBUG, "Negative DetectionSet found")
+            self.log.log(Log.DEBUG, "Negative FootprintSet found")
             isNegative = True
             footprintLists.append([dsNegative.getFootprints(), isNegative])
         
@@ -133,7 +133,7 @@ class SourceMeasurementStage(Stage):
         dsPositive = clipboard.get(self._positiveDetectionKey)
         dsNegative = clipboard.get(self._negativeDetectionKey)
         if dsPositive == None and dsNegative ==None:
-            raise Exception("Missing input DetectionSet")
+            raise Exception("Missing input FootprintSet")
         return (exposureAndPsfList, dsPositive, dsNegative)
 		
     def _validatePolicy(self): 
