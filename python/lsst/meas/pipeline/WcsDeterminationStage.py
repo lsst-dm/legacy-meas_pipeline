@@ -123,8 +123,8 @@ class WcsDeterminationStage(Stage):
             self.log.log(Log.INFO,
                     "Setting number of stars in solver to %i" %(num,))
             if num > wcsSourceSet.size():
-                self.log.log(Log.INFO, "Reducing to actual number: %i" % (num,))
                 num = wcsSourceSet.size()
+                self.log.log(Log.INFO, "Reducing to actual number: %i" % (num,))
             self.astromSolver.setNumBrightObjects(num)
 
         # find RA/Dec of center of image (need not be exact)
