@@ -7,3 +7,5 @@ from SourceClassifiers import *
 from SourceClassifier import SourceClassifier
 from SourceClassificationStage import SourceClassificationStage
 from SourceToDiaSourceStage import SourceToDiaSourceStage
+from TransformDetectionStage import *
+from MultifitStage import *
