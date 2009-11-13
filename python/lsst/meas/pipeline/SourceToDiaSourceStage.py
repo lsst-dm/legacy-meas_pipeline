@@ -1,4 +1,4 @@
-from lsst.pex.harness.Stage import Stage
+from lsst.pex.harness.stage import Stage
 
 from lsst.pex.logging import Log
 

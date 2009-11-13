@@ -14,7 +14,7 @@ import time
 
 import lsst.utils.tests as utilsTests
 import lsst.pex.harness as pexHarness
-import lsst.pex.harness.SimpleStageTester
+from lsst.pex.harness.simpleStageTester import SimpleStageTester
 import lsst.pex.harness.Clipboard as Clipboard
 import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
@@ -24,7 +24,7 @@ import lsst.afw.image as afwImage
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 class AddDetectStageTestCase(unittest.TestCase):
-    """A test case for SourceDetectionStage.py"""
+    """A test case for AddAndDetectStage.py"""
 
     def setUp(self):
         img = afwImage.MaskedImageF(512, 512)
@@ -36,9 +36,12 @@ class AddDetectStageTestCase(unittest.TestCase):
         del self.exposure
 
     def testSingleInputExposure(self):
-        policy = pexPolicy.Policy("tests/AddDetectTest1.paf")
-        stage = measPipe.AddAndDetectStage(1, policy)
-        tester = pexHarness.SimpleStageTester.test(stage)
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                "tests/AddDetectTest1.paf")
+        policy = pexPolicy.Policy.createPolicy(file)
+
+        stage = measPipe.AddAndDetectStage(policy)
+        tester = SimpleStageTester(stage)
 
         tester.setDebugVerbosity(5)
 
@@ -50,13 +53,19 @@ class AddDetectStageTestCase(unittest.TestCase):
         assert(outWorker.contains(policy.getString("exposureKey")))
        
     def testMultipleInputExposure(self):
-        policy = pexPolicy.Policy("tests/AddDetectTest2.paf")
-        stage = measPipe.AddAndDetectStage(1, policy)
-        tester = pexHarness.SimpleStageTester.test(stage)
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                "tests/AddDetectTest2.paf")
+        policy = pexPolicy.Policy.createPolicy(file)
+
+        stage = measPipe.AddAndDetectStage(policy)
+        tester = SimpleStageTester(stage)
 
         tester.setDebugVerbosity(5)
 
-        clipboard = dict(calibratedExposure0=self.exposure, calibratedExposure1=self.exposure)
+        clipboard = dict(
+            calibratedExposure0=self.exposure, 
+            calibratedExposure1=self.exposure
+        )
         outWorker = tester.runWorker(clipboard)
     
         assert(outWorker.contains(policy.getString("positiveDetectionKey")))        

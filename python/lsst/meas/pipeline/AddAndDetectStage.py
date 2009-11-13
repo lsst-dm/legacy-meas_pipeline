@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 
-import lsst.pex.policy as policy
+import lsst.pex.policy as pexPolicy
 import lsst.pex.exceptions as pexExcept
 from lsst.pex.logging import Log, Rec
 import lsst.afw.image as afwImg
 import lsst.afw.math as afwMath
-from SourceDetectionStage import SourceDetectionStage
+import lsst.pex.harness.stage as harnessStage
 
-class AddAndDetectStage(SourceDetectionStage):
+import sourceDetection
+
+class AddAndDetectStageParallel(harnessStage.ParallelProcessing):
     """
     Stage wrapper for adding together a list of images before performing
     detection.
 
     Policy Input:
-    - exposureKey: List of exposures to stack for detection
+    - exposureKey: List of background subtracted exposures to detect on
     - detectionPolicy: (optional)
     - psfPolicy: (optional)
     - positiveDetectionKey: (optional) output key for positive FootprintSet
@@ -25,63 +27,69 @@ class AddAndDetectStage(SourceDetectionStage):
 
     Clipboard output:
     - FootprintSet(s)- this stage produces up to 2 DetectionSet outputs
+    - psf used in detection
+    - added Exposure
     """
+    def setup(self):
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "AddAndDetectStageDictionary.paf", "pipeline")
+        defPolicy = pexPolicy.Policy.createPolicy(
+            file, file.getRepositoryPath())
 
-    def __init__(self, stageId=-1, policy=None):
-        SourceDetectionStage.__init__(self, stageId, policy)
-        del self.log
-        self.log = Log(Log.getDefaultLog(),
-                        "lsst.meas.pipeline.AddAndDetectStage")
-    def process(self):
+        if self.policy is None:
+            self.policy = defPolicy
+        else:
+            self.policy.mergeDefaults(defPolicy)
+
+    def process(self, clipboard):
         """
         Detect sources in the worker process
         """
-        self.log.log(Log.INFO, "Detecting Sources in process")
-
-        self._validatePolicy()
-        clipboard = self.inputQueue.getNextDataset()
-
+        #grab list of background subtracted exposures
+        exposureKeyList = self.policy.getStringArray("exposureKey") 
         exposureList = []
-        for key in self._exposureKey:
+        for key in exposureKeyList:
             if not clipboard.contains(key):
                 self.log.log(Log.FATAL, "Input missing - ignoring dataset")
                 return
-
             exposureList.append(clipboard.get(key))
-        
-        addedExposure = self._addExposures(exposureList)
+                
+        addedExposure = sourceDetection.addExposures(exposureList)
 
-        psf = self._getOrMakePsf(clipboard)
-        dsPositive, dsNegative = self._detectSourcesImpl(addedExposure, psf)
+        #get a smoothing psf
+        psf = None
+        if self.policy.exists("inputPsfKey"):
+            psf = clipboard.get(self.policy.get("inputPsfKey"))
+        elif self.policy.exists("psfPolicy"):
+            psf = sourceDetection.makePsf(self.policy.get("psfPolicy"))
+
+        #perform the detection
+        dsPositive, dsNegative = sourceDetection.detectSources(
+            addedExposure, psf, self.policy.get("detectionPolicy"))        
+        
         #
         # Copy addedExposure's mask bits to the individual exposures
         #
+        detectionMask = addedExposure.getMaskedImage().getMask()
         for e in exposureList:
             msk = e.getMaskedImage().getMask()
-            msk |= addedExposure.getMaskedImage().getMask()
+            msk |= detectionMask
             del msk
 
-        self._output(clipboard, dsPositive, dsNegative, None, psf) 
+        del detectionMask
 
-    def _addExposures(self, exposureList):
-        exposure0 = exposureList[0]
-        image0 = exposure0.getMaskedImage()
+        #output products
+        if not dsPositive is None:
+            clipboard.put(self.policy.get("positiveDetectionKey"), dsPositive)
+        if not dsNegative is None:
+            clipboard.put(self.policy.get("negativeDetectionKey"), dsNegative)
+        if not psf is None:
+            clipboard.put(self.policy.get("psfKey"), psf)
+        clipboard.put(self.policy.get("addedExposureKey"), addedExposure)
 
-        addedImage = image0.Factory(image0, True)
-        addedImage.setXY0(image0.getXY0())
-
-        for exposure in exposureList[1:]:
-            image = exposure.getMaskedImage()
-            addedImage += image
-
-        addedExposure = exposure0.Factory(addedImage, exposure0.getWcs())
-        return addedExposure
-
-    def _validatePolicy(self):
-        SourceDetectionStage._validatePolicy(self)
-        
-        self._exposureKey = self._policy.getStringArray("exposureKey")
-
-        
-        
+class AddAndDetectStage(harnessStage.Stage):
+    """
+    Defined for testing convenience
+    """
+    parallelClass = AddAndDetectStageParallel
 

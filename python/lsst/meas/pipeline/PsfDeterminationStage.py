@@ -2,7 +2,7 @@ import math
 from math import *
 
 from lsst.pex.logging import Log, Rec
-from lsst.pex.harness.Stage import Stage
+from lsst.pex.harness.stage import Stage
 import lsst.pex.policy as policy
 import lsst.afw.image as afwImg
 import lsst.afw.detection as afwDet

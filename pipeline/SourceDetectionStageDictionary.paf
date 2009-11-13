@@ -5,6 +5,7 @@
 target: lsst.detection.pipeline.SourceDetectionStage
 
 definitions: {
+	#input clipboard keys
     exposureKey: {
         type: "string"
     	description: "specify the clipboard key of the exposure to detect on."
@@ -12,21 +13,14 @@ definitions: {
         maxOccurs: 1
         default: "calibratedExposure"
     }    	
-    psfPolicy: {
-        type: "policy"
-        dictionary: @PsfDictionary.paf
-        description: "includes all the parameters needed to create a PSF"
-        minOccurs: 1 
-        maxOccurs: 1
+    inputPsfKey : {
+    	type: "string"
+    	description: "input clipboard key for a smoothing Psf"
+    	minOccurs: 0
+    	maxOccurs: 1
     }
-    detectionPolicy: {
-        type: "policy"
-        dictionary: @DetectionDictionary.paf
-        description: "includes all the parameters needed to perform source
-                      detection on an exposure"
-        minOccurs: 1 
-        macOccurs: 1
-    }
+    
+    #output keys:
     positiveDetectionKey: {
         type: "string"
         description: "specify the clipboard key of the positive FootprintSet"
@@ -43,12 +37,39 @@ definitions: {
     }
     smoothingPsfKey: {
         type: "string"
-        description: "specify the output key for the smoothingPsf used"
+        description: "specify the output key for the psf used"
         minOccurs: 0
         maxOccurs: 1
         default: "psf"
+    }    
+    backgroundSubtractedExposureKey: {
+        type: "string"
+        description: "specify clipboard key of output background-subtracted Exposure"
+        minOccurs: 1
+        maxOccurs: 1
     }
-
+    backgroundKey : {
+    	type: "string"
+    	description: "output clipboard key for computed background"
+    	default: "background
+    }
+    
+    #parameters
+    psfPolicy: {
+        type: "policy"
+        dictionary: @PsfDictionary.paf
+        description: "includes all the parameters needed to create a PSF"
+        minOccurs: 0 
+        maxOccurs: 1
+    }
+    detectionPolicy: {
+        type: "policy"
+        dictionary: @DetectionDictionary.paf
+        description: "includes all the parameters needed to perform source
+                      detection on an exposure"
+        minOccurs: 1 
+        macOccurs: 1
+    }
     backgroundPolicy: {
         type: "policy"
         description: "Parameters to control background subtraction"
@@ -71,15 +92,14 @@ definitions: {
                     minOccurs: 1
                     maxOccurs: 1
                     default:   "NATURAL_SPLINE" # 
+                    allowed: {
+                    	value: "NATURAL_SPLINE"
+                    }
                 }
             }
         }
     }
     
-    backgroundSubtractedExposureKey: {
-        type: "string"
-        description: "specify clipboard key of output background-subtracted Exposure"
-        minOccurs: 1
-        maxOccurs: 1
-    }
+    
+
 }

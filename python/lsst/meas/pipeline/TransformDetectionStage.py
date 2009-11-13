@@ -3,7 +3,7 @@
 import lsst.pex.harness.stage as harnessStage
 from lsst.pex.logging import Log
 import lsst.daf.base as dafBase
-from lss.daf.base import *
+from lsst.daf.base import *
 import lsst.pex.policy as pexPolicy
 
 class TransformDetectionStageParallel(harnessStage.ParallelProcessing):

@@ -3,7 +3,7 @@ import math
 import sys
 import lsst.utils as utils
 import os
-from lsst.pex.harness.Stage import Stage
+from lsst.pex.harness.stage import Stage
 from lsst.pex.logging import Log
 from lsst.pex.policy import Policy
 import lsst.daf.base as dafBase

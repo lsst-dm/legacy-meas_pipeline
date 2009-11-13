@@ -6,26 +6,20 @@
 target: lsst.meas.pipeline.AddAndDetectStage
 
 definitions: {
+	#inputs keys
     exposureKey: {
         type: "string"
         description: "clipboard key for input exposures"
         minOccurs: 1 
     }
-    psfPolicy: {
-        type: "policy"
-        dictionary: @PsfDicionary.paf
-        description: "includes all the parameters needed to create a PSF"
-        minOccurs: 1 
-        maxOccurs: 1
+    inputPsfKey: {
+    	type: "string"
+    	description: "input clipboard key for a smothing psf"
+    	minOccurs: 0
+    	maxOccurs: 1
     }
-    detectionPolicy: {
-        type: "policy"
-        dictionary: @DetectionDicionary.paf
-        description: "includes all the parameters needed to perform source
-                      detection on an exposure"
-        minOccurs: 1
-        maxOccurs: 1
-    }
+    
+    #output keys
     positiveDetectionKey: {
         type: "string"
         description: "specify the clipboard key of the positive FootprintSet"
@@ -46,5 +40,29 @@ definitions: {
         minOccurs: 0
         maxOccurs: 1
         default: "psf"
+    }
+    addedExposureKey: {
+    	type: "string"
+    	description: "output clipboard key for added exposure"
+    	default: "addedExposure"
+    	minOccurs: 0
+    	maxOccurs: 1
+    }
+    
+    #parameters
+    psfPolicy: {
+        type: "policy"
+        dictionary: @PsfDicionary.paf
+        description: "includes all the parameters needed to create a PSF"
+        minOccurs: 1 
+        maxOccurs: 1
+    }
+    detectionPolicy: {
+        type: "policy"
+        dictionary: @DetectionDicionary.paf
+        description: "includes all the parameters needed to perform source
+                      detection on an exposure"
+        minOccurs: 1
+        maxOccurs: 1
     }
 }

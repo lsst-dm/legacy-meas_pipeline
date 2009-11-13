@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, sys
 
-from lsst.pex.harness.Stage import Stage
+from lsst.pex.harness.stage import Stage
 
 import lsst.pex.policy as policy
 

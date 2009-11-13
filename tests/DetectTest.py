@@ -16,11 +16,13 @@ import eups
 import lsst.utils.tests as utilsTests
 import lsst.pex.harness.Queue as pexQueue
 import lsst.pex.harness.Clipboard as pexClipboard
-import lsst.pex.policy as policy
+import lsst.pex.policy as pexPolicy
 from lsst.pex.logging import Trace
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
+
+from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -41,9 +43,14 @@ class DetectStageTestCase(unittest.TestCase):
         ipsdDir = os.path.join(eups.productDir("meas_pipeline"),\
                             "tests")
         policyPath = os.path.join(ipsdDir, "sourceDetection0_policy.paf")
-        policyFile = policy.PolicyFile(policyPath)
-        stagePolicy = policy.Policy(policyFile)
-        
+        policyFile = pexPolicy.PolicyFile(policyPath)
+        stagePolicy = pexPolicy.Policy.createPolicy(policyFile)
+
+        stage = measPipe.SourceDetectionStage(stagePolicy)
+        tester = SimpleStageTester(stage)
+
+        tester.setDebugVerbosity(5)
+
         clipboard = pexClipboard.Clipboard() 
         filename = os.path.join(eups.productDir("afwdata"),
                                 "CFHT", "D4", 
@@ -51,33 +58,24 @@ class DetectStageTestCase(unittest.TestCase):
         bbox = afwImage.BBox(afwImage.PointI(32,32), 512, 512)
         exposure = afwImage.ExposureF(filename, 0,bbox)
         clipboard.put(stagePolicy.getString("exposureKey"), exposure)
-       
-        inQueue = pexQueue.Queue()
-        inQueue.addDataset(clipboard)
-        outQueue = pexQueue.Queue()
-        stage = measPipe.SourceDetectionStage(1, stagePolicy)
-        stage.initialize(outQueue, inQueue)
-        stage.setUniverseSize(1)
-        
-        stage.process()
 
-        clipboard = outQueue.getNextDataset()
+        outWorker = tester.runWorker(clipboard)
+
         detectionKey = stagePolicy.getString("positiveDetectionKey")
-        assert(clipboard.contains(detectionKey))
-        detectionSet = clipboard.get(detectionKey)
+        assert(outWorker.contains(detectionKey))
+        detectionSet = outWorker.get(detectionKey)
         fpList = detectionSet.getFootprints()
         assert(fpList.size() > 0) 
         psfKey = stagePolicy.getString("psfKey")
-        assert(clipboard.contains(psfKey))
+        assert(outWorker.contains(psfKey))
         exposureKey = stagePolicy.getString("exposureKey")
-        assert(clipboard.contains(exposureKey))
-        
-        
+        assert(outWorker.contains(exposureKey))
+                
         del stagePolicy
         del clipboard
+        del outWorker
         del stage
-        del inQueue
-        del outQueue
+        del tester 
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
