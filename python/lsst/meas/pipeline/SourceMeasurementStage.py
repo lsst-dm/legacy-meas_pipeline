@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, sys
 
-from lsst.pex.harness.stage import Stage
+import lsst.pex.harness.stage as harnessStage
 
 import lsst.pex.policy as policy
 
@@ -13,7 +13,7 @@ import lsst.afw.math as afwMath
 import lsst.meas.algorithms as measAlg
 
 
-class SourceMeasurementStage(Stage):
+class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
     """
     Description:
         This stage wraps the measurement of sources on an exposure.
@@ -40,20 +40,13 @@ class SourceMeasurementStage(Stage):
     - SourceSet with key specified by policy data.outputKey
     """
 
-    def __init__(self, stageId = -1, policy = None):
-        # call base constructor
-        Stage.__init__(self, stageId, policy)
-        # initialize a log
-        self.log = Log(Log.getDefaultLog(), "SourceMeasurementStage")
-    
-    def process(self):
+    def process(self, clipboard):
         """
         Measure sources in the worker process
         """
         self.log.log(Log.INFO, "Measuring Sources in process")
         
         self._validatePolicy()
-        clipboard = self.inputQueue.getNextDataset()		
         
         #this may raise exceptions
         try:
@@ -111,9 +104,6 @@ class SourceMeasurementStage(Stage):
             persistableSourceSet = afwDet.PersistableSourceVector(sourceSet)
             clipboard.put("persistable_" + outKey, persistableSourceSet) 
         
-        #pass clipboard to outputQueue
-        self.outputQueue.addDataset(clipboard)
-    
 	
     def _getClipboardData(self, clipboard):
         #private helped method for grabbing the clipboard data in a useful way 
@@ -140,15 +130,18 @@ class SourceMeasurementStage(Stage):
         #private helper method for validating my policy
         # for DC3a expects perfect policies!
 
-        self._measurePolicy = self._policy.getPolicy("measureObjects")
+        self._measurePolicy = self.policy.getPolicy("measureObjects")
         self._inputKeys = []
         self._outputKeys = []
-        dataPolicyArray = self._policy.getPolicyArray("data")
+        dataPolicyArray = self.policy.getPolicyArray("data")
         for dataPolicy in dataPolicyArray: 
             exposureKey = dataPolicy.getString("exposureKey")
             psfKey = dataPolicy.getString("psfKey")
             self._inputKeys.append((exposureKey, psfKey))
             self._outputKeys.append(dataPolicy.getString("outputKey"))
 
-        self._positiveDetectionKey = self._policy.get("positiveDetectionKey")
-        self._negativeDetectionKey = self._policy.get("negativeDetectionKey")
+        self._positiveDetectionKey = self.policy.get("positiveDetectionKey")
+        self._negativeDetectionKey = self.policy.get("negativeDetectionKey")
+
+class SourceMeasurementStage(harnessStage.Stage):
+    parallelClass = SourceMeasurementStageParallel

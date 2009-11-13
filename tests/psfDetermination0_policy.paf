@@ -8,6 +8,7 @@ data: {
     outputPsfKey: "psfModel"
     outputCellSetKey: "psfCellSet0"
 }
+
 fluxLim: 5.0e3
 sizeCellX: 512
 sizeCellY: 512

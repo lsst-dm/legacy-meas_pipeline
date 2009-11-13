@@ -16,10 +16,11 @@ import eups
 import lsst.utils.tests as utilsTests
 import lsst.pex.harness.Queue as pexQueue
 import lsst.pex.harness.Clipboard as pexClipboard
-import lsst.pex.policy as policy
+import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
+from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -32,30 +33,34 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def testDc3PipePolicies(self):
+    def clipboardIoTest(self):
         if not eups.productDir("afwdata"):
             print >> sys.stderr, "afwdata is not setting up; skipping test"
             return
 
-        ipsdDir = os.path.join(eups.productDir("meas_pipeline"),\
-                            "tests")
-        policyPath = os.path.join(ipsdDir, "sourceDetection0_policy.paf")
-        policyFile = policy.PolicyFile(policyPath)
-        detectPolicy = policy.Policy(policyFile)
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                "tests/sourceDetection0_policy.paf")
+        detectPolicy = pexPolicy.Policy.createPolicy(file)
+        
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                "tests/sourceMeasurement0_policy.paf")
+        measurePolicy = pexPolicy.Policy.createPolicy(file)
 
-        policyPath = os.path.join(ipsdDir, "sourceMeasurement0_policy.paf")
-        policyFile = policy.PolicyFile(policyPath)
-        measurePolicy = policy.Policy(policyFile)
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                "tests/psfDetermination0_policy.paf")
+        psfPolicy = pexPolicy.Policy.createPolicy(file)
        
-        policyPath = os.path.join(ipsdDir, "psfDetermination0_policy.paf")
-        policyFile = policy.PolicyFile(policyPath)
-        psfPolicy = policy.Policy(policyFile)
-       
+
+        tester = SimpleStageTester()
+        tester.addStage(measPipe.SourceDetectionStage(detectPolicy))
+        tester.addStage(measPipe.SourceMeasurementStage(measurePolicy))
+        tester.addStage(measPipe.PsfDeterminationStage(psfPolicy))
+
+
         clipboard = pexClipboard.Clipboard() 
         filename = os.path.join(eups.productDir("afwdata"),
                                 "CFHT", "D4", 
                                 "cal-53535-i-797722_1")
-        
         # test only a portion of the exposure to speed up testing
         bbox = afwImage.BBox(afwImage.PointI(32, 32), 512, 512)        
         testExp = afwImage.ExposureF(filename, 0, bbox)
@@ -65,45 +70,17 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
 
         clipboard = pexClipboard.Clipboard() 
         clipboard.put(detectPolicy.get('exposureKey'), testExp)
-
-        inQueue = pexQueue.Queue() 
-        inQueue.addDataset(clipboard)       
-        detectToMeasureQueue = pexQueue.Queue()
-        measureToPsfQueue = pexQueue.Queue()       
-        outQueue = pexQueue.Queue()
         
-        detectStage = measPipe.SourceDetectionStage(0, detectPolicy)
-        detectStage.initialize(detectToMeasureQueue, inQueue)
-        detectStage.setUniverseSize(1)
-        detectStage.setRun("psfDeterminationTest")
+        
+        outWorker = tester.runWorker(clipboard)
+  
+        assert(outWorker.contains(psfPolicy.get("data.outputPsfKey")))
+        assert(outWorker.contains(psfPolicy.get("data.outputCellSetKey")))
 
-        measureStage = measPipe.SourceMeasurementStage(1, measurePolicy)
-        measureStage.initialize(measureToPsfQueue, detectToMeasureQueue)
-        measureStage.setUniverseSize(1)
-        measureStage.setRun("psfDeterminationTest")
-
-        psfStage = measPipe.PsfDeterminationStage(2, psfPolicy)
-        psfStage.initialize(outQueue, measureToPsfQueue)
-        psfStage.setUniverseSize(1)
-        psfStage.setRun("psfDeterminationTest")
-
-        detectStage.process()
-        measureStage.process()
-        psfStage.process()
-
-        clipboard = outQueue.getNextDataset()        
-        assert(clipboard.contains(psfPolicy.getString('data.outputPsfKey')))
-        assert(clipboard.contains(psfPolicy.getString('data.outputCellSetKey')))
-
-        del detectStage
-        del measureStage
-        del psfStage
-        del inQueue
-        del detectToMeasureQueue
-        del measureToPsfQueue
-        del outQueue
-        del clipboard
+        del outWorker
         del testExp
+        del clipboard
+        del tester
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
@@ -111,7 +88,10 @@ def suite():
     utilsTests.init()
 
     suites = []
-    suites += unittest.makeSuite(PsfDeterminationStageTestCase)
+    if not eups.productDir("afwdata"):
+        print >> sys.stderr, "afwdata is not setting up; skipping test"
+    else:
+        suites += unittest.makeSuite(PsfDeterminationStageTestCase)
     suites += unittest.makeSuite(utilsTests.MemoryTestCase)
     return unittest.TestSuite(suites)
 
