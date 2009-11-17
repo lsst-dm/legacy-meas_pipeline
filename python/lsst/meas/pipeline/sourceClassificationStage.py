@@ -2,14 +2,14 @@ import itertools
 import pdb
 import sys
 
-from SourceClassifier import SourceClassifier
-
-from lsst.pex.harness.stage import Stage
+import lsst.pex.harness.stage as harnessStage
 from lsst.pex.logging import Log, LogRec, endr
-from lsst.pex.policy import Policy
+import lsst.pex.policy as pexPolicy
+from sourceClassifier import SourceClassifier
 
+__all__ = ["SourceClassificationStage", "SourceClassificationStageParallel"]
 
-class SourceClassificationStage(Stage):
+class SourceClassificationStageParallel(harnessStage.ParallelProcessing):
     """
     This stage implements source classification on pairs of sources.
     Two lists of sources, each corresponding to measurements from one
@@ -45,9 +45,9 @@ class SourceClassificationStage(Stage):
       modifications. Only individual sources are modified by this stage.
     """
 
-    class _Classifier(object):
+    class Classifier(object):
         """
-        Helper class for importing and running source classifiers.
+        Helper class for importing and running Ssource classifiers.
         """
         def __init__(self, policy, log):
             bits = policy.getIntArray("bits")
@@ -97,26 +97,36 @@ class SourceClassificationStage(Stage):
             self._classifier.finish(log)
 
 
-    def __init__(self, stageId, policy):
-        Stage.__init__(self, stageId, policy)
-        self._log = Log(Log.getDefaultLog(), "lsst.meas.pipeline.SourceClassificationStage")
-        self._list1Key = policy.getString("sourceList0ClipboardKey")
-        self._list2Key = policy.getString("sourceList1ClipboardKey")
-        self._policies = policy.getPolicyArray("classifier") if policy.exists("classifier") else []
+    def setup(self):
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "SourceClassificationStageDictionary.paf", "pipeline")
+        defPolicy = pexPolicy.Policy.createPolicy(file, 
+            file.getRepositoryPath())
 
+        if self.policy is None:
+            self.policy = defPolicy
+        else:
+            self.policy.mergeDefaults(defPolicy)
 
-    def process(self):
+    def process(self, clipboard):
         """
         Classify sources in the worker process
         """
-        clipboard = self.inputQueue.getNextDataset()
-        sourceList1 = clipboard.get(self._list1Key)
-        sourceList2 = clipboard.get(self._list2Key)
-        classifiers = [ SourceClassificationStage._Classifier(p, self._log) for p in self._policies ]
+        sourceList1 = clipboard.get(self.policy.getString("sourceList0Key"))
+        sourceList2 = clipboard.get(self.policy.getString("sourceList1Key"))
+        classifierList = []
+        if self.policy.exists("classifier"):            
+            classifierPolicyList = self.policy.getPolicyArray("classifier")      
+            for classifierPolicy in classifierPolicyList:
+                classifier = SourceClassificationStageParallel.Classifier(
+                    classifierPolicy, self.log)
+                classifierList.append(classifier)
 
-        for c in classifiers:
-            c.invoke(sourceList1, sourceList2)
-        for c in classifiers:
-            c.finish(self._log)
-        self.outputQueue.addDataset(clipboard)
+        for classifier in classifierList:
+            classifier.invoke(sourceList1, sourceList2)
+        for classifier in classifierList:
+            classifier.finish(self.log)
+
+class SourceClassificationStage(harnessStage.Stage):
+    parallelClass = SourceClassificationStageParallel
 

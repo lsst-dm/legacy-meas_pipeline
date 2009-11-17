@@ -107,11 +107,12 @@ definitions: {
             min: 0
         }
     }
-    PsfDeterminationSdqaKey: {
+    sdqaKey: {
         type: "string"
         description: "specify clipboard key of output SDQA"
         minOccurs: 1
         maxOccurs: 1
+        default: "psfDeterminationSdqaKey"
     }
 }
 

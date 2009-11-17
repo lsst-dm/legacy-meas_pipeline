@@ -5,14 +5,14 @@
 target: lsst.meas.pipeline.SourceClassificationStage
 
 definitions: {
-    sourceList0ClipboardKey: {
+    sourceList0Key: {
         type:        "string"
         description: "the clipboard key of the second source list passed to the classification stage."
         minOccurs:   0
         maxOccurs:   1
         default:     "sourceSet0"
     }
-    sourceList1ClipboardKey: {
+    sourceList1Key: {
         type:        "string"
     	description: "the clipboard key of the second source list passed to the classification stage."
         minOccurs:   0 

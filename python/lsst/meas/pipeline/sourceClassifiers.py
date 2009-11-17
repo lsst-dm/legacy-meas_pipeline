@@ -3,7 +3,7 @@ Classes which classify sources based on their attributes.
 """
 import math
 
-from SourceClassifier import SourceClassifier
+from sourceClassifier import SourceClassifier
 from lsst.pex.logging import Log, LogRec, endr
 
 

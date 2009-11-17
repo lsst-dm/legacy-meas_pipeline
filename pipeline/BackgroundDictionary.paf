@@ -1,0 +1,24 @@
+#<?cfg paf dictionary ?>
+
+definitions: {
+    binsize: {
+        type: "int"
+        description: "how large a region of the sky should be used for each 
+        			  background point"
+        maxOccurs: 1
+        default: 256
+        allowed: {
+            min: 10
+        }
+    }
+    algorithm: {
+        type: "string"      
+        description: "how to interpolate the background values. This maps to an 
+        			  enum; see afw::math::Background"
+        maxOccurs: 1
+        default:   "NATURAL_SPLINE"
+        allowed: {
+        	value: "NATURAL_SPLINE"
+        }
+    }
+}

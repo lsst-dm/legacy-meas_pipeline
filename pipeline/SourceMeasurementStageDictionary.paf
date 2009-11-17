@@ -15,9 +15,8 @@ definitions: {
     psfKey: {
         type: "string"
         description: "clipboard key of the input psf"
-        minOccurs: 0
         maxOccurs: 1
-        deafault: "PSF"
+        deafalt: "psf"
     }
     data: {
         type: "policy"		
@@ -33,7 +32,13 @@ definitions: {
                     minOccurs: 1
                     maxOccurs: 1
                 }
-	        outputKey: {
+                psfKey: {
+			        type: "string"
+			        description: "clipboard key of the input psf"
+			        minOccurs: 1
+			        maxOccurs: 1			        
+			    }
+	        	outputKey: {
                     type: "string"
                     description: "clipboard key of the output SourceSet"
                     minOccurs: 1
@@ -45,15 +50,13 @@ definitions: {
     positiveDetectionKey: {
         type: "string"
         description: "specify the clipboard key of the positive FootprintSet"
-        minOccurs: 0
         maxOccurs: 1
-        default: "PositiveFootprintSet"
+        default: "positiveFootprintSet"
     }
     negativeDetectionKey: {
         type: "string"
         description: "specify the clipboard key of the negative FootprintSet"
-        minOccurs: 0
         maxOccurs: 1
-        default: "NegativeFootprintSet"
+        default: "negativeFootprintSet"
     }
 }

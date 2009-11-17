@@ -1,14 +1,14 @@
-from lsst.pex.harness.stage import Stage
+import lsst.pex.harness.stage as harnessStage
 
 from lsst.pex.logging import Log
 
-import lsst.pex.policy as policy
+import lsst.pex.policy as pexPolicy
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImg
 import lsst.pex.exceptions as pexExcept
 import lsst.meas.algorithms as measAlg
 
-class SourceToDiaSourceStage(Stage):
+class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
     """
     Description:
        Glue stage for transforming clipboard objects from SourceSet 
@@ -26,26 +26,36 @@ class SourceToDiaSourceStage(Stage):
     - DiaSourceSet with key outputKey.
     - PersistableDiaSourceVector with key "persistable_"+outputKey
     """
-    def process(self):
+    def setup(self):
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "SourceToDiaSourceStageDictionary.paf", "pipeline")
+        defPolicy = pexPolicy.Policy.createPolicy(file, 
+            file.getRepositoryPath())
+
+        if self.policy is None:
+            self.policy = defPolicy
+        else:
+            self.policy.mergeDefaults(defPolicy)
+
+
+    def process(self, clipboard):
         """
         Converting to DiaSource in the worker process
         """
-        self.log = Log(Log.getDefaultLog(), 
-                "lsst.meas.pipeline.SourceToDiaSourceStage")
-
         self.log.log(Log.INFO, "Executing in process")
        
-        clipboard = self.inputQueue.getNextDataset()
-        ccdWcsKey = self._policy.get("ccdWcsKey")
-        ampBBoxKey = self._policy.getString("ampBBoxKey")
-        self.ccdWcs = clipboard.get(ccdWcsKey)
-        self.ampBBox = clipboard.get(ampBBoxKey)
-        keys = self._getPolicyKeys()
+        self.ccdWcs = clipboard.get(self.policy.get("ccdWcsKey"))
+        self.ampBBox = clipboard.get(self.policy.getString("ampBBoxKey"))
 
-        for inKey, outKey in keys:
-            sourceSet = clipboard.get(inKey)
-            if sourceSet == None:
-                raise RuntimeException("SourceSet missing from clipboard")
+        dataPolicyList = self.policy.getPolicyArray("data")
+        for dataPolicy in dataPolicyList:
+            inputKey = dataPolicy.getString("inputKey")
+            outputKey = dataPolicy.getString("outputKey")
+
+            sourceSet = clipboard.get(inputKey)
+            if sourceSet is None:
+                self.log.log(Log.FATAL, "No SourceSet with key " + inputKey)
+                continue
 
             diaSourceSet = afwDet.DiaSourceSet()
             for source in sourceSet:
@@ -79,23 +89,9 @@ class SourceToDiaSourceStage(Stage):
 
             persistableSet = afwDet.PersistableDiaSourceVector(diaSourceSet)
 
-            clipboard.put(outKey, diaSourceSet)
-            clipboard.put("persistable_" + outKey, persistableSet)
+            clipboard.put(outputKey, diaSourceSet)
+            clipboard.put("persistable_" + outputKey, persistableSet)
         
-        self.outputQueue.addDataset(clipboard)
-    
-    def _getPolicyKeys(self):
-        """
-        parse policy object into more useful form
-        """
-        keys = []
-        for item in self._policy.getPolicyArray("data"):
-            inputKey = item.getString("inputKey")
-            outputKey = item.getString("outputKey")
-            keys.append((inputKey, outputKey))
-
-        return keys
-
     def raDecWithErrs(self, x, y, xErr, yErr):
         # ccdWcs is determined from a CCDs worth of WcsSources (by each slice in the CCD),
         # but is shifted to amp relative coordinates. XY coords are CCD relative, so transform
@@ -108,3 +104,6 @@ class SourceToDiaSourceStage(Stage):
         raErr = raDecWithErr.getX() - ra
         decErr = raDecWithErr.getY() - dec
         return (ra, dec, raErr, decErr)
+
+class SourceToDiaSourceStage(harnessStage.Stage):
+    parallelClass = SourceToDiaSourceStageParallel

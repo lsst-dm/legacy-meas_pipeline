@@ -9,12 +9,9 @@ from math import *
 
 import pdb
 import unittest
-import random
-import time
 
 import eups
 import lsst.utils.tests as utilsTests
-import lsst.pex.harness.Queue as pexQueue
 import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
@@ -34,10 +31,6 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         pass
 
     def clipboardIoTest(self):
-        if not eups.productDir("afwdata"):
-            print >> sys.stderr, "afwdata is not setting up; skipping test"
-            return
-
         file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
                 "tests/sourceDetection0_policy.paf")
         detectPolicy = pexPolicy.Policy.createPolicy(file)
@@ -69,7 +62,7 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         # testExp = afImage.ExposureF(filename)
 
         clipboard = pexClipboard.Clipboard() 
-        clipboard.put(detectPolicy.get('exposureKey'), testExp)
+        clipboard.put(detectPolicy.get("inputKeys.exposure"), testExp)
         
         
         outWorker = tester.runWorker(clipboard)
@@ -81,6 +74,8 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         del testExp
         del clipboard
         del tester
+
+        print >> sys.stderr, "at end of test"
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

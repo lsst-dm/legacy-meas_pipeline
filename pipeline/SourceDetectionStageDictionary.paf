@@ -6,55 +6,70 @@ target: lsst.detection.pipeline.SourceDetectionStage
 
 definitions: {
 	#input clipboard keys
-    exposureKey: {
-        type: "string"
-    	description: "specify the clipboard key of the exposure to detect on."
-        minOccurs: 0 
-        maxOccurs: 1
-        default: "calibratedExposure"
-    }    	
-    inputPsfKey : {
-    	type: "string"
-    	description: "input clipboard key for a smoothing Psf"
-    	minOccurs: 0
-    	maxOccurs: 1
-    }
+	inputKeys: {
+		type: "policy"
+		dictionary: {
+    		definitions: {
+    		    exposure: {
+                    type: "string"
+                	description: "specify the clipboard key(s) of the exposure(s) 
+                				  to detect on."
+                    minOccurs: 1
+                }    	
+                psf : {
+                	type: "string"
+                	description: "input clipboard key for a smoothing Psf"
+                	minOccurs: 0
+                	maxOccurs: 1
+                }
+    		}
+		}
+		maxOccurs: 1		
+	}
     
-    #output keys:
-    positiveDetectionKey: {
-        type: "string"
-        description: "specify the clipboard key of the positive FootprintSet"
-        minOccurs: 0
-        maxOccurs: 1
-        default: "positiveFootprintSet"
-    }
-    negativeDetectionKey: {
-        type: "string"
-        description: "specify the clipboard key of the negative FootprintSet"
-        minOccurs: 0
-        maxOccurs: 1
-        default: "negativeFootprintSet"
-    }
-    smoothingPsfKey: {
-        type: "string"
-        description: "specify the output key for the psf used"
-        minOccurs: 0
-        maxOccurs: 1
-        default: "psf"
-    }    
-    backgroundSubtractedExposureKey: {
-        type: "string"
-        description: "specify clipboard key of output background-subtracted Exposure"
-        minOccurs: 1
-        maxOccurs: 1
-    }
-    backgroundKey : {
-    	type: "string"
-    	description: "output clipboard key for computed background"
-    	default: "background
-    }
+    #output clipboard keys:
+    outputKeys: {
+    	type: "policy"
+    	dictionary: {
+    		definitions: {
+    		    positiveDetection: {
+    				type: "string"
+                    description: "specify the clipboard key of the positive FootprintSet"
+                    maxOccurs: 1
+                    default: "positiveFootprintSet"
+                }
+                negativeDetection: {
+                    type: "string"
+                    description: "specify the clipboard key of the negative FootprintSet"
+                    maxOccurs: 1
+                    default: "negativeFootprintSet"
+                }
+                psf: {
+                    type: "string"
+                    description: "specify the output key for the psf used"
+                    maxOccurs: 1
+                    default: "psf"
+                }    
+                backgroundSubtractedExposure: {
+                    type: "string"
+                    description: "specify output clipboard key of the background-subtracted 
+                    			  exposure on which detection was performed"
+                    maxOccurs: 1
+                    default: "backgroundSubtractedExposure"
+                }
+                background: {
+                	type: "string"
+                	description: "output clipboard key for computed background object"
+                	maxOccurs: 1
+                	default: "background"
+                }
+            }
+		}
+		maxOccurs: 1
+	}
+
     
-    #parameters
+    #parameters    
     psfPolicy: {
         type: "policy"
         dictionary: @PsfDictionary.paf
@@ -72,32 +87,10 @@ definitions: {
     }
     backgroundPolicy: {
         type: "policy"
+        dictionary: @BackgroundDictionary.paf
         description: "Parameters to control background subtraction"
         minOccurs: 1
-        dictionary: {
-            definitions: {
-                binsize: {
-                    type: "int"
-                    description: "how large a region of the sky should be used for each background point"
-                    minOccurs: 1
-                    maxOccurs: 1
-                    default: 256
-                    allowed: {
-                        min: 10
-                    }
-                }
-                algorithm: {
-                    type: "string"      # really an enum; see afw::math::Background
-                    description: "how to interpolate the background values"
-                    minOccurs: 1
-                    maxOccurs: 1
-                    default:   "NATURAL_SPLINE" # 
-                    allowed: {
-                    	value: "NATURAL_SPLINE"
-                    }
-                }
-            }
-        }
+        maxOccurs: 1
     }
     
     

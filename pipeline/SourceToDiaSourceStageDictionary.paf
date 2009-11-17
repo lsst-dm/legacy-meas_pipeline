@@ -4,29 +4,31 @@
 
 target: lsst.meas.pipeline.SourceToDiaSourceStage
 
-definitions:
+definitions: {
     data: {
         type: "policy"
-        description: "Array of (input, output) key pairs. For every SourceSet  found in
-                      the clipboard with key inputKey, the stage will output a DiaSourceSet
-                      to the clipboard with key specified by outputKey"
+        description: "Array of (input, output) key pairs. For every SourceSet 
+        			  found in the clipboard with key inputKey, the stage will 
+        			  output a DiaSourceSet to the clipboard with key specified 
+        			  by outputKey"
         dictionary: {
             definitions: {
                 inputKey: {
                     type: "string"
-                    description: "specify the clipboard location of incoming SourceSet"
-                    minOccurs: 0
+                    description: "specify the clipboard location of incoming 
+                    			  SourceSet"
+					minOccurs: 1
                     maxOccurs: 1
-                    default: "sourceSet"
                 }
                 outputKey: {
                     type: "string"
-                    description: "specfy the clipboard key for the output DiaSourceSet"
-                    minOccurs: 0
+                    description: "specfy the clipboard key for the output 
+                    		      DiaSourceSet"
+                    minOccurs: 1                    
                     maxOccurs: 1
-                    default: "diaSourceSet"
                 }
             }
         }
         minOccurs: 1
     }
+}

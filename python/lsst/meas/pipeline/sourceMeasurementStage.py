@@ -3,7 +3,7 @@ import os, sys
 
 import lsst.pex.harness.stage as harnessStage
 
-import lsst.pex.policy as policy
+import lsst.pex.policy as pexPolicy
 
 from lsst.pex.logging import Log, Rec
 import lsst.pex.exceptions as pexExcept
@@ -39,18 +39,29 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
     - DetetectionSet(s) from input with same key name(s)
     - SourceSet with key specified by policy data.outputKey
     """
+    def setup(self):
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "SourceMeasurementStageDictionary.paf", "pipeline")
+        defPolicy = pexPolicy.Policy.createPolicy(
+            file, file.getRepositoryPath())
 
+        if self.policy is None:
+            self.policy = defPolicy
+        else:
+            self.policy.mergeDefaults(defPolicy)
+
+        
     def process(self, clipboard):
         """
         Measure sources in the worker process
         """
         self.log.log(Log.INFO, "Measuring Sources in process")
         
-        self._validatePolicy()
+        self.validatePolicy()
         
         #this may raise exceptions
         try:
-            input = self._getClipboardData(clipboard)
+            input = self.getClipboardData(clipboard)
             exposureAndPsfList, dsPositive, dsNegative = input
         except pexExcept.LsstException, e:
             self.log.log(Log.FATAL, e.what())
@@ -105,8 +116,9 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
             clipboard.put("persistable_" + outKey, persistableSourceSet) 
         
 	
-    def _getClipboardData(self, clipboard):
+    def getClipboardData(self, clipboard):
         #private helped method for grabbing the clipboard data in a useful way 
+
         exposureAndPsfList = []
         for exposureKey, psfKey in self._inputKeys: 
             exposure = clipboard.get(exposureKey)
@@ -126,7 +138,7 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
             raise Exception("Missing input FootprintSet")
         return (exposureAndPsfList, dsPositive, dsNegative)
 		
-    def _validatePolicy(self): 
+    def validatePolicy(self): 
         #private helper method for validating my policy
         # for DC3a expects perfect policies!
 

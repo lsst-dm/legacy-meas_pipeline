@@ -1,12 +1,12 @@
 data: {
-    exposureKey: calibratedExposure0
-    psfKey: psfModel
-    outputKey: sourceSet0
+    exposureKey: "calibratedExposure0"
+    psfKey: "smoothingPsfModel"
+    outputKey: "sourceSet0"
 }
 data: {
-    exposureKey: calibratedExposure1
-    psfKey: psfModel
-    outputKey: sourceSet1
+    exposureKey: "calibratedExposure1"
+    psfKey: "smoothingPsfModel"
+    outputKey: "sourceSet1"
 }
 measureObjects: {
     centroidAlgorithm: SDSS

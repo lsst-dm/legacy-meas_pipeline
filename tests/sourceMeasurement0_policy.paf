@@ -9,7 +9,7 @@ measureObjects: {
     apRadius: 3.0
 }
 data: {
-    exposureKey: "backgroundSubtractedExposure0"
+    exposureKey: "calibratedExposure0"
     psfKey: "smoothingPsfModel"
     outputKey: "sourceSet0"
 }

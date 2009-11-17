@@ -40,18 +40,17 @@ def getBackground(image, backgroundPolicy):
     Make a new Exposure which is exposure - background
     """
     algorithm = backgroundPolicy.get("algorithm")
-    if algorithmName == "NATURAL_SPLINE":
+    if algorithm == "NATURAL_SPLINE":
         bctrl = afwMath.BackgroundControl(afwMath.NATURAL_SPLINE)
     else:
-        raise RuntimeError, "Unknown backgroundPolicy.algorithm: %s" % algorithm            
+        return None
     binsize = backgroundPolicy.get("binsize")
 
-    
-    #
-    # Subtract background
-    #
+    # Set background control parameters
     bctrl.setNxSample(image.getWidth()/binsize + 1)
     bctrl.setNySample(image.getHeight()/binsize + 1)
+
+    #return a background object
     return afwMath.makeBackground(image, bctrl)
     
 def subtractBackground(exposure, backgroundPolicy):
@@ -61,17 +60,16 @@ def subtractBackground(exposure, backgroundPolicy):
     deepCopy.setXY0(maskedImage.getXY0())
 
     image = deepCopy.getImage()    
-    try:
-        background = getBackground(image, backgroundPolicy)
-    except:
-        return exposure, None
+    
+    background = getBackground(image, backgroundPolicy)        
 
-    image -= backround.getImageF()
-    del image
+    if not background is None:       
+        image -= background.getImageF()
+        del image
 
-    backgroundSubtractedExposure = exposure.Factor(
+    backgroundSubtractedExposure = exposure.Factory(
         deepCopy, 
-        afwImg.Wcs(exposure.getWcs)
+        afwImg.Wcs(exposure.getWcs())
     )
 
     return backgroundSubtractedExposure, background
@@ -96,8 +94,10 @@ def detectSources(exposure, psf, detectionPolicy):
         maskedImage.getWidth(), 
         maskedImage.getHeight()
     )
-   
-    if not psf is None:
+    
+    if psf is None:
+        middle = maskedImage.Factory(maskedImage)
+    else:
         convolvedImage = maskedImage.Factory(maskedImage.getDimensions())
         convolvedImage.setXY0(maskedImage.getXY0())
 
@@ -108,7 +108,6 @@ def detectSources(exposure, psf, detectionPolicy):
             maskedImage, 
             convolvedImage.getMask().getMaskPlane("EDGE")
         )
-    
         #
         # Only search psf-smooth part of frame
         #
@@ -123,34 +122,10 @@ def detectSources(exposure, psf, detectionPolicy):
         urc -= llc
         bbox = afwImg.BBox(llc, urc)    
         middle = convolvedImage.Factory(convolvedImage, bbox)
-    else:
-        middle = maskedImage
 
-    dsNegative = None
     dsPositive = None
-
-    if thresholdPolarity == "negative" or thresholdPolarity == "both":
-        threshold = afwDet.createThreshold(
-            thresholdValue,
-            thresholdType,
-            False
-        )
-        #detect negative sources
-        dsNegative = afwDet.makeFootprintSet(
-            middle,
-            threshold,
-            "DETECTED_NEGATIVE",
-            minPixels
-        )
-        #set detection region to be the entire region
-        dsPositive.setRegion(region)
-        #
-        # We want to grow the detections into the edge by at least one pixel so 
-        # that it sees the EDGE bit
-        #
-        dsPositive = afwDet.FootprintSetF(dsPositive, 1, False)
-        dsPositive.setMask(maskedImage.getMask(), "DETECTED_NEGATIVE")
     if thresholdPolarity != "negative":
+        #do positive detections        
         threshold = afwDet.createThreshold(
             thresholdValue,
             thresholdType,
@@ -164,17 +139,39 @@ def detectSources(exposure, psf, detectionPolicy):
         )
         #set detection region to be the entire region
         dsPositive.setRegion(region)
-        #
+        
         # We want to grow the detections into the edge by at least one pixel so 
-        # that it sees the EDGE bit
-        #
+        # that it sees the EDGE bit        
         dsPositive = afwDet.FootprintSetF(dsPositive, 1, False)
         dsPositive.setMask(maskedImage.getMask(), "DETECTED")
+
+    dsNegative = None
+    if thresholdPolarity != "positive":
+        #do negative detections
+        threshold = afwDet.createThreshold(
+            thresholdValue,
+            thresholdType,
+            False
+        )
+        #detect negative sources
+        dsNegative = afwDet.makeFootprintSet(
+            middle,
+            threshold,
+            "DETECTED_NEGATIVE",
+            minPixels
+        )
+        #set detection region to be the entire region
+        dsNegative.setRegion(region)
+        
+        # We want to grow the detections into the edge by at least one pixel so 
+        # that it sees the EDGE bit        
+        dsNegative = afwDet.FootprintSetF(dsNegative, 1, False)
+        dsNegative.setMask(maskedImage.getMask(), "DETECTED_NEGATIVE")
 
     #
     # clean up
     #
-    del middle
+    del middle    
 
     return dsPositive, dsNegative
 

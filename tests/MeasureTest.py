@@ -37,51 +37,54 @@ class MeasureStageTestCase(unittest.TestCase):
 
     def testSingleInputExposure(self):
         file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "tests/MeasureTestDetect.paf")
+                "sourceDetection0_policy.paf", "tests")
         detectPolicy = pexPolicy.Policy.createPolicy(file)
         file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "tests/MeasureTest1.paf")
+                "sourceMeasurement0_policy.paf", "tests")
         measurePolicy = pexPolicy.Policy.createPolicy(file)
+
 
         tester = SimpleStageTester()
         tester.addStage(measPipe.SourceDetectionStage(detectPolicy))
         tester.addStage(measPipe.SourceMeasurementStage(measurePolicy))
 
         clipboard = pexClipboard.Clipboard()
-        clipboard.put("calibratedExposure0", self.exposure)
+        clipboard.put(detectPolicy.get("inputKeys.exposure"), self.exposure)
         
         outWorker = tester.runWorker(clipboard)
 
-        assert(outWorker.contains("sourceSet0"))
-        assert(outWorker.contains("persistable_sourceSet0"))
+        dataPolicy = measurePolicy.getPolicy("data")
+        outputKey = dataPolicy.get("outputKey")
+        assert(outWorker.contains(outputKey))
+        assert(outWorker.contains("persistable_" + outputKey))
 
         del clipboard
         del outWorker
 
     def testMultipleInputExposure(self):
         file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "tests/AddDetectTest2.paf")
+                "sourceDetection1_policy.paf", "tests")
         detectPolicy = pexPolicy.Policy.createPolicy(file)
         file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "tests/MeasureTest1.paf")
+                "sourceMeasurement1_policy.paf", "tests")
         measurePolicy = pexPolicy.Policy.createPolicy(file)
 
         tester = SimpleStageTester()
-        tester.addStage(measPipe.AddAndDetectStage(detectPolicy))
+        tester.addStage(measPipe.SourceDetectionStage(detectPolicy))
         tester.addStage(measPipe.SourceMeasurementStage(measurePolicy))
 
-        clipboard = pexClipboard.Clipboard()
-        clipboard.put("calibratedExposure0", self.exposure)
-        clipboard.put("calibratedExposure1", self.exposure)
+        clipboard = pexClipboard.Clipboard()         
+        exposureKeys = detectPolicy.getStringArray("inputKeys.exposure")
+        for key in exposureKeys:
+            clipboard.put(key, self.exposure)
         
         outWorker = tester.runWorker(clipboard)
 
-        assert(outWorker.contains("sourceSet0"))
-        assert(outWorker.contains("persistable_sourceSet0"))
-        assert(outWorker.contains("sourceSet0"))
-        assert(outWorker.contains("sourceSet1"))    
-        assert(outWorker.contains("persistable_sourceSet0"))
-        assert(outWorker.contains("persistable_sourceSet1"))
+        dataPolicyList = measurePolicy.getPolicyArray("data")
+        for dataPolicy in dataPolicyList:
+            outputKey = dataPolicy.get("outputKey")
+            assert(outWorker.contains(outputKey))
+            assert(outWorker.contains("persistable_" + outputKey))
 
         del outWorker
         del clipboard
