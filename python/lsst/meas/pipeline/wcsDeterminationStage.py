@@ -1,11 +1,10 @@
-import glob
 import math
 import sys
 import lsst.utils as utils
 import os
-from lsst.pex.harness.stage import Stage
+import lsst.pex.harness.stage as harnessStage
 from lsst.pex.logging import Log
-from lsst.pex.policy import Policy
+import lsst.pex.policy as pexPolicy
 import lsst.daf.base as dafBase
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
@@ -13,7 +12,7 @@ import lsst.meas.astrom.net as astromNet
 import lsst.pex.exceptions as exceptions
 import lsst.meas.algorithms as measAlg
 
-class WcsDeterminationStage(Stage):
+class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
     """Refine a WCS in an Exposure based on a list of sources
 
     See detection/pipeline/WcsDeterminationStageDictionary.paf for Policy file entries
@@ -34,65 +33,50 @@ class WcsDeterminationStage(Stage):
     \todo After DC3 we should not assume the input exposure has a Wcs;
     the associated minimal data (center RA/Dec, etc.) should come in as separate metadata.
     """
-    def initialize(self, outQueue, inQueue):
-        # call base version
-        Stage.initialize(self, outQueue, inQueue)
+    def setup(self):
+        #merge defaults
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline",
+            "WcsDeterminationStageDictionary.paf", pipeline)
+        defPolicy = pexPolicy.Policy.createPolicy(
+            file, file.getRepositoryPath())        
+        if self.policy is None:
+            self.policy = defPolicy
+        else:
+            self.policy.mergeDefaults(defPolicy)
 
-        # initialize a log
-        self.log = Log(Log.getDefaultLog(), "lsst.meas.pipeline.WcsDeterminationStage")
-
-        # Do nothing else in the master
-
-        if self.getRank() == -1:
-            return
-
+        #get an GlobalAstrometrySolution
         path = os.path.join(
                 utils.productDir("astrometry_net_data"),
                 "metadata.paf")
         self.astromSolver = astromNet.GlobalAstrometrySolution(path)
 
-    def process(self):
+    def process(self, clipboard):
         """Determine Wcs"""
         self.log.log(Log.INFO, "Wcs Determination Stage")
 
-        clipboard = self.inputQueue.getNextDataset()
-
-        exposureKeyList = self._policy.getStringArray("exposureKeyList")
-        sourceSetKey = self._policy.getString("sourceSetKey")
-        ampBBoxKey = self._policy.getString("ampBBoxKey")
-        outputWcsKey = self._policy.getString("outputCcdWcsKey")
-
-        self.fluxLimit = self._policy.getDouble("fluxLimit")
-        self.pixelScaleRangeFactor = self._policy.getDouble("pixelScaleRangeFactor")
         self.log.log(Log.INFO, "Reset solver")
         self.astromSolver.reset()
+        
 
-        # Set parameters
-        allowDistortion = self._policy.getBool("allowDistortion")
-        matchThreshold = self._policy.getDouble("matchThreshold")
-        self.astromSolver.allowDistortion(allowDistortion)
-        self.astromSolver.setMatchThreshold(matchThreshold)
-
-        # Shouldn't this be on the clipboard instead? But in any case,
-        # we need it to determine best guess RA/Dec of center of CCD
-        self.ccdWidth = self._policy.getInt("ccdDimensions.width")
-        self.ccdHeight = self._policy.getInt("ccdDimensions.height")
-
-        sourceSet = clipboard.get(sourceSetKey)
+        exposureKeyList = self.policy.getStringArray("exposureKeyList")
+        
+        ampBBox = clipboard.get(self.policy.getString("ampBBoxKey"))
+        sourceSet = clipboard.get(self.policy.getString("sourceSetKey"))
         if isinstance(sourceSet, afwDet.PersistableSourceVector):
             sourceSet = sourceSet.getSources()
         
         initialWcs = clipboard.get(exposureKeyList[0]).getWcs().clone()
-        ampBBox = clipboard.get(ampBBoxKey)
         
         # Shift WCS from amp coordinates to CCD coordinates
         # Use first Exposure's WCS as the initial guess
         initialWcs.shiftReferencePixel(ampBBox.getX0(), ampBBox.getY0())
 
         self.log.log(Log.INFO, "Determine Wcs")
-        wcs = self.determineWcs(sourceSet, initialWcs)
+        wcs = self.determineWcs(sourceSet, initialWcs, self.policy)
         self.log.log(Log.INFO, wcs.getFitsMetadata().toString())
-        clipboard.put(outputWcsKey, wcs)
+        
+        #output the ccd WCS
+        clipboard.put(self.policy.getString("outputCcdWcsKey", wcs))
 
         # Shift WCS from CCD coordinates to amp coordinates
         wcs.shiftReferencePixel(-ampBBox.getX0(), -ampBBox.getY0())
@@ -102,24 +86,37 @@ class WcsDeterminationStage(Stage):
             exposure = clipboard.get(exposureKey)
             exposure.setWcs(wcs.clone())
 
-        self.outputQueue.addDataset(clipboard)
-    
-    def determineWcs(self, sourceSet, initialWcs):
+    def determineWcs(self, sourceSet, initialWcs, policy):
         """Determine Wcs of an Exposure given a SourceSet and an initial Wcs
         """
         # select sufficiently bright sources that are not flagged
+        fluxLimit = self.policy.getDouble("fluxLimit")
+        pixelScaleRangeFactor = self.policy.getDouble("pixelScaleRangeFactor")
+
+
+        # Set parameters
+        allowDistortion = self.policy.getBool("allowDistortion")
+        matchThreshold = self.policy.getDouble("matchThreshold")
+        self.astromSolver.allowDistortion(allowDistortion)
+        self.astromSolver.setMatchThreshold(matchThreshold)
+
+        # Shouldn't this be on the clipboard instead? But in any case,
+        # we need it to determine best guess RA/Dec of center of CCD
+        ccdWidth = self.policy.getInt("ccdDimensions.width")
+        ccdHeight = self.policy.getInt("ccdDimensions.height")
+        
         wcsSourceSet = afwDet.SourceSet()
         for source in sourceSet:
-            if source.getPsfFlux() >= self.fluxLimit and \
+            if source.getPsfFlux() >= fluxLimit and \
                 source.getFlagForDetection() == measAlg.Flags.BINNED1:
                 wcsSourceSet.append(source)
         
         self.log.log(Log.INFO, "Using %s sources with flux > %s; initial list had %s sources" % \
-            (len(wcsSourceSet), self.fluxLimit, len(sourceSet)))
+            (len(wcsSourceSet), fluxLimit, len(sourceSet)))
         self.astromSolver.setStarlist(wcsSourceSet)
 
-        if self._policy.exists("brightestNStars"):
-            num = self._policy.getInt("brightestNStars")
+        if self.policy.exists("brightestNStars"):
+            num = self.policy.getInt("brightestNStars")
             self.log.log(Log.INFO,
                     "Setting number of stars in solver to %i" %(num,))
             if num > wcsSourceSet.size():
@@ -129,8 +126,8 @@ class WcsDeterminationStage(Stage):
 
         # find RA/Dec of center of image (need not be exact)
         ccdCtrPos = afwImage.PointD(
-            afwImage.indexToPosition(self.ccdWidth / 2),
-            afwImage.indexToPosition(self.ccdHeight / 2),
+            afwImage.indexToPosition(ccdWidth / 2),
+            afwImage.indexToPosition(ccdHeight / 2),
         )
         # Use RA/decl of WCS origin, not CCD center, as it seems to lead to
         # faster solutions.  TODO: figure out what the right input is.
@@ -144,8 +141,8 @@ class WcsDeterminationStage(Stage):
         imageScale = math.sqrt(pixelAreaDegSq) * 3600.0
         self.log.log(Log.INFO, "Predicted image scale = %s arcsec/pixel" % (imageScale,))
     
-        minImageScale = imageScale / self.pixelScaleRangeFactor
-        maxImageScale = imageScale * self.pixelScaleRangeFactor
+        minImageScale = imageScale / pixelScaleRangeFactor
+        maxImageScale = imageScale * pixelScaleRangeFactor
         self.astromSolver.setMinimumImageScale(minImageScale)
         self.astromSolver.setMaximumImageScale(maxImageScale)
         self.log.log(Log.INFO, "Set image scale min=%s; max=%s" % (minImageScale, maxImageScale))
@@ -174,3 +171,6 @@ class WcsDeterminationStage(Stage):
         else:
             self.log.log(Log.WARN, "Failed to find WCS solution; leaving raw Wcs unchanged")
             return initialWcs
+
+class WcsDeterminationStage(harnessStage.Stage):
+    parallelClas = WcsDeterminationStageParallel

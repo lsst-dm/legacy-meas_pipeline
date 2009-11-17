@@ -1,4 +1,4 @@
-setupRequired(pex_harness >= 3.2.10)
+setupRequired(pex_harness >= 3.4)
 setupRequired(afw >= 3.3.17)
 setupRequired(meas_algorithms >= 3.0.10)
 setupRequired(meas_astrom >= 3.0.9)
