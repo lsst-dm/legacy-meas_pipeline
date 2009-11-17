@@ -8,3 +8,4 @@ from sourceClassificationStage import *
 from sourceToDiaSourceStage import *
 from transformDetectionStage import *
 from multifitStage import *
+from forcedPhotometryStage import *
