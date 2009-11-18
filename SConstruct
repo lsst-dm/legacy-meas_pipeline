@@ -44,7 +44,7 @@ env['IgnoreFiles'] = r"(~$|\.pyc$|^\.svn$|\.o$)"
 Alias("install", env.Install(env['prefix'], "python"))
 Alias("install", env.Install(env['prefix'], "include"))
 Alias("install", env.Install(env['prefix'], "lib"))
-Alias("install", env.Install(env['prefix'], "pipeline"))
+Alias("install", env.Install(env['prefix'], "policy"))
 Alias("install", env.InstallEups(os.path.join(env['prefix'], "ups")))
 
 scons.CleanTree(r"*~ core *.so *.os *.o")
