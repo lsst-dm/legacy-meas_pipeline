@@ -34,29 +34,27 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
     the associated minimal data (center RA/Dec, etc.) should come in as separate metadata.
     """
     def setup(self):
+        self.log = Log(self.log, "WcsDeterminationStage - parallel")
+        
         #merge defaults
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline",
-            "WcsDeterminationStageDictionary.paf", pipeline)
-        defPolicy = pexPolicy.Policy.createPolicy(
-            file, file.getRepositoryPath())        
+        policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline",
+            "WcsDeterminationStageDictionary.paf", "policy")
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
+            policyFile.getRepositoryPath())        
+
         if self.policy is None:
-            self.policy = defPolicy
-        else:
-            self.policy.mergeDefaults(defPolicy)
+            self.policy = pexPolicy.Policy()
+        self.policy.mergeDefaults(defPolicy)
 
         #get an GlobalAstrometrySolution
-        path = os.path.join(
-                utils.productDir("astrometry_net_data"),
+        path = os.path.join(utils.productDir("astrometry_net_data"),
                 "metadata.paf")
         self.astromSolver = astromNet.GlobalAstrometrySolution(path)
 
     def process(self, clipboard):
         """Determine Wcs"""
-        self.log.log(Log.INFO, "Wcs Determination Stage")
-
         self.log.log(Log.INFO, "Reset solver")
         self.astromSolver.reset()
-        
 
         exposureKeyList = self.policy.getStringArray("exposureKeyList")
         

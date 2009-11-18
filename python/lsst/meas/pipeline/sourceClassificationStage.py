@@ -98,15 +98,16 @@ class SourceClassificationStageParallel(harnessStage.ParallelProcessing):
 
 
     def setup(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-            "SourceClassificationStageDictionary.paf", "pipeline")
-        defPolicy = pexPolicy.Policy.createPolicy(file, 
-            file.getRepositoryPath())
+        self.log = Log(self.log, "SourceClassificationStage - parallel")
+
+        policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "SourceClassificationStageDictionary.paf", "policy")
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
+            policyFile.getRepositoryPath())
 
         if self.policy is None:
-            self.policy = defPolicy
-        else:
-            self.policy.mergeDefaults(defPolicy)
+            self.policy = pexPolicy()
+        self.policy.mergeDefaults(defPolicy)
 
     def process(self, clipboard):
         """

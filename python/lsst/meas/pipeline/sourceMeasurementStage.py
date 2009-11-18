@@ -40,15 +40,16 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
     - SourceSet with key specified by policy data.outputKey
     """
     def setup(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-            "SourceMeasurementStageDictionary.paf", "pipeline")
+        self.log = Log(self.log, "SourceMeasurementStage - parallel")
+
+        policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "SourceMeasurementStageDictionary.paf", "policy")
         defPolicy = pexPolicy.Policy.createPolicy(
-            file, file.getRepositoryPath())
+            policyFile, policyFile.getRepositoryPath())
 
         if self.policy is None:
-            self.policy = defPolicy
-        else:
-            self.policy.mergeDefaults(defPolicy)
+            self.policy = pexPolicy.policy()
+        self.policy.mergeDefaults(defPolicy)
 
         
     def process(self, clipboard):

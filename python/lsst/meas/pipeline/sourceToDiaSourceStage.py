@@ -27,15 +27,16 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
     - PersistableDiaSourceVector with key "persistable_"+outputKey
     """
     def setup(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-            "SourceToDiaSourceStageDictionary.paf", "pipeline")
-        defPolicy = pexPolicy.Policy.createPolicy(file, 
-            file.getRepositoryPath())
+        self.log = Log(self.log, "SourceToDiaSourceStage - parallel")
+
+        policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "SourceToDiaSourceStageDictionary.paf", "policy")
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
+            policyFile.getRepositoryPath())
 
         if self.policy is None:
-            self.policy = defPolicy
-        else:
-            self.policy.mergeDefaults(defPolicy)
+            self.policy = pexPolicy.Policy()
+        self.policy.mergeDefaults(defPolicy)
 
 
     def process(self, clipboard):

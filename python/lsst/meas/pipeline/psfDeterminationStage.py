@@ -20,15 +20,16 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
     for details on configuring valid stage policies
     """
     def setup(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-            "PsfDeterminationStageDictionary.paf", "pipeline")
-        defPolicy = pexPolicy.Policy.createPolicy(file, 
-            file.getRepositoryPath())
+        self.log = Log(self.log, "PsfDeterminationStage - parallel")
+
+        policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "PsfDeterminationStageDictionary.paf", "policy")
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
+            policyFile.getRepositoryPath())
 
         if self.policy is None:
-            self.policy = defPolicy
-        else:
-            self.policy.mergeDefaults(defPolicy)
+            self.policy = pexPolicy.Policy()
+        self.policy.mergeDefaults(defPolicy)
 
     def process(self, clipboard):
         dataList = []

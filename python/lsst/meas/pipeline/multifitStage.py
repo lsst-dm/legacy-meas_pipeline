@@ -6,6 +6,8 @@ import lsst.daf.base as dafBase
 from lsst.daf.base import *
 import lsst.pex.policy as pexPolicy
 
+__all__ = ["MultifitStage", "MultifitStageParallel"]
+
 class MultifitStageParallel(harnessStage.ParallelProcessing):
     """
     Given an Exposure Stack and an initial Model, fit the model on the
@@ -22,17 +24,18 @@ class MultifitStageParallel(harnessStage.ParallelProcessing):
     """
     
     def setup(self):
-        file = pexPolicy.DefaultPolicyFile(meas_pipeline, 
-            "MultifitStageDictionary.paf", 
-            "pipeline")
+        self.log = Log(self.log, "MultifitStage - parallel")
+        policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "MultifitStageDictionary.paf", "policy")
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
+            policyFile.getRepositoryPah())
 
-        defPolicy = pexPolicy.Policy.createPolicy(file, file.getRepositoryPah())
         if self.policy is None:
-            self.policy = defPolicy
-        else: 
-            self.policy.mergeDefaults(defPolicy)
+            self.policy = pexPolicy.Policy()
+        self.policy.mergeDefaults(defPolicy)
 
     def process(self, clipboard):
         pass
 
-
+class MultifitStage(harnessStage.Stage):
+    parallelClass = MultifitStageParallel

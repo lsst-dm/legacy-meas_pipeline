@@ -13,16 +13,18 @@ class ForcedPhotometryStageParallel(harnessStage.ParallelProcessing):
     - Model(s): point source and/or small galaxy model    
     - ExposureStack
     """
+
     def setup(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-            "ForcedPhotometryStageDictionary.paf", "pipeline")
-        defPolicy = pexPolicy.Policy.createPolicy(file, 
-            file.getRepositoryPath())
+        self.log = Log(self.log, "ForcedPhotometryStage - parallel")
+
+        policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+            "ForcedPhotometryStageDictionary.paf", "policy")
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
+            policyFile.getRepositoryPath())
 
         if self.policy is None:
-            self.policy = defPolicy
-        else:
-            self.policy.mergeDefaults(defPolicy)
+            self.policy = pexPolicy.Policy()
+        self.policy.mergeDefaults(defPolicy)
 
     def process(self, clipboard):
         pass
