@@ -2,48 +2,22 @@
 #
 # Setup our environment
 #
-import glob, os.path, re, os
+import os.path, re, os
 import lsst.SConsUtils as scons
 
 env = scons.makeEnv("meas_pipeline",
-    r"$HeadURL$",[
-        ["boost", "boost/version.hpp", "boost_system:C++"],
-        ["boost", "boost/version.hpp", "boost_filesystem:C++"],
-        ["boost", "boost/regex.hpp", "boost_regex:C++"],
-        ["boost", "boost/serialization/base_object.hpp", "boost_serialization:C++"],
-        ["python", "Python.h"],
-        ["m", "math.h", "m", "sqrt"],
-		["cfitsio", "fitsio.h", "cfitsio", "ffopen"],
-        ["wcslib", "wcslib/wcs.h", "wcs"],
-        ["xpa", "xpa.h", "xpa", "XPAPuts"],
-        ["minuit", "Minuit/FCNBase.h", "lcg_Minuit:C++"],
-        ["pex_exceptions", "lsst/pex/exceptions.h", "pex_exceptions:C++"],
-        ["utils", "lsst/utils/Utils.h", "utils:C++"],
-        ["daf_base", "lsst/daf/base.h", "daf_base:C++"],
-        ["pex_policy", "lsst/pex/policy/Policy.h", "pex_policy:C++"],
-        ["pex_logging", "lsst/pex/logging/Trace.h", "pex_logging:C++"],
-        ["security", "lsst/security/Security.h", "security:C++"],
-        ["daf_persistence", "lsst/daf/persistence/Persistence.h", "daf_persistence:C++"],
-        ["daf_data", "lsst/daf/data/LsstBase.h", "daf_data:C++"],
-        ["gsl", "gsl/gsl_rng.h", "gslcblas gsl"],
-        ["afw", "lsst/afw/image/MaskedImage.h", "afw"],
-        ["eigen", "Eigen/Core.h"],
-        ["meas_algorithms", "lsst/meas/algorithms.h", "meas_algorithms:C++"],
-    ]
-)
-
-env.libs["meas_pipeline"] +=  env.getlibs("daf_base daf_data daf_persistence pex_logging pex_exceptions pex_policy security afw meas_algorithms boost minuit utils wcslib")
+                    r"$HeadURL$",
+                    []
+                    )
 #
 # Build/install things
 #
-for d in Split("doc lib src tests python/lsst/meas/pipeline"):
+for d in Split("doc tests python/lsst/meas/pipeline"):
     SConscript(os.path.join(d, "SConscript"))
 
 env['IgnoreFiles'] = r"(~$|\.pyc$|^\.svn$|\.o$)"
 
 Alias("install", env.Install(env['prefix'], "python"))
-Alias("install", env.Install(env['prefix'], "include"))
-Alias("install", env.Install(env['prefix'], "lib"))
 Alias("install", env.Install(env['prefix'], "policy"))
 Alias("install", env.InstallEups(os.path.join(env['prefix'], "ups")))
 
