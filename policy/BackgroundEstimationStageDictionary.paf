@@ -1,0 +1,65 @@
+#<?cfg paf dictionary ?>
+#
+# Dictionary for BackgroundEstimationStage policies
+#
+target: lsst.detection.pipeline.BackgroundEstimationStage
+
+definitions: {
+    #input clipboard keys
+    inputKeys: {
+        type: "policy"
+        dictionary: {
+            definitions: {
+                exposure: {
+                    type: "string"
+                    description: "specify the clipboard key of the exposure to detect on."
+                    maxOccurs: 1
+                }        
+            }
+        }
+        maxOccurs: 1        
+    }
+    
+    #output clipboard keys:
+    outputKeys: {
+        type: "policy"
+        dictionary: {
+            definitions: {
+                backgroundSubtractedExposure: {
+                    type: "string"
+                    description: "specify output clipboard key of the background-subtracted exposure"
+                    maxOccurs: 1
+                    default: "backgroundSubtractedExposure"
+                }
+                background: {
+                    type: "string"
+                    description: "output clipboard key for computed background object"
+                    maxOccurs: 1
+                    default: "background"
+                }
+            }
+        }
+        maxOccurs: 1
+    }
+
+    
+    #parameters    
+    detectionPolicy: {
+        type: "policy"
+        dictionary: @DetectionDictionary.paf
+        description: "includes all the parameters needed to perform source
+                      detection on an exposure"
+        minOccurs: 1 
+        macOccurs: 1
+    }
+    backgroundPolicy: {
+        type: "policy"
+        dictionary: @BackgroundDictionary.paf
+        description: "Parameters to control background subtraction"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    
+    
+
+}

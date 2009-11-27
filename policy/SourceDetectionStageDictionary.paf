@@ -85,14 +85,11 @@ definitions: {
         minOccurs: 1 
         macOccurs: 1
     }
-    backgroundPolicy: {
+    XXbackgroundPolicy: {               # backgroundPolicy is loaded from meas/utils/policy
         type: "policy"
         dictionary: @BackgroundDictionary.paf
         description: "Parameters to control background subtraction"
         minOccurs: 1
         maxOccurs: 1
     }
-    
-    
-
 }
