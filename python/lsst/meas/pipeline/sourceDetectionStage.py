@@ -11,7 +11,7 @@ import lsst.afw.math as afwMath
 import lsst.pex.exceptions as pexExcept
 import lsst.meas.algorithms as measAlg
 
-import sourceDetection
+import lsst.meas.utils.sourceDetection as sourceDetection
 
 import lsst.afw.display.ds9 as ds9
 import lsst.afw.display.utils as displayUtils

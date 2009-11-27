@@ -5,7 +5,7 @@ import sys
 import lsst.pex.harness.stage as harnessStage
 from lsst.pex.logging import Log, LogRec, endr
 import lsst.pex.policy as pexPolicy
-from sourceClassifier import SourceClassifier
+from lsst.meas.utils.sourceClassifier import SourceClassifier
 
 __all__ = ["SourceClassificationStage", "SourceClassificationStageParallel"]
 

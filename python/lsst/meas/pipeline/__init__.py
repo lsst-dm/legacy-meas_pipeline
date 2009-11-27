@@ -2,8 +2,6 @@ from sourceMeasurementStage import *
 from sourceDetectionStage import *
 from psfDeterminationStage import *
 from wcsDeterminationStage import *
-from sourceClassifiers import *
-from sourceClassifier import SourceClassifier
 from sourceClassificationStage import *
 from sourceToDiaSourceStage import *
 from transformDetectionStage import *
