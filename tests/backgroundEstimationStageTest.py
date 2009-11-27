@@ -84,13 +84,12 @@ class BackgroundEstimationStageTestCase(unittest.TestCase):
         #
         outWorker = tester.runWorker(clipboard)
 
-        outPolicy = policy.getPolicy("outputKeys")
-        assert(outWorker.contains(outPolicy.getString("backgroundSubtractedExposure")))
-        assert(outWorker.contains(outPolicy.getString("background")))
+        outPolicy = policy.get("outputKeys")
+        assert(outWorker.contains(outPolicy.get("backgroundSubtractedExposure")))
+        assert(outWorker.contains(outPolicy.get("background")))
 
         if display:
-            ds9.mtv(outWorker.get(outPolicy.getString("backgroundSubtractedExposure")),
-                    frame=1, title="Subtracted")
+            ds9.mtv(outWorker.get(outPolicy.get("backgroundSubtractedExposure")), frame=1, title="Subtracted")
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

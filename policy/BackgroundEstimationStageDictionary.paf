@@ -2,7 +2,7 @@
 #
 # Dictionary for BackgroundEstimationStage policies
 #
-target: lsst.detection.pipeline.BackgroundEstimationStage
+target: lsst.meas.pipeline.BackgroundEstimationStage
 
 definitions: {
     #input clipboard keys
