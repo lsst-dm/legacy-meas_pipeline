@@ -43,33 +43,15 @@ class BackgroundEstimationStageTestCase(unittest.TestCase):
         del self.exposure        
 
     def testSingleExposure(self):
-        #
-        # It'd be better use use the default dictionary for the stage,
-        # BackgroundEstimationStageDictionary.paf, but this doesn't seem to work.  I (RHL) suspect that this
-        # because of #872, but I can't be sure.  For now, leave the copies of the defaults in
-        # backgroundEstimation_policy.paf.
-        #
         file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
                                            "backgroundEstimation_policy.paf", "tests")
         policy = pexPolicy.Policy.createPolicy(file)
-        #
-        # We pull backgroundDictionary from meas/utils/policy explicitly; this is a different problem
-        # related to dictionaries being unable to load defaults from other packages; #1035
-        #
-        if True:                        # workaround #1035
-            dfile = pexPolicy.DefaultPolicyFile("meas_utils", 
-                                                "BackgroundDictionary.paf", "policy")
-            
-            defpolicy = pexPolicy.Policy.createPolicy(dfile, dfile.getRepositoryPath())
-            tmp = pexPolicy.Policy()
-            tmp.mergeDefaults(defpolicy)
-            policy.add("backgroundPolicy", tmp)
 
         stage = measPipe.BackgroundEstimationStage(policy)
         tester = SimpleStageTester(stage)
 
         clipboard = pexClipboard.Clipboard()         
-        clipboard.put(policy.get("inputKeys.exposure"), self.exposure)
+        clipboard.put(policy.get("inputKeys.exposureKey"), self.exposure)
 
         if display:
             ds9.mtv(self.exposure, frame=0, title="Input")
@@ -79,11 +61,12 @@ class BackgroundEstimationStageTestCase(unittest.TestCase):
         outWorker = tester.runWorker(clipboard)
 
         outPolicy = policy.get("outputKeys")
-        assert(outWorker.contains(outPolicy.get("backgroundSubtractedExposure")))
-        assert(outWorker.contains(outPolicy.get("background")))
+        assert(outWorker.contains(outPolicy.get("backgroundSubtractedExposureKey")))
+        assert(outWorker.contains(outPolicy.get("backgroundKey")))
 
         if display:
-            ds9.mtv(outWorker.get(outPolicy.get("backgroundSubtractedExposure")), frame=1, title="Subtracted")
+            ds9.mtv(outWorker.get(outPolicy.get("backgroundSubtractedExposureKey")),
+                    frame=1, title="Subtracted")
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

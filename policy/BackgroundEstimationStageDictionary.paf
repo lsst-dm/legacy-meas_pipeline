@@ -10,12 +10,12 @@ definitions: {
         type: "policy"
         dictionary: {
             definitions: {
-                exposure: {
+                exposureKey: {
                     type: "string"
                     description: "specify the clipboard key of the exposure to detect on."
+                    minOccurs: 1
                     maxOccurs: 1
                     default: "calibratedExposure"
-
                 }        
             }
         }
@@ -28,14 +28,14 @@ definitions: {
         type: "policy"
         dictionary: {
             definitions: {
-                backgroundSubtractedExposure: {
+                backgroundSubtractedExposureKey: {
                     type: "string"
                     description: "specify output clipboard key of the background-subtracted exposure"
                     minOccurs: 1
                     maxOccurs: 1
                     default: "backgroundSubtractedExposure"
                 }
-                background: {
+                backgroundKey: {
                     type: "string"
                     description: "output clipboard key for computed background object"
                     minOccurs: 1
@@ -46,7 +46,6 @@ definitions: {
         }
         maxOccurs: 1
     }
-
     
     #parameters    
     detectionPolicy: {
@@ -65,7 +64,4 @@ definitions: {
         minOccurs: 1
         maxOccurs: 1
     }
-    
-    
-
 }

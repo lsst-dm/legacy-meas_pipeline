@@ -1,11 +1,11 @@
 #<? cfg paf policy ?>
 #
-# Stage policy for BackgroundEstimationStage
-
-XinputKeys: {
-    exposure: "calibratedExposure"
+# Stage policy for BackgroundEstimationStageTest
+#
+inputKeys: {
+    exposureKey: "calibratedExposure"
 }
 outputKeys: {
-    backgroundSubtractedExposure: "backgroundSubtractedExposure"
-    background: "background"
+    backgroundSubtractedExposureKey: "backgroundSubtractedExposure"
+    backgroundKey: "background"
 }
