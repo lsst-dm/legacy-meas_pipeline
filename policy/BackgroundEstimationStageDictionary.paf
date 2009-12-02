@@ -14,10 +14,13 @@ definitions: {
                     type: "string"
                     description: "specify the clipboard key of the exposure to detect on."
                     maxOccurs: 1
+                    default: "calibratedExposure"
+
                 }        
             }
         }
-        maxOccurs: 1        
+        minOccurs: 1
+        maxOccurs: 1
     }
     
     #output clipboard keys:
@@ -28,12 +31,14 @@ definitions: {
                 backgroundSubtractedExposure: {
                     type: "string"
                     description: "specify output clipboard key of the background-subtracted exposure"
+                    minOccurs: 1
                     maxOccurs: 1
                     default: "backgroundSubtractedExposure"
                 }
                 background: {
                     type: "string"
                     description: "output clipboard key for computed background object"
+                    minOccurs: 1
                     maxOccurs: 1
                     default: "background"
                 }
@@ -50,7 +55,8 @@ definitions: {
         description: "includes all the parameters needed to perform source
                       detection on an exposure"
         minOccurs: 1 
-        macOccurs: 1
+        maxOccurs: 1
+        macOccurs: 1                    # typo --- should be detected
     }
     backgroundPolicy: {
         type: "policy"

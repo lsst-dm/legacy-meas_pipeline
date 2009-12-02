@@ -1,5 +1,7 @@
 #<?cfg paf dictionary ?>
-
+#
+# This file should be moved back to meas/utils when #1035 is resolved
+#
 target: backgroundPolicy
 
 definitions: {

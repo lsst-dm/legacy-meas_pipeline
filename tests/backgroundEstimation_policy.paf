@@ -2,7 +2,7 @@
 #
 # Stage policy for BackgroundEstimationStage
 
-inputKeys: {
+XinputKeys: {
     exposure: "calibratedExposure"
 }
 outputKeys: {

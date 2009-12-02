@@ -43,25 +43,19 @@ class BackgroundEstimationStageTestCase(unittest.TestCase):
         del self.exposure        
 
     def testSingleExposure(self):
-        
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                                           "backgroundEstimation_policy.paf", "tests")
-        policy = pexPolicy.Policy.createPolicy(file)
         #
         # It'd be better use use the default dictionary for the stage,
         # BackgroundEstimationStageDictionary.paf, but this doesn't seem to work.  I (RHL) suspect that this
         # because of #872, but I can't be sure.  For now, leave the copies of the defaults in
         # backgroundEstimation_policy.paf.
         #
+        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                                           "backgroundEstimation_policy.paf", "tests")
+        policy = pexPolicy.Policy.createPolicy(file)
+        #
         # We pull backgroundDictionary from meas/utils/policy explicitly; this is a different problem
         # related to dictionaries being unable to load defaults from other packages; #1035
         #
-        dfile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                                            "BackgroundEstimationStageDictionary.paf", "policy")
-        
-        defpolicy = pexPolicy.Policy.createPolicy(dfile, dfile.getRepositoryPath())
-        policy.mergeDefaults(defpolicy) # does nothing
-
         if True:                        # workaround #1035
             dfile = pexPolicy.DefaultPolicyFile("meas_utils", 
                                                 "BackgroundDictionary.paf", "policy")
