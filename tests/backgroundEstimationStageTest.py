@@ -51,7 +51,7 @@ class BackgroundEstimationStageTestCase(unittest.TestCase):
         tester = SimpleStageTester(stage)
 
         clipboard = pexClipboard.Clipboard()         
-        clipboard.put(policy.get("inputKeys.exposureKey"), self.exposure)
+        clipboard.put(policy.get("inputKeys.exposure"), self.exposure)
 
         if display:
             ds9.mtv(self.exposure, frame=0, title="Input")
@@ -61,11 +61,11 @@ class BackgroundEstimationStageTestCase(unittest.TestCase):
         outWorker = tester.runWorker(clipboard)
 
         outPolicy = policy.get("outputKeys")
-        assert(outWorker.contains(outPolicy.get("backgroundSubtractedExposureKey")))
-        assert(outWorker.contains(outPolicy.get("backgroundKey")))
+        assert(outWorker.contains(outPolicy.get("backgroundSubtractedExposure")))
+        assert(outWorker.contains(outPolicy.get("background")))
 
         if display:
-            ds9.mtv(outWorker.get(outPolicy.get("backgroundSubtractedExposureKey")),
+            ds9.mtv(outWorker.get(outPolicy.get("backgroundSubtractedExposure")),
                     frame=1, title="Subtracted")
 
 def suite():

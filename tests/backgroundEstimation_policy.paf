@@ -3,9 +3,12 @@
 # Stage policy for BackgroundEstimationStageTest
 #
 inputKeys: {
-    exposureKey: "calibratedExposure"
+    exposure: "calibratedExposure"
 }
 outputKeys: {
-    backgroundSubtractedExposureKey: "backgroundSubtractedExposure"
-    backgroundKey: "background"
+    exposure: "calibratedExposure"
+    background: "background"
+}
+parameters: {
+    subtractBackground: true
 }

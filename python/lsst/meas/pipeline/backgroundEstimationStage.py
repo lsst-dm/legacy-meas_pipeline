@@ -67,15 +67,18 @@ class BackgroundEstimationStageParallel(harnessStage.ParallelProcessing):
         self.log.log(Log.INFO, "Subtracting background in process")
         
         #grab exposure from clipboard
-        exposure = clipboard.get(self.policy.getString("inputKeys.exposureKey"))
+        exposure = clipboard.get(self.policy.getString("inputKeys.exposure"))
             
-        #subtract the background
-        backgroundSubtracted, background = sourceDetection.subtractBackground(
-            exposure, self.policy.get("backgroundPolicy"))
+        #estimate and maybe subtract the background
+        background, backgroundSubtractedExposure = sourceDetection.estimateBackground(
+            exposure,
+            self.policy.get("parameters.backgroundPolicy"),
+            self.policy.get("parameters.subtractBackground"))
 
         #output products
-        clipboard.put(self.policy.get("outputKeys.backgroundKey"), background)
-        clipboard.put(self.policy.get("outputKeys.backgroundSubtractedExposureKey"), backgroundSubtracted)
+        clipboard.put(self.policy.get("outputKeys.background"), background)
+        clipboard.put(self.policy.get("outputKeys.backgroundSubtractedexposure"),
+                      backgroundSubtractedExposure)
         
         
 class BackgroundEstimationStage(harnessStage.Stage):

@@ -47,21 +47,18 @@ definitions: {
         maxOccurs: 1
     }
     
-    #parameters    
-    detectionPolicy: {
+    parameters: {
         type: "policy"
-        dictionary: @DetectionDictionary.paf
-        description: "includes all the parameters needed to perform source
-                      detection on an exposure"
-        minOccurs: 1 
-        maxOccurs: 1
-        macOccurs: 1                    # typo --- should be detected
-    }
-    backgroundPolicy: {
-        type: "policy"
-        dictionary: @BackgroundDictionary.paf
-        description: "Parameters to control background subtraction"
-        minOccurs: 1
-        maxOccurs: 1
+        dictionary: {
+            definitions: {
+                backgroundPolicy: {
+                    type: "policy"
+                    dictionary: @BackgroundDictionary.paf
+                    description: "Parameters to control background subtraction"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+            }
+        }
     }
 }
