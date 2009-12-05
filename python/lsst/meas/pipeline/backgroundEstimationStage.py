@@ -31,29 +31,18 @@ class BackgroundEstimationStageParallel(harnessStage.ParallelProcessing):
 
     Clipboard Input:
     - Calibrated science Exposure(s) (including background)
-    - a PSF may be specified by policy attribute inputPsfKey. Alternatively, the
-      stage's policy may request that a psf be constructed, by providing the
-      psfPolicy attribute.
 
     ClipboardOutput:
     - background subtracted Exposure used in the detection. Key specified
-        by policy attribute 'backgroundSubtractedExposureKey'
+        by policy attribute 'backgroundSubtractedExposure'
     - the measured background object itself. Key specified by policy 
         attribute 'background'        
-    - PSF: the psf used to smooth the exposure before detection 
-        Key specified by policy attribute 'psfKey'
-    - PositiveFootprintSet (DetectionSet): if thresholdPolarity policy 
-        is "positive" or "both". Key specified by policy attribute
-        'positiveDetectionKey'
-    - NegativeFootprintSet (DetectionSet): if threholdPolarity policy 
-        is "negative" or "both". Key specified by policy attribute
-        'negativeDetectionKey'
     """
     def setup(self):
         self.log = Log(self.log, "BackgroundEstimationStage - parallel")
 
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-            "BackgroundEstimationStageDictionary.paf", "policy")
+                                                 "BackgroundEstimationStageDictionary.paf", "policy")
         defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
@@ -67,7 +56,7 @@ class BackgroundEstimationStageParallel(harnessStage.ParallelProcessing):
         self.log.log(Log.INFO, "Subtracting background in process")
         
         #grab exposure from clipboard
-        exposure = clipboard.get(self.policy.getString("inputKeys.exposure"))
+        exposure = clipboard.get(self.policy.get("inputKeys.exposure"))
             
         #estimate and maybe subtract the background
         background, backgroundSubtractedExposure = sourceDetection.estimateBackground(
@@ -77,7 +66,7 @@ class BackgroundEstimationStageParallel(harnessStage.ParallelProcessing):
 
         #output products
         clipboard.put(self.policy.get("outputKeys.background"), background)
-        clipboard.put(self.policy.get("outputKeys.backgroundSubtractedexposure"),
+        clipboard.put(self.policy.get("outputKeys.backgroundSubtractedExposure"),
                       backgroundSubtractedExposure)
         
         
