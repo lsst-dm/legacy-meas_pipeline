@@ -31,9 +31,9 @@ definitions: {
     outputKeys: {
     	type: "policy"
     	dictionary: {
-    		definitions: {
-    		    positiveDetection: {
-    				type: "string"
+            definitions: {
+                positiveDetection: {
+                    type: "string"
                     description: "specify the clipboard key of the positive FootprintSet"
                     maxOccurs: 1
                     default: "positiveFootprintSet"
@@ -64,9 +64,9 @@ definitions: {
                 	default: "background"
                 }
             }
-		}
-		maxOccurs: 1
-	}
+        }
+        maxOccurs: 1
+    }
 
     
     #parameters    
