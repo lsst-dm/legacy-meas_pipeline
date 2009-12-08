@@ -47,7 +47,7 @@ class BackgroundEstimationStageParallel(harnessStage.ParallelProcessing):
 
         if self.policy is None:
             self.policy = pexPolicy.Policy()
-        self.policy.mergeDefaults(defPolicy)
+        self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
         """

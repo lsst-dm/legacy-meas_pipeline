@@ -49,7 +49,7 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
 
         if self.policy is None:
             self.policy = pexPolicy.policy()
-        self.policy.mergeDefaults(defPolicy)
+        self.policy.mergeDefaults(defPolicy.getDictionary())
 
         
     def process(self, clipboard):
