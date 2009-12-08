@@ -70,6 +70,13 @@ definitions: {
 
     
     #parameters    
+    backgroundPolicy: {
+        type: "policy"
+        dictionary: @BackgroundDictionary.paf
+        description: "includes all the parameters needed to estimate an exposure's background"
+        minOccurs: 1 
+        maxOccurs: 1
+    }
     psfPolicy: {
         type: "policy"
         dictionary: @PsfDictionary.paf
