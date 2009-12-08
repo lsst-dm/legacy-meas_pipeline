@@ -39,8 +39,7 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
         #merge defaults
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline",
             "WcsDeterminationStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
-            policyFile.getRepositoryPath())        
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
             self.policy = pexPolicy.Policy()

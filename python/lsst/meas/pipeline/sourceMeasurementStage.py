@@ -44,8 +44,7 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
 
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
             "SourceMeasurementStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(
-            policyFile, policyFile.getRepositoryPath())
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
             self.policy = pexPolicy.policy()

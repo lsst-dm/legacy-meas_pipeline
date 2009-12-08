@@ -66,8 +66,9 @@ class BackgroundEstimationStageParallel(harnessStage.ParallelProcessing):
 
         #output products
         clipboard.put(self.policy.get("outputKeys.background"), background)
-        clipboard.put(self.policy.get("outputKeys.backgroundSubtractedExposure"),
-                      backgroundSubtractedExposure)
+        if backgroundSubtractedExposure:
+            clipboard.put(self.policy.get("outputKeys.backgroundSubtractedExposure"),
+                          backgroundSubtractedExposure)
         
         
 class BackgroundEstimationStage(harnessStage.Stage):

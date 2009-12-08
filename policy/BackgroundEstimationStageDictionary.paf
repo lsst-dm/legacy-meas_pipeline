@@ -31,7 +31,7 @@ definitions: {
                 backgroundSubtractedExposure: {
                     type: "string"
                     description: "specify output clipboard key of the background-subtracted exposure"
-                    minOccurs: 1
+                    minOccurs: 0
                     maxOccurs: 1
                     default: "backgroundSubtractedExposure"
                 }
@@ -57,6 +57,13 @@ definitions: {
                     description: "Parameters to control background subtraction"
                     minOccurs: 1
                     maxOccurs: 1
+                }
+                subtractBackground: {
+                    type: bool 
+                    description: "Subtract the background in situ"
+                    minOccurs: 0
+                    maxOccurs: 1
+                    default: true
                 }
             }
         }

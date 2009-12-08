@@ -31,8 +31,7 @@ class TransformDetectionStageParallel(harnessStage.ParallelProcessing):
  
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
             "TransformDetectionStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
-            policyFile.getRepositoryPah())
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
             self.policy = pexPolicy.Policy()

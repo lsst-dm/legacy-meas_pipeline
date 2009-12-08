@@ -27,8 +27,7 @@ class MultifitStageParallel(harnessStage.ParallelProcessing):
         self.log = Log(self.log, "MultifitStage - parallel")
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
             "MultifitStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
-            policyFile.getRepositoryPah())
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPah(), True)
 
         if self.policy is None:
             self.policy = pexPolicy.Policy()
