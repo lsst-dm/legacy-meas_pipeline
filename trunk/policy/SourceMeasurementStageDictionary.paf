@@ -1,0 +1,62 @@
+#<?cfg paf dictionary ?>
+#
+# this is a comment
+#
+target: lsst.meas.pipeline.SourceMeasurementStage
+
+definitions: {
+    measureObjects: {
+        type: "policy"        
+        description: "policy for configuring measurement algorithms"
+        dictionary: @lsst/meas/algorithms/MeasureSourcesDictionary.paf
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    psfKey: {
+        type: "string"
+        description: "clipboard key of the input psf"
+        maxOccurs: 1
+        deafalt: "psf"
+    }
+    data: {
+        type: "policy"		
+        description: "specify the clipboard key of the exposure to measure on 
+                      and the desired output key for the SourceSet related to 
+                      this exposure."	
+        minOccurs: 1 
+        dictionary:{
+            definitions: {
+                exposureKey : {
+                    type: "string"
+                    description: "clipboard key of the input exposure"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+                psfKey: {
+			        type: "string"
+			        description: "clipboard key of the input psf"
+			        minOccurs: 1
+			        maxOccurs: 1			        
+			    }
+	        	outputKey: {
+                    type: "string"
+                    description: "clipboard key of the output SourceSet"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+            }
+        }		
+    }
+    positiveDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the positive FootprintSet"
+        maxOccurs: 1
+        default: "positiveFootprintSet"
+    }
+    negativeDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the negative FootprintSet"
+        maxOccurs: 1
+        default: "negativeFootprintSet"
+    }
+}

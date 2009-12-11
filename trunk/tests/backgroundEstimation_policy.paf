@@ -1,0 +1,14 @@
+#<? cfg paf policy ?>
+#
+# Stage policy for BackgroundEstimationStageTest
+#
+inputKeys: {
+    exposure: "calibratedExposure"
+}
+outputKeys: {
+    exposure: "calibratedExposure"
+    background: "background"
+}
+parameters: {
+    subtractBackground: true
+}
