@@ -1,6 +1,6 @@
 #<?cfg paf dictionary ?>
 #
-# this is a comment
+# This file should be moved back to meas/algorithms when #1035 is resolved
 #
 target: lsst.meas.pipeline.SourceMeasurementStage
 
@@ -8,7 +8,7 @@ definitions: {
     measureObjects: {
         type: "policy"        
         description: "policy for configuring measurement algorithms"
-        dictionary: @lsst/meas/algorithms/MeasureSourcesDictionary.paf
+        dictionary: @MeasureSourcesDictionary.paf
         minOccurs: 1
         maxOccurs: 1
     }
@@ -16,7 +16,7 @@ definitions: {
         type: "string"
         description: "clipboard key of the input psf"
         maxOccurs: 1
-        deafalt: "psf"
+        default: "psf"
     }
     data: {
         type: "policy"		

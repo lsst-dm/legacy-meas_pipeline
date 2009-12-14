@@ -27,22 +27,21 @@ class MeasureStageTestCase(unittest.TestCase):
     """A test case for SourceMeasurementStage.py"""
 
     def setUp(self):
-        filename = os.path.join(eups.productDir("afwdata"),
-                                "CFHT", "D4", 
-                                "cal-53535-i-797722_1")
+        filename = os.path.join(eups.productDir("afwdata"), "CFHT", "D4", "cal-53535-i-797722_1")
         bbox = afwImage.BBox(afwImage.PointI(32,32), 512, 512)
         self.exposure =  afwImage.ExposureF(filename, 0, bbox)
+
     def tearDown(self):
         del self.exposure
 
     def testSingleInputExposure(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "sourceDetection0_policy.paf", "tests")
-        detectPolicy = pexPolicy.Policy.createPolicy(file)
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "sourceMeasurement0_policy.paf", "tests")
-        measurePolicy = pexPolicy.Policy.createPolicy(file)
+        polFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                                              "sourceDetection0_policy.paf", "tests")
+        detectPolicy = pexPolicy.Policy.createPolicy(polFile)
 
+        polFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                                              "sourceMeasurement0_policy.paf", "tests")
+        measurePolicy = pexPolicy.Policy.createPolicy(polFile)
 
         tester = SimpleStageTester()
         tester.addStage(measPipe.SourceDetectionStage(detectPolicy))
