@@ -59,47 +59,7 @@ class DetectStageTestCase(unittest.TestCase):
         assert(outWorker.contains(exposureKey))
         assert(outWorker.contains(outPolicy.getString("background")))
         assert(outWorker.contains(outPolicy.getString("psf")))
-
-        del policy
-        del outPolicy
-        del clipboard
-        del outWorker
-        del stage
-        del tester 
     
-    def testMultipleExposure(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "sourceDetection1_policy.paf", "tests")
-        policy = pexPolicy.Policy.createPolicy(file)
-
-        stage = measPipe.SourceDetectionStage(policy)
-        tester = SimpleStageTester(stage)
-
-        clipboard = pexClipboard.Clipboard()         
-        exposureKeys = policy.getArray("inputKeys.exposure")
-        for key in exposureKeys:
-            clipboard.put(key, self.exposure)
-
-        outWorker = tester.runWorker(clipboard)
-
-        outPolicy = policy.getPolicy("outputKeys")
-        detectionKey = outPolicy.get("positiveDetection")
-        assert(outWorker.contains(detectionKey))
-        detectionSet = outWorker.get(detectionKey)
-        fpList = detectionSet.getFootprints()
-        assert(fpList.size() > 0)     
-        exposureKey = outPolicy.getString("backgroundSubtractedExposure")
-        assert(outWorker.contains(exposureKey))
-        assert(outWorker.contains(outPolicy.getString("background")))
-        assert(outWorker.contains(outPolicy.getString("psf")))
-
-        del policy
-        del outPolicy
-        del clipboard
-        del outWorker
-        del stage
-        del tester 
-
 def suite():
     """Returns a suite containing all the test cases in this module."""
 

@@ -21,6 +21,13 @@ import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
+import lsst.afw.display.ds9 as ds9
+
+try:
+    type(display)
+except NameError:
+    display = False
+
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 class MeasureStageTestCase(unittest.TestCase):
@@ -50,43 +57,26 @@ class MeasureStageTestCase(unittest.TestCase):
         clipboard = pexClipboard.Clipboard()
         clipboard.put(detectPolicy.get("inputKeys.exposure"), self.exposure)
         
-        outWorker = tester.runWorker(clipboard)
+        if display:
+            ds9.mtv(self.exposure, frame=0, title="Input")
+        #
+        # Do the work
+        #
+        outClipboard = tester.runWorker(clipboard)
+        #
+        # See if we got it right
+        #
+        if display:
+            ds9.mtv(outClipboard.get(detectPolicy.get("outputKeys.backgroundSubtractedExposure")),
+                    frame=1, title="Detected")
 
-        dataPolicy = measurePolicy.getPolicy("data")
-        outputKey = dataPolicy.get("outputKey")
-        assert(outWorker.contains(outputKey))
-        assert(outWorker.contains("persistable_" + outputKey))
+        sources = measurePolicy.get("outputKeys.sources")
+        assert(outClipboard.contains(sources))
+        if False:
+            assert(outClipboard.contains("persistable_" + sources))
 
         del clipboard
-        del outWorker
-
-    def testMultipleInputExposure(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "sourceDetection1_policy.paf", "tests")
-        detectPolicy = pexPolicy.Policy.createPolicy(file)
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "sourceMeasurement1_policy.paf", "tests")
-        measurePolicy = pexPolicy.Policy.createPolicy(file)
-
-        tester = SimpleStageTester()
-        tester.addStage(measPipe.SourceDetectionStage(detectPolicy))
-        tester.addStage(measPipe.SourceMeasurementStage(measurePolicy))
-
-        clipboard = pexClipboard.Clipboard()         
-        exposureKeys = detectPolicy.getStringArray("inputKeys.exposure")
-        for key in exposureKeys:
-            clipboard.put(key, self.exposure)
-        
-        outWorker = tester.runWorker(clipboard)
-
-        dataPolicyList = measurePolicy.getPolicyArray("data")
-        for dataPolicy in dataPolicyList:
-            outputKey = dataPolicy.get("outputKey")
-            assert(outWorker.contains(outputKey))
-            assert(outWorker.contains("persistable_" + outputKey))
-
-        del outWorker
-        del clipboard
+        del outClipboard
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
@@ -108,4 +98,3 @@ def run(exit=False):
 
 if __name__ == "__main__":
     run(True)
-
