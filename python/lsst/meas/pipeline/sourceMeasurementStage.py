@@ -41,7 +41,7 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         
         #this may raise exceptions
         try:
-            measurePolicy, exposureList, psfList, positiveDetection, negativeDetection = \
+            measurePolicy, exposure, psf, positiveDetection, negativeDetection = \
                            self.getClipboardData(clipboard)
         except pexExcept.LsstException, e:
             self.log.log(Log.FATAL, e.what())
@@ -67,28 +67,27 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         sourceSet = afwDet.SourceSet()
         sourceId = 0;
 
-        for exposure, psf in zip(exposureList, psfList):
-            measureSources = measAlg.makeMeasureSources(exposure, measurePolicy, psf)
-        
-            for footprintList, isNegative in footprintLists:
-                for footprint in footprintList:
-                    source = afwDet.Source()
-                    sourceSet.append(source)
-                    source.setId(sourceId)
-                    sourceId += 1
+        measureSources = measAlg.makeMeasureSources(exposure, measurePolicy, psf)
 
-                    detectionBits = measAlg.Flags.BINNED1
-                    if isNegative:
-                        detectionBits |= measAlg.Flags.DETECT_NEGATIVE
+        for footprintList, isNegative in footprintLists:
+            for footprint in footprintList:
+                source = afwDet.Source()
+                sourceSet.append(source)
+                source.setId(sourceId)
+                sourceId += 1
 
-                    source.setFlagForDetection(source.getFlagForDetection() | detectionBits);
+                detectionBits = measAlg.Flags.BINNED1
+                if isNegative:
+                    detectionBits |= measAlg.Flags.DETECT_NEGATIVE
 
-                    try:
-                        measureSources.apply(source, footprint)
-                    except Exception, e:
-                        # don't worry about measurement exceptions
-                        # although maybe I should log them
-                        self.log.log(Log.WARN, str(e))
+                source.setFlagForDetection(source.getFlagForDetection() | detectionBits);
+
+                try:
+                    measureSources.apply(source, footprint)
+                except Exception, e:
+                    # don't worry about measurement exceptions
+                    # although maybe I should log them
+                    self.log.log(Log.WARN, str(e))
             
             #place SourceSet on the clipboard
             clipboard.put(self.policy.get("outputKeys.sources"), sourceSet)
@@ -98,21 +97,15 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
 
         measurePolicy = self.policy.getPolicy("measureObjects")
 
-        exposureList = []
-        for e in self.policy.getArray("inputKeys.exposure"):
-            exposureList.append(clipboard.get(e))
-
-        psfList = []
-        for p in self.policy.getArray("inputKeys.psf"):
-            psfList.append(clipboard.get(p))
-
+        exposure = clipboard.get(self.policy.get("inputKeys.exposure"))
+        psf = clipboard.get(self.policy.get("inputKeys.psf"))
         positiveDetection = clipboard.get(self.policy.get("inputKeys.positiveDetection"))
         negativeDetection = clipboard.get(self.policy.get("inputKeys.negativeDetection"))
 
         if not positiveDetection and not negativeDetection:
             raise Exception("Missing input FootprintSets")
 
-        return (measurePolicy, exposureList, psfList, positiveDetection, negativeDetection)
+        return measurePolicy, exposure, psf, positiveDetection, negativeDetection
 		
 class SourceMeasurementStage(harnessStage.Stage):
     parallelClass = SourceMeasurementStageParallel
