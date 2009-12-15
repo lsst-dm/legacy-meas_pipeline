@@ -5,27 +5,27 @@
 target: lsst.detection.pipeline.SourceDetectionStage
 
 definitions: {
-	#input clipboard keys
-	inputKeys: {
-		type: "policy"
-		dictionary: {
-    		definitions: {
-    		    exposure: {
+    #input clipboard keys
+    inputKeys: {
+        type: "policy"
+        dictionary: {
+            definitions: {
+                exposure: {
                     type: "string"
-                	description: "specify the clipboard key(s) of the exposure(s) 
-                				  to detect on."
+                    description: "specify the clipboard key(s) of the exposure(s) 
+                    to detect on."
                     minOccurs: 1
                 }    	
                 psf : {
-                	type: "string"
-                	description: "input clipboard key for a smoothing Psf"
-                	minOccurs: 0
-                	maxOccurs: 1
+                    type: "string"
+                    description: "input clipboard key for a smoothing Psf"
+                    minOccurs: 0
+                    maxOccurs: 1
                 }
-    		}
-		}
-		maxOccurs: 1		
-	}
+            }
+        }
+        maxOccurs: 1		
+    }
     
     #output clipboard keys:
     outputKeys: {
