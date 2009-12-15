@@ -28,6 +28,12 @@ definitions: {
         type: "policy"
         dictionary: {
             definitions: {
+                exposure: {
+                    type: "string"
+                    description: "specify output clipboard key of the modified exposure"
+                    minOccurs: 0
+                    maxOccurs: 1
+                }
                 backgroundSubtractedExposure: {
                     type: "string"
                     description: "specify output clipboard key of the background-subtracted exposure"

@@ -31,4 +31,16 @@ definitions: {
         }
         minOccurs: 1
     }
+    ampBBoxKey: {
+        type: "string"
+        description: "Specify the amplifier's BBox"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    ccdWcsKey: {
+        type: "string"
+        description: "Specify the amplifier's Wcs Key"
+        minOccurs: 1
+        maxOccurs: 1
+    }
 }

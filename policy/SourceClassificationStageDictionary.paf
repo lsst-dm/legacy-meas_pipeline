@@ -60,13 +60,13 @@ definitions: {
                     }
                     allowed:  {
                        value: "pairs"
-                       descripiton: "pairs of sources from both source lists are to be passed to the
+                       description: "pairs of sources from both source lists are to be passed to the
                                      classifier (as Python tuples)"
                     }
                 }
                 parameter: {
                     type: "policy"
-                    description: "classifier specific configuration parameters"
+                    #description: "classifier specific configuration parameters"
                     minOccurs: 0
                     maxOccurs: 1
                 }
