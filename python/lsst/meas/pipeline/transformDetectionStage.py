@@ -31,12 +31,11 @@ class TransformDetectionStageParallel(harnessStage.ParallelProcessing):
  
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
             "TransformDetectionStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
-            policyFile.getRepositoryPah())
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
             self.policy = pexPolicy.Policy()
-        self.policy.mergeDefaults(defPolicy)
+        self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
         pass

@@ -19,12 +19,11 @@ class ForcedPhotometryStageParallel(harnessStage.ParallelProcessing):
 
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
             "ForcedPhotometryStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
-            policyFile.getRepositoryPath())
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
             self.policy = pexPolicy.Policy()
-        self.policy.mergeDefaults(defPolicy)
+        self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
         pass

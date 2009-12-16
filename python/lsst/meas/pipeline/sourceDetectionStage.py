@@ -11,7 +11,7 @@ import lsst.afw.math as afwMath
 import lsst.pex.exceptions as pexExcept
 import lsst.meas.algorithms as measAlg
 
-import sourceDetection
+import lsst.meas.utils.sourceDetection as sourceDetection
 
 import lsst.afw.display.ds9 as ds9
 import lsst.afw.display.utils as displayUtils
@@ -34,13 +34,13 @@ class SourceDetectionStageParallel(harnessStage.ParallelProcessing):
 
     Clipboard Input:
     - Calibrated science Exposure(s) (including background)
-    - a PSF may be specified by policy attribute inputPsfKey. Alternatively, the
+    - a PSF may be specified by policy attribute inputPsf. Alternatively, the
       stage's policy may request that a psf be constructed, by providing the
       psfPolicy attribute.
 
     ClipboardOutput:
     - background subtracted Exposure used in the detection. Key specified
-        by policy attribute 'backgroundSubtractedExposureKey'
+        by policy attribute 'backgroundSubtractedExposure'
     - the measured background object itself. Key specified by policy 
         attribute 'background'        
     - PSF: the psf used to smooth the exposure before detection 
@@ -57,12 +57,11 @@ class SourceDetectionStageParallel(harnessStage.ParallelProcessing):
 
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
             "SourceDetectionStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
-            policyFile.getRepositoryPath())
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
             self.policy = pexPolicy.Policy()
-        self.policy.mergeDefaults(defPolicy)
+        self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
         """
@@ -81,17 +80,19 @@ class SourceDetectionStageParallel(harnessStage.ParallelProcessing):
             #stack the exposures
             exposure = sourceDetection.addExposures(exposureList)
         else:                    
-            exposure = clipboard.get(
-                self.policy.getString("inputKeys.exposure"))
+            exposure = clipboard.get(self.policy.get("inputKeys.exposure"))
             exposureList.append(exposure)
        
         if exposure is None:
-            print "Input Exposure Missing"
-            return
+            import pdb; pdb.set_trace()
+            raise RuntimeError, "Input Exposure Missing"
             
         #subtract the background
-        backgroundSubtracted, background = sourceDetection.subtractBackground(
-            exposure, self.policy.get("backgroundPolicy"))
+        if self.policy.exists("backgroundPolicy") and self.policy.get("backgroundPolicy.algorithm") != "NONE":
+            background, backgroundSubtracted = sourceDetection.estimateBackground(
+                exposure, self.policy.get("backgroundPolicy"), True)
+        else:
+            backgroundSubtracted, background = exposure, None
 
         #get or make a smoothing psf according to the policy
         if self.policy.exists("inputKeys.psf"):
@@ -100,6 +101,7 @@ class SourceDetectionStageParallel(harnessStage.ParallelProcessing):
             psf = sourceDetection.makePsf(self.policy.get("psfPolicy"))
         else:
             psf = None
+            
         #perform detection
         dsPositive, dsNegative = sourceDetection.detectSources(
             backgroundSubtracted, psf, self.policy.get("detectionPolicy"))        
@@ -117,20 +119,19 @@ class SourceDetectionStageParallel(harnessStage.ParallelProcessing):
 
 
         #output products
-        if not dsPositive is None:
+        if dsPositive:
             clipboard.put(
                 self.policy.get("outputKeys.positiveDetection"), dsPositive)
-        if not dsNegative is None:
+        if dsNegative:
             clipboard.put(
                 self.policy.get("outputKeys.negativeDetection"), dsNegative)
-        if not background is None:
+        if background:
             clipboard.put(self.policy.get("outputKeys.background"), background)
-        if not psf is None:
+        if psf:
             clipboard.put(self.policy.get("outputKeys.psf"), psf)
-        clipboard.put(
-            self.policy.get("outputKeys.backgroundSubtractedExposure"),
-            backgroundSubtracted)
-        
+
+        clipboard.put(self.policy.get("outputKeys.backgroundSubtractedExposure"),
+                      backgroundSubtracted)
         
 class SourceDetectionStage(harnessStage.Stage):
     parallelClass = SourceDetectionStageParallel

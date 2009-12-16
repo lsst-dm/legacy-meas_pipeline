@@ -30,14 +30,12 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
         self.log = Log(self.log, "SourceToDiaSourceStage - parallel")
 
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-            "SourceToDiaSourceStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
-            policyFile.getRepositoryPath())
+                                                 "SourceToDiaSourceStageDictionary.paf", "policy")
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
             self.policy = pexPolicy.Policy()
-        self.policy.mergeDefaults(defPolicy)
-
+        self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
         """

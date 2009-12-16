@@ -5,7 +5,7 @@ import sys
 import lsst.pex.harness.stage as harnessStage
 from lsst.pex.logging import Log, LogRec, endr
 import lsst.pex.policy as pexPolicy
-from sourceClassifier import SourceClassifier
+from lsst.meas.utils.sourceClassifier import SourceClassifier
 
 __all__ = ["SourceClassificationStage", "SourceClassificationStageParallel"]
 
@@ -102,12 +102,11 @@ class SourceClassificationStageParallel(harnessStage.ParallelProcessing):
 
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
             "SourceClassificationStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, 
-            policyFile.getRepositoryPath())
+        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
             self.policy = pexPolicy()
-        self.policy.mergeDefaults(defPolicy)
+        self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
         """

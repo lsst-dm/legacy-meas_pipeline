@@ -1,4 +1,8 @@
 #<?cfg paf dictionary ?>
+#
+# This file should be moved back to meas/utils when #1035 is resolved
+#
+target: backgroundPolicy
 
 definitions: {
     binsize: {
@@ -17,8 +21,13 @@ definitions: {
         			  enum; see afw::math::Background"
         maxOccurs: 1
         default:   "NATURAL_SPLINE"
+
         allowed: {
-        	value: "NATURAL_SPLINE"
+            value: "NATURAL_SPLINE"
+        }
+        allowed: {
+            value: "NONE"
+            description: "No background estimation is to be attempted"
         }
     }
 }

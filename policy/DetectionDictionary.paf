@@ -11,6 +11,14 @@ definitions:{
         maxOccurs: 1
         min: 0
     }
+    nGrow: {
+        type: "int"
+        description: "How many pixels to to grow detections"
+        minOccurs: 0
+        maxOccurs: 1
+        default: 1
+        min: 0
+    }
     thresholdValue: {
         type: "double"
         description: "value assigned to the threshold object used in detection"

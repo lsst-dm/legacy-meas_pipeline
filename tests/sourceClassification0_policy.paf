@@ -8,19 +8,19 @@ sourceList1Key: "sourceSet1"
 classifier: {
     bits: 0 1
     scope: "pairs"
-    pythonClass: "lsst.meas.pipeline.PresentInBothExposuresClassifier"
+    pythonClass: "lsst.meas.utils.PresentInBothExposuresClassifier"
     parameter.psfFluxThreshold: 1.0
 }
 classifier: {
     bits: 2
     scope: "pairs"
-    pythonClass: "lsst.meas.pipeline.ShapeDiffersInExposuresClassifier"
+    pythonClass: "lsst.meas.utils.ShapeDiffersInExposuresClassifier"
     parameter.shapeNormDiffThreshold: 1.0
 }
 classifier: {
     bits: 3 4
     scope: "pairs"
-    pythonClass: "lsst.meas.pipeline.PositiveFluxExcursionClassifier"
+    pythonClass: "lsst.meas.utils.PositiveFluxExcursionClassifier"
     parameter.psfFluxThreshold: 1.0
 }
 

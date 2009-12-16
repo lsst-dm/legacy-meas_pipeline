@@ -40,6 +40,6 @@ definitions: {
         description: "specify up to three additional parameters" 
         minOccurs: 0
         maxOccurs: 3 
-        default: 0
+        default: 0.0
     }
 }

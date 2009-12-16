@@ -5,35 +5,35 @@
 target: lsst.detection.pipeline.SourceDetectionStage
 
 definitions: {
-	#input clipboard keys
-	inputKeys: {
-		type: "policy"
-		dictionary: {
-    		definitions: {
-    		    exposure: {
+    #input clipboard keys
+    inputKeys: {
+        type: "policy"
+        dictionary: {
+            definitions: {
+                exposure: {
                     type: "string"
-                	description: "specify the clipboard key(s) of the exposure(s) 
-                				  to detect on."
+                    description: "specify the clipboard key(s) of the exposure(s) 
+                    to detect on."
                     minOccurs: 1
                 }    	
                 psf : {
-                	type: "string"
-                	description: "input clipboard key for a smoothing Psf"
-                	minOccurs: 0
-                	maxOccurs: 1
+                    type: "string"
+                    description: "input clipboard key for a smoothing Psf"
+                    minOccurs: 0
+                    maxOccurs: 1
                 }
-    		}
-		}
-		maxOccurs: 1		
-	}
+            }
+        }
+        maxOccurs: 1		
+    }
     
     #output clipboard keys:
     outputKeys: {
     	type: "policy"
     	dictionary: {
-    		definitions: {
-    		    positiveDetection: {
-    				type: "string"
+            definitions: {
+                positiveDetection: {
+                    type: "string"
                     description: "specify the clipboard key of the positive FootprintSet"
                     maxOccurs: 1
                     default: "positiveFootprintSet"
@@ -64,12 +64,19 @@ definitions: {
                 	default: "background"
                 }
             }
-		}
-		maxOccurs: 1
-	}
+        }
+        maxOccurs: 1
+    }
 
     
     #parameters    
+    backgroundPolicy: {
+        type: "policy"
+        dictionary: @BackgroundDictionary.paf
+        description: "includes all the parameters needed to estimate an exposure's background"
+        minOccurs: 1 
+        maxOccurs: 1
+    }
     psfPolicy: {
         type: "policy"
         dictionary: @PsfDictionary.paf
@@ -85,14 +92,4 @@ definitions: {
         minOccurs: 1 
         macOccurs: 1
     }
-    backgroundPolicy: {
-        type: "policy"
-        dictionary: @BackgroundDictionary.paf
-        description: "Parameters to control background subtraction"
-        minOccurs: 1
-        maxOccurs: 1
-    }
-    
-    
-
 }
