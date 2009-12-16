@@ -22,6 +22,7 @@ Alias("install", env.Install(env['prefix'], "policy"))
 Alias("install", env.InstallEups(os.path.join(env['prefix'], "ups")))
 
 scons.CleanTree(r"*~ core *.so *.os *.o")
+
 #
 # Build TAGS files
 #
