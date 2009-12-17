@@ -17,7 +17,6 @@ import lsst.utils.tests as utilsTests
 import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
-import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
@@ -30,7 +29,7 @@ except NameError:
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-class MeasureStageTestCase(unittest.TestCase):
+class SourceMeasurementStageTestCase(unittest.TestCase):
     """A test case for SourceMeasurementStage.py"""
 
     def setUp(self):
@@ -88,7 +87,7 @@ def suite():
     if not eups.productDir("afwdata"):
         print >> sys.stderr, "afwdata is not setting up; skipping test"
     else:
-        suites += unittest.makeSuite(MeasureStageTestCase)
+        suites += unittest.makeSuite(SourceMeasurementStageTestCase)
     suites += unittest.makeSuite(utilsTests.MemoryTestCase)
     return unittest.TestSuite(suites)
 
