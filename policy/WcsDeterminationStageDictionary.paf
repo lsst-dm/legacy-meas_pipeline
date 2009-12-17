@@ -74,7 +74,7 @@ definitions: {
         }
     }
 
-    #Parameters for determining distortion
+    #Parameters for matching source to catalogue
     distanceForCatalogueMatchinArcsec: {
         type: "double"
         description: "Allow the difference in position of sources (between image and catalogue) be as great as this distance and still consider them a match. Used when constructing a setof common objects between an image and a catalogue, so that image distortion can be measured"
@@ -88,6 +88,14 @@ definitions: {
         minOccurs: 0
         maxOccurs: 1
         default: 3
+    }
+    
+    calculateSip:{
+        type: "boolean"
+        description: "Do we want to solve for distortion in the image?"
+        minOccurs: 0
+        maxOccurs: 1
+        default: true
     }
     wcsToleranceInArcsec: {
         type: "double"
