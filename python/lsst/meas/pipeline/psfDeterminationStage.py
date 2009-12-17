@@ -30,36 +30,22 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
             self.policy = pexPolicy.Policy()
         self.policy.mergeDefaults(defPolicy.getDictionary())
 
+        self.psfDeterminationPolicy = self.policy.get("parameters.psfDeterminationPolicy")
+
     def process(self, clipboard):
-        dataList = []
-        dataPolicyList = self.policy.getPolicyArray("data")
+        self.log.log(Log.INFO, "Estimating PSF is in process")
+
+        
+        #grab exposure from clipboard
+        exposure = clipboard.get(self.policy.get("inputKeys.exposure"))       
+        sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
 
         sdqaRatings = sdqa.SdqaRatingSet()
-        for dataPolicy in dataPolicyList:
-            exposureKey = dataPolicy.getString("exposureKey")
-            exposure = clipboard.get(exposureKey)
-            if exposure is None:
-                self.log.log(Log.FATAL, 
-                    "No Exposure with key " + exposureKey)
-                continue
-            sourceSetKey = dataPolicy.getString("sourceSetKey")
-            sourceSet = clipboard.get(sourceSetKey)
-            if sourceSet is None:
-                self.log.log(Log.FATAL, 
-                    "No SourceSet with key " + sourceSetKey)
-                continue
+        psf, cellSet = Psf.getPsf(exposure, sourceSet, self.psfDeterminationPolicy, sdqaRatings)
 
-            psfOutKey = dataPolicy.getString("outputPsfKey")
-            outputCellSetKey = dataPolicy.getString("outputCellSetKey")
-            psf, cellSet = Psf.getPsf(exposure, sourceList, 
-                self.policy, sdqaRatings)
-
-            clipboard.put(outKey, psf)
-            clipboard.put(outputCellSetKey, cellSet)
-
-
-        sdqaKey = self.policy.getString("sdqaKey")
-        clipboard.put(sdqaKey, sdqa.PersistableSdqaRatingVector(sdqaRatings))
+        clipboard.put(self.policy.get("outputKeys.psf"), psf)
+        clipboard.put(self.policy.get("outputKeys.cellSet"), cellSet)
+        clipboard.put(self.policy.get("outputKeys.sdqa"), sdqa)
 
 class PsfDeterminationStage(harnessStage.Stage):
     parallelClass = PsfDeterminationStageParallel

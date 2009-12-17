@@ -44,7 +44,7 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
         self.log.log(Log.INFO, "Executing in process")
        
         self.ccdWcs = clipboard.get(self.policy.get("ccdWcsKey"))
-        self.ampBBox = clipboard.get(self.policy.getString("ampBBoxKey"))
+        self.ampBBox = clipboard.get(self.policy.get("ampBBoxKey"))
 
         dataPolicyList = self.policy.getPolicyArray("data")
         for dataPolicy in dataPolicyList:
