@@ -92,7 +92,10 @@ def suite():
 
     suites = []
 
-    suites += unittest.makeSuite(WcsDeterminationStageTestCase)
+    if not eups.productDir("astrometry_net_data"):
+        print >> sys.stderr, "Unable to test WcsDeterminationStage as astrometry_net_data is not setup"
+    else:
+        suites += unittest.makeSuite(WcsDeterminationStageTestCase)
 
     suites += unittest.makeSuite(utilsTests.MemoryTestCase)
     return unittest.TestSuite(suites)
