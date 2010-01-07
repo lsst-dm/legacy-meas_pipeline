@@ -1,0 +1,20 @@
+#<? cfg paf policy?>
+#
+# Stage policy for SourceMeasurementStage
+
+measureObjects: { 
+    centroidAlgorithm: "SDSS"
+    shapeAlgorithm: "SDSS"
+    photometryAlgorithm: "NAIVE"
+    apRadius: 3.0
+}
+inputKeys: {
+    psf: "smoothingPsfModel"
+    positiveDetection: "positiveFootprintSet"
+    negativeDetection: "negativeFootprintSet"
+    exposure: "backgroundSubtractedExposure"
+}
+
+outputKeys: {
+    sources: "sources"
+}

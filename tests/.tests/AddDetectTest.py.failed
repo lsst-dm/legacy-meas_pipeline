@@ -1,0 +1,6 @@
+tests/AddDetectTest.py
+
+Traceback (most recent call last):
+  File "tests/AddDetectTest.py", line 16, in <module>
+    import lsst.pex.harness.Queue as pexQueue
+ImportError: No module named harness.Queue
