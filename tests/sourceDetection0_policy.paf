@@ -2,16 +2,7 @@
 #
 # Stage policy for SourceDetectionStage
 
-inputKeys: {
-	exposure: "calibratedExposure0"
-}
-outputKeys: {
-	psf: "smoothingPsfModel"
-	positiveDetection: "positiveFootprintSet"
-	negativeDetection: "negativeFootprintSet"
-	backgroundSubtractedExposure: "backgroundSubtractedExposure"
-	background: "background"
-}
+exposureKey: "calibratedExposure0"
 
 backgroundPolicy: {
     # how to interpolate the background values
@@ -29,7 +20,12 @@ psfPolicy: {
 }
 detectionPolicy: {
     minPixels:1 
-    thresholdValue: 3.0
+    thresholdValue: 3
     thresholdType: "stdev"
     thresholdPolarity: "positive"
 }
+
+psfKey: "smoothingPsfModel"
+positiveDetectionKey: "positiveFootprintSet"
+negativeDetectionKey: "negativeFootprintSet"
+backgroundSubtractedExposureKey: "backgroundSubtractedExposure0"

@@ -16,11 +16,10 @@ import lsst.utils.tests as utilsTests
 import lsst.daf.base as dafBase
 import lsst.pex.harness.Queue as pexQueue
 import lsst.pex.harness.Clipboard as pexClipboard
-import lsst.pex.policy as pexPolicy
+import lsst.pex.policy as policy
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImage
-from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -28,49 +27,59 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
     """A test case for SourceDetectionStage.py"""
 
     def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
-    def testValidClipboard(self):
-        dataPolicy1 = pexPolicy.Policy()
+        dataPolicy1 = policy.Policy()
         dataPolicy1.add("inputKey", "sourceSet0")
         dataPolicy1.add("outputKey", "diaSourceSet0")
-        dataPolicy2 = pexPolicy.Policy()
+        dataPolicy2 = policy.Policy()
         dataPolicy2.add("inputKey", "sourceSet1")
         dataPolicy2.add("outputKey", "diaSourceSet1")
-        stagePolicy = pexPolicy.Policy()
+        stagePolicy = policy.Policy()
         stagePolicy.add("data", dataPolicy1)
         stagePolicy.add("data", dataPolicy2)
         stagePolicy.add("ccdWcsKey", "ccdWcs")
         stagePolicy.add("ampBBoxKey", "ampBBox")
 
-        sourceSet = afwDet.SourceSet()
-        for i in xrange(5):
-            sourceSet.append(afwDet.Source())
+        self.sourceSet = afwDet.SourceSet()
+        self.sourceSet.append(afwDet.Source())
+        self.sourceSet.append(afwDet.Source())
+        self.sourceSet.append(afwDet.Source())
+        self.sourceSet.append(afwDet.Source())
+        self.sourceSet.append(afwDet.Source())
         
-        point = afwImage.PointD(0.0, 0.0)
-        wcs = afwImage.createWcs(point, point, 1, 0, 0, 1);
+        metadata = dafBase.PropertySet()
+        metadata.set('CRPIX1',  0.0)
+        metadata.set('CRPIX2',  0.0)
+        wcs = afwImage.Wcs(metadata)
         ampBBox = afwImage.BBox(afwImage.PointI(0, 0), 1, 1)
 
-        tester = SimpleStageTester(measPipe.SourceToDiaSourceStage(stagePolicy))
-
         clipboard = pexClipboard.Clipboard()
-        clipboard.put(dataPolicy1.get("inputKey"), sourceSet)
-        clipboard.put(dataPolicy2.get("inputKey"), sourceSet) 
-        clipboard.put(stagePolicy.get("ccdWcsKey"), wcs)
-        clipboard.put(stagePolicy.get("ampBBoxKey"), ampBBox)
-        
-        outWorker = tester.runWorker(clipboard)
-    
-        for policy in stagePolicy.getPolicyArray("data"):                
-            assert(outWorker.contains(policy.get("inputKey")))
-            assert(outWorker.contains(policy.get("outputKey")))
-            assert(outWorker.contains("persistable_" + policy.get("outputKey")))
+        clipboard.put("sourceSet0", self.sourceSet)
+        clipboard.put("sourceSet1", self.sourceSet) 
+        clipboard.put("ccdWcs", wcs)
+        clipboard.put("ampBBox", ampBBox)
 
-            diaSourceSet = outWorker.get(policy.get("outputKey"))
-            assert(diaSourceSet.size() == sourceSet.size())
+        inQueue = pexQueue.Queue()
+        inQueue.addDataset(clipboard)
+        self.outQueue = pexQueue.Queue()
+        
+        self.stage = measPipe.SourceToDiaSourceStage(1, stagePolicy)
+        self.stage.initialize(self.outQueue, inQueue)
+        self.stage.setUniverseSize(1)
+        self.stage.setRun("StageTest")
+    
+    def tearDown(self):
+        del self.stage
+        del self.outQueue
+
+    def testValidClipboard(self):
+        self.stage.process()
+        clipboard = self.outQueue.getNextDataset()
+        assert(clipboard.contains("diaSourceSet0"))
+        assert(clipboard.contains("persistable_diaSourceSet0"))
+        assert(clipboard.contains("diaSourceSet1"))
+        assert(clipboard.contains("persistable_diaSourceSet1"))
+        diaSourceSet = clipboard.get("diaSourceSet0")
+        assert(diaSourceSet.size() ==self.sourceSet.size())
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

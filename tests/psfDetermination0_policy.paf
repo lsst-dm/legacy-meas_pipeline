@@ -3,12 +3,11 @@
 # Stage policy for PsfDetermination Stage
 
 data: {
-    exposureKey: "calibratedExposure0"
+    exposureKey: "backgroundSubtractedExposure0"
     sourceSetKey: "sourceSet0"
     outputPsfKey: "psfModel"
     outputCellSetKey: "psfCellSet0"
 }
-
 fluxLim: 5.0e3
 sizeCellX: 512
 sizeCellY: 512
@@ -21,4 +20,4 @@ tolerance: 0.1
 reducedChi2ForPsfCandidates: 2.0
 nIterForPsf: 3
 
-sdqaKey: "psfDeterminationRatingSet"
+PsfDeterminationSdqaKey: "psfDeterminationRatingSet"

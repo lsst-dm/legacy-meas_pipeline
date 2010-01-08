@@ -2,65 +2,48 @@ import os, os.path
 import pdb
 import unittest
 
-import eups
-import lsst.utils.tests as utilsTests
-
 from lsst.pex.harness.Clipboard import  Clipboard
-import lsst.pex.harness.stage as harnessStage
-from lsst.pex.harness.simpleStageTester import SimpleStageTester
+from lsst.pex.harness.Queue import Queue
+import lsst.pex.policy as policy
+import lsst.afw.detection as detection
+import lsst.meas.pipeline as pipeline
 
-import lsst.pex.policy as pexPolicy
-import lsst.afw.detection as afwDet
-import lsst.meas.pipeline as measPipe
-from lsst.meas.utils.sourceClassifiers import *
 
 class SourceClassificationStageTestCase(unittest.TestCase):
     """A test case for the SourceClassificationStage"""
 
     def setUp(self):
-        pass
+       self._policy = policy.Policy(os.path.join(os.environ["MEAS_PIPELINE_DIR"],
+                                                 "tests", "SourceClassificationStageTest.paf"))
+       self._stage = pipeline.SourceClassificationStage(0, self._policy)
 
     def tearDown(self):
-        pass
+        del self._stage
+        del self._policy
 
     def testStage(self):
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "sourceClassification0_policy.paf", "tests")
-        policy = pexPolicy.Policy.createPolicy(file)
-    
-        tester = SimpleStageTester(measPipe.SourceClassificationStage(policy))
-
-        set0 = afwDet.DiaSourceSet()
-        set1 = afwDet.DiaSourceSet()
-        set0.append(afwDet.DiaSource())
-        set0.append(afwDet.DiaSource())
-        set0.append(afwDet.DiaSource())
-        set1.append(afwDet.DiaSource())
-        set1.append(afwDet.DiaSource())
-        set1.append(afwDet.DiaSource())
+        set0 = detection.DiaSourceSet()
+        set1 = detection.DiaSourceSet()
+        set0.append(detection.DiaSource())
+        set0.append(detection.DiaSource())
+        set0.append(detection.DiaSource())
+        set1.append(detection.DiaSource())
+        set1.append(detection.DiaSource())
+        set1.append(detection.DiaSource())
 
         clipboard = Clipboard()
         clipboard.put("sourceSet0", set0)
         clipboard.put("sourceSet1", set1)
+        inq = Queue()
+        outq = Queue()
+        self._stage.setUniverseSize(1)
+        self._stage.setRank(0)
+        self._stage.initialize(outq, inq)
+        inq.addDataset(clipboard)
 
-        outWorker = tester.runWorker(clipboard)
+        self._stage.process()
 
-        #TODO: insert assert statements here!
-
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-
-    utilsTests.init()
-
-    suites = []
-    suites += unittest.makeSuite(SourceClassificationStageTestCase)
-    suites += unittest.makeSuite(utilsTests.MemoryTestCase)
-    return unittest.TestSuite(suites)
-
-def run(exit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), exit)
 
 if __name__ == "__main__":
-    run(True)
+    unittest.main()
 

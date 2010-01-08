@@ -8,13 +8,11 @@ measureObjects: {
     photometryAlgorithm: "NAIVE"
     apRadius: 3.0
 }
-inputKeys: {
-    psf: "smoothingPsfModel"
-    positiveDetection: "positiveFootprintSet"
-    negativeDetection: "negativeFootprintSet"
-    exposure: "backgroundSubtractedExposure"
+data: {
+    exposureKey: "backgroundSubtractedExposure0"
+    psfKey: "smoothingPsfModel"
+    outputKey: "sourceSet0"
 }
+positiveDetectionKey: "positiveFootprintSet"
+negativeDetectionKey: "negativeFootprintSet"
 
-outputKeys: {
-    sources: "sources"
-}

@@ -71,8 +71,7 @@ class PsfDeterminationStage(Stage):
             psfOutKey = dataPolicy.getString("outputPsfKey")
             outputCellSetKey = dataPolicy.getString("outputCellSetKey")
             dataList.append((exposure, sourceSet, psfOutKey, outputCellSetKey))
-            self.log.log(Log.INFO, "datakeys: %s %s %s %s" % (exposureKey, sourceSetKey, psfOutKey, outputCellSetKey))
-            self.log.log(Log.INFO, "number of sources: %s" % (len(sourceSet)))
+            
         return dataList
 
     def _validatePolicy(self):
@@ -92,5 +91,3 @@ class PsfDeterminationStage(Stage):
         self._nIterForPsf = self._policy.getInt("nIterForPsf")
         self._sizeCellX = self._policy.getInt("sizeCellX")
         self._sizeCellY = self._policy.getInt("sizeCellY")
-
-        self.log.log(Log.INFO, "fluxLim: %s" % (self._fluxLim))

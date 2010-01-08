@@ -12,8 +12,6 @@ import lsst.meas.algorithms as measAlg
 import lsst.afw.display.ds9 as ds9
 import lsst.afw.display.utils as displayUtils
 
-display = False
-
 try:
     type(display)
 except NameError:
@@ -111,8 +109,6 @@ class SourceDetectionStage(Stage):
         maskedImage = exposure.getMaskedImage()
         convolvedImage = maskedImage.Factory(maskedImage.getDimensions())
         convolvedImage.setXY0(maskedImage.getXY0())
-        # IS THE MASK zeroed??  It's not a deep copy...
-        convolvedImage.getMask().set(0)
 
         if display:
             ds9.mtv(maskedImage)
@@ -152,8 +148,6 @@ class SourceDetectionStage(Stage):
                                                 self._positiveThreshold,
                                                 "DETECTED",
                                                 self._minPixels)
-            if not ds9.getMaskPlaneColor("DETECTED"):
-                ds9.setMaskPlaneColor("DETECTED", ds9.GREEN)
         #
         # ds only searched the middle but it belongs to the entire MaskedImage
         #

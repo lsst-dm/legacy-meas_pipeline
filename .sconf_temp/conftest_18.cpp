@@ -1,3 +1,0 @@
-
-#include <Minuit/FCNBase.h>
-

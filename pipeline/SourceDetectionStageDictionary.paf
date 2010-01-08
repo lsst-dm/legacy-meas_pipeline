@@ -1,0 +1,85 @@
+#<?cfg paf dictionary ?>
+#
+# Dictionary for SourceDetectionStage policies
+#
+target: lsst.detection.pipeline.SourceDetectionStage
+
+definitions: {
+    exposureKey: {
+        type: "string"
+    	description: "specify the clipboard key of the exposure to detect on."
+        minOccurs: 0 
+        maxOccurs: 1
+        default: "calibratedExposure"
+    }    	
+    psfPolicy: {
+        type: "policy"
+        dictionary: @PsfDictionary.paf
+        description: "includes all the parameters needed to create a PSF"
+        minOccurs: 1 
+        maxOccurs: 1
+    }
+    detectionPolicy: {
+        type: "policy"
+        dictionary: @DetectionDictionary.paf
+        description: "includes all the parameters needed to perform source
+                      detection on an exposure"
+        minOccurs: 1 
+        macOccurs: 1
+    }
+    positiveDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the positive DetectionSet"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "positiveFootprintSet"
+    }
+    negativeDetectionKey: {
+        type: "string"
+        description: "specify the clipboard key of the negative DetectionSet"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "negativeFootprintSet"
+    }
+    smoothingPsfKey: {
+        type: "string"
+        description: "specify the output key for the smoothingPsf used"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "psf"
+    }
+
+    backgroundPolicy: {
+        type: "policy"
+        description: "Parameters to control background subtraction"
+        minOccurs: 1
+        dictionary: {
+            definitions: {
+                binsize: {
+                    type: "int"
+                    description: "how large a region of the sky should be used for each background point"
+                    minOccurs: 1
+                    maxOccurs: 1
+                    default: 256
+                    allowed: {
+                        min: 10
+                    }
+                }
+                algorithm: {
+                    type: "string"      # really an enum; see afw::math::Background
+                    description: "how to interpolate the background values"
+                    minOccurs: 1
+                    maxOccurs: 1
+                    default:   "NATURAL_SPLINE" # 
+                }
+            }
+        }
+    }
+    
+    backgroundSubtractedExposureKey: {
+        type: "string"
+        description: "specify clipboard key of output background-subtracted Exposure"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+}

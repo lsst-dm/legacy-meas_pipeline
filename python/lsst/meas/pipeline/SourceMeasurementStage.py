@@ -104,7 +104,7 @@ class SourceMeasurementStage(Stage):
                         # don't worry about measurement exceptions
                         # although maybe I should log them
                         self.log.log(Log.WARN, str(e))
-#                    self.log.log(Log.INFO, "source id,x,y, flg: %s %s %s %s" % (sourceId, source.getXAstrom(), source.getYAstrom(), source.getFlagForDetection()))
+            
             #place SourceSet on the clipboard 
             clipboard.put(outKey, sourceSet)
             

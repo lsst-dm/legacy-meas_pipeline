@@ -1,0 +1,83 @@
+#<?cfg paf dictionary ?>
+#
+# this is a comment
+#
+target: lsst.meas.pipeline.WcsDeterminationStage
+
+definitions: {
+    # Required entries
+    exposureKeyList: {
+        type: "string"
+        description: "array of keys of exposures on clipboard"
+        minOccurs: 1
+    }
+    sourceSetKey: {
+        type: "string"
+        description: "key of SourceSet on clipboard"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    ampBBoxKey: {
+        type: "string"
+        description: "key of amplifier bounding box on clipboard"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    outputCcdWcsKey: {
+        type: "string"
+        description: "key of resulting WCS in CCD coordinates"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    initialWcsName: {
+        type: "string"
+        description: "initial Wcs to warm-start Wcs determination"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    ccdDimensions: {
+        type: "policy"
+        description: "dimensions of the CCD"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+
+    # Optional entries
+    fluxLimit: {
+        type: "double"
+        description: "minimum flux of sources for WCS determination"
+        default: 20000.0
+        minOccurs: 0
+        maxOccurs: 1
+    }
+    brightestNStars: {
+        type: "int"
+        description: "maximum number of bright stars to use"
+        minOccurs: 0
+        maxOccurs: 1
+    }
+    allowDistortion: {
+        type: "boolean"
+        description: "Inform the solver that the image may suffer from some distortion. Leave this on if a purely linear wcs solution will get the postions of some stars wrong by more than 1 pixel."
+        default: true
+        minOccurs: 0
+        maxOccurs: 1
+    }
+    matchThreshold: {
+        type: "double"
+        description: "How good does a match need to be to be accepted. Typical value is log(1e12) approximately 27"
+        default: 27.631
+        minOccurs: 0
+        maxOccurs: 1
+    }
+    pixelScaleRangeFactor: {
+        type: "double"
+        description: "range of allowed fit pixel scale = [input scale/pixelScaleRangeFactor, input scale * pixelScaleRangeFactor]"
+        minOccurs: 0
+        maxOccurs: 1
+        default: 1.1
+        allowed: {
+            min: 1.0
+        }
+    }
+}

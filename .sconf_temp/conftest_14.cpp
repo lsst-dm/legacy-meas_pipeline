@@ -1,3 +1,0 @@
-
-#include <wcslib/wcs.h>
-

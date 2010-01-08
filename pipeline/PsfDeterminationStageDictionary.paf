@@ -1,0 +1,117 @@
+#<? cfg paf dictionary ?>
+#
+# 
+target: lsst.meas.pipeline.PsfDeterminationStage
+
+definitions: {
+    data: {
+        type: "policy"
+        description: "list of (exposure, source set, psf, cellSet) key tuples"
+        minOccurs: 1
+        dictionary: {
+            definitions: {
+                exposureKey: {
+                    type: "string"
+                    description: "specify clipboard key of input Exposure"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+                sourceSetKey: {
+                    type: "string"
+                    description: "specify clipboard key of input SourceSet"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+                outputPsfKey: {
+                    type: "string"
+                    description: "specify clipboard key for output PSF"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+                outputCellSetKey: {
+                    type: "string"
+                    description: "specify the clipboard key for output psfCellSet"
+                    minOccurs: 1
+                    maxOccurs: 1                    
+                }
+            }
+        }
+    }
+    fluxLim: {
+        type: "int"
+        description: "specify the minimum psfFlux for good Psf Candidates"
+        minOccurs: 0
+        maxOccurs: 1
+        default: 1000
+        allowed: {
+            min: 0
+        }
+    }
+    nEigenComponents: {
+        type: "int"
+        description: "number of eigen components for PSF kernel creation"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    spatialOrder: {
+        type: "int"
+        description: "specify spacial order for PSF kernel creation"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    nStarPerCell: {
+        type: "int"
+        description: "number of stars per psf cell for PSF kernel creation"
+        minOccurs: 1
+        maxOccurs: 1    
+    }
+    kernelSize: {
+        type: "int"
+        description: "size of the kernel to create"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    nStarPerCellSpatialFit: {
+        type: "int"
+        description: "number of stars per psf Cell for spacial fitting"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    tolerance: {
+        type: "int"
+        description: "tolerance of spatial fitting"
+        minOccurs: 1
+        maxOccurs: 1        
+    }
+    reducedChi2ForPsfCandidates: {
+        type: "double"
+        descrition: "for psf candidate evaluation"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+    sizeCellX: {
+        type: "int"
+        description: "size of cell used to determine PSF. column direction"
+        minOccurs: 1
+        maxOccurs: 1
+        allowed: {
+            min: 0
+        }
+    }
+    sizeCellY: {
+        type: "int"
+        description: "size of cell used to determine PSF. column direction"
+        minOccurs: 1
+        maxOccurs: 1
+        allowed: {
+            min: 0
+        }
+    }
+    PsfDeterminationSdqaKey: {
+        type: "string"
+        description: "specify clipboard key of output SDQA"
+        minOccurs: 1
+        maxOccurs: 1
+    }
+}
+

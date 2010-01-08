@@ -1,6 +1,0 @@
-tests/SourceClassificationStageTest.py
-
-Traceback (most recent call last):
-  File "tests/SourceClassificationStageTest.py", line 5, in <module>
-    from lsst.pex.harness.Clipboard import  Clipboard
-ImportError: No module named harness.Clipboard

@@ -108,9 +108,6 @@ class WcsDeterminationStage(Stage):
     def determineWcs(self, sourceSet, initialWcs):
         """Determine Wcs of an Exposure given a SourceSet and an initial Wcs
         """
-        self.log.log(Log.INFO, "initialWCS = %s" % \
-            initialWcs.getFitsMetadata().toString())
-
         # select sufficiently bright sources that are not flagged
         wcsSourceSet = afwDet.SourceSet()
         for source in sourceSet:
@@ -144,9 +141,6 @@ class WcsDeterminationStage(Stage):
             (predRaDecCtr.getX(), predRaDecCtr.getY()))
         
         # Determinate predicted image scale in arcseconds/pixel
-        self.log.log(Log.INFO, "ccdCtrPos = %s, %s pix" % \
-            (ccdCtrPos.getX(), ccdCtrPos.getY()))
-
         pixelAreaDegSq = initialWcs.pixArea(ccdCtrPos) # in degrees^2
         imageScale = math.sqrt(pixelAreaDegSq) * 3600.0
         self.log.log(Log.INFO, "Predicted image scale = %s arcsec/pixel" % (imageScale,))
