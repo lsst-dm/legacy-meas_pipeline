@@ -7,8 +7,9 @@ definitions:{
         type: "int"
         description: "detected sources with fewer than the specified number
                       of pixels will be ignored"
-        minOccurs: 1
+        minOccurs: 0
         maxOccurs: 1
+	default: 1
         min: 0
     }
     nGrow: {
@@ -22,8 +23,9 @@ definitions:{
     thresholdValue: {
         type: "double"
         description: "value assigned to the threshold object used in detection"
-        minOccurs: 1
+        minOccurs: 0
         maxOccurs: 1
+        default: 5.0		   
         min: 0
     }    
     thresholdType: {
@@ -31,7 +33,7 @@ definitions:{
         description: "specified the desired flavor of Threshold"
         minOccurs: 0
         maxOccurs: 1
-        default: "value"
+        default: "stdev"
         allowed: {
             value: "variance"
             description: "threshold applied to image variance"

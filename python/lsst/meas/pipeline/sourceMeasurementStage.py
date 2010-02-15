@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 import os, sys
 
-import lsst.pex.harness.stage as harnessStage
+import lsst.pex.harness.stage            as harnessStage
 
-import lsst.pex.policy as pexPolicy
+import lsst.pex.policy                   as pexPolicy
 
-from lsst.pex.logging import Log, Rec
-import lsst.pex.exceptions as pexExcept
-import lsst.afw.detection as afwDet
-import lsst.afw.image as afwImg
-import lsst.afw.math as afwMath
-import lsst.meas.algorithms as measAlg
-
+from   lsst.pex.logging                  import Log, Rec
+import lsst.pex.exceptions               as pexExcept
+import lsst.afw.detection                as afwDet
+import lsst.afw.image                    as afwImg
+import lsst.afw.math                     as afwMath
+import lsst.meas.algorithms              as measAlg
+import lsst.meas.utils.sourceMeasurement as srcMeas
 
 class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
     """
@@ -62,36 +62,13 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
             self.log.log(Log.DEBUG, "Negative FootprintSet found")
             isNegative = True
             footprintLists.append([negativeDetection.getFootprints(), isNegative])
+
+        sourceSet = srcMeas.sourceMeasurement(exposure, psf, footprintLists, measurePolicy)
         
-        # loop over all exposures
-        sourceSet = afwDet.SourceSet()
-        sourceId = 0;
+        # place SourceSet on the clipboard
+        clipboard.put(self.policy.get("outputKeys.sources"), sourceSet)
 
-        measureSources = measAlg.makeMeasureSources(exposure, measurePolicy, psf)
-
-        for footprintList, isNegative in footprintLists:
-            for footprint in footprintList:
-                source = afwDet.Source()
-                sourceSet.append(source)
-                source.setId(sourceId)
-                sourceId += 1
-
-                detectionBits = measAlg.Flags.BINNED1
-                if isNegative:
-                    detectionBits |= measAlg.Flags.DETECT_NEGATIVE
-
-                source.setFlagForDetection(source.getFlagForDetection() | detectionBits);
-
-                try:
-                    measureSources.apply(source, footprint)
-                except Exception, e:
-                    # don't worry about measurement exceptions
-                    # although maybe I should log them
-                    self.log.log(Log.WARN, str(e))
-            
-            #place SourceSet on the clipboard
-            clipboard.put(self.policy.get("outputKeys.sources"), sourceSet)
-	
+        
     def getClipboardData(self, clipboard):
         #private helped method for grabbing the clipboard data in a useful way 
 
