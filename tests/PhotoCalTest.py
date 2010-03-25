@@ -50,8 +50,8 @@ def readSourceSet(fileName):
 
     return sourceSet
 
-class PhotometricZeroPointStageTestCase(unittest.TestCase):
-    """A test case for PhotometricZeroPointStage.py"""
+class PhotoCalStageTestCase(unittest.TestCase):
+    """A test case for PhotoCalStage.py"""
 
     def setUp(self):
         pass
@@ -64,7 +64,7 @@ class PhotometricZeroPointStageTestCase(unittest.TestCase):
         catSet = []
         for s in srcSet:
             s1 = afwDet.Source(s)
-            s1.setPsfflux(s1.getPsfFlux()*.281)
+            s1.setPsfFlux(s1.getPsfFlux()*.281)
             catSet.append(s1)
             
         #Make a SourceMatch object
@@ -73,7 +73,7 @@ class PhotometricZeroPointStageTestCase(unittest.TestCase):
         
         #Put them on the clipboard
         filename = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                      "PhotometricZeroPointStageDictionary.paf", "policy")
+                      "PhotoCalStageDictionary.paf", "policy")
         self.policy = pexPolicy.Policy.createPolicy(filename)
 
         self.clipboard = pexClipboard.Clipboard()         
@@ -86,7 +86,7 @@ class PhotometricZeroPointStageTestCase(unittest.TestCase):
     def testSingleExposure(self):
         pass
         #Run the stage
-        stage = measPipe.PhotometricZeroPointStage(self.policy)
+        stage = measPipe.PhotoCalStage(self.policy)
         tester = SimpleStageTester(stage)
         outWorker = tester.runWorker(self.clipboard)
 
@@ -108,7 +108,7 @@ def suite():
     if not eups.productDir("astrometry_net_data"):
         print >> sys.stderr, "Unable to test WcsDeterminationStage as astrometry_net_data is not setup"
     else:
-        suites += unittest.makeSuite(PhotometricZeroPointStageTestCase)
+        suites += unittest.makeSuite(PhotoCalStageTestCase)
 
     suites += unittest.makeSuite(utilsTests.MemoryTestCase)
     return unittest.TestSuite(suites)

@@ -21,7 +21,7 @@ import lsst.meas.astrom.sip.cleanBadPoints as cleanBadPoints
 import pdb
     
 
-class PhotometricZeroPointStageParallel(harnessStage.ParallelProcessing):
+class PhotoCalStageParallel(harnessStage.ParallelProcessing):
     """Validate the Wcs for an image using the astrometry.net package and calculate distortion
     coefficients
     
@@ -40,7 +40,7 @@ class PhotometricZeroPointStageParallel(harnessStage.ParallelProcessing):
     
     def setup(self):
         policyFile=pexPolicy.DefaultPolicyFile("meas_pipeline",   # package name
-                                  "PhotometricZeroPointStageDictionary.paf", # default. policy
+                                  "PhotoCalStageDictionary.paf", # default. policy
                                   "policy" # dir containing policies
                                   )
         defaultPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath())
@@ -51,9 +51,9 @@ class PhotometricZeroPointStageParallel(harnessStage.ParallelProcessing):
             self.policy.mergeDefaults(defaultPolicy)
                
         #Setup the log
-        self.log = Debug(self.log, "PhotometricZeroPointStageParallel")
+        self.log = Debug(self.log, "PhotoCalStageParallel")
         self.log.setThreshold(Log.DEBUG)
-        self.log.log(Log.INFO, "Finished setup of PhotometricZeroPointStageParallel")
+        self.log.log(Log.INFO, "Finished setup of PhotoCalStageParallel")
         
 
     def process(self, clipboard):
@@ -73,7 +73,7 @@ class PhotometricZeroPointStageParallel(harnessStage.ParallelProcessing):
         
         #Do the work
         #@FIXME. Where is this code going to be???
-        zero, zeroUnc = measAstrom.calcPhotometricZeroPoint(srcMatchSetKey, log=log)
+        zero, zeroUnc = measAstrom.PhotoCal(srcMatchSetKey, log=log)
         #zero, zeroUnc = None, None
 
         #Save results to clipboard
@@ -82,11 +82,11 @@ class PhotometricZeroPointStageParallel(harnessStage.ParallelProcessing):
 
 
 
-class PhotometricZeroPointStage(harnessStage.Stage):
+class PhotoCalStage(harnessStage.Stage):
     """A wrapper stage that supplies the names of the classes that do the work
        Different classes are provided for serial and parallel processing
     """
-    parallelClass = PhotometricZeroPointStageParallel
+    parallelClass = PhotoCalStageParallel
 
 
 
