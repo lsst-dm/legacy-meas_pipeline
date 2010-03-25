@@ -61,20 +61,20 @@ class PhotometricZeroPointStageTestCase(unittest.TestCase):
         
         #Make a copy, with different fluxes.
         #The exact choice doesn't matter ,we just want to make sure the code returns an answer
-        #@TODO this is wrong
-        catSet = srcSet
-        
-        for s in catSet:
-            s.setPsfFlux( s.getPsfFlux()*.215)
-
-        #Make a source match object
+        catSet = []
+        for s in srcSet:
+            s1 = afwDet.Source(s)
+            s1.setPsfflux(s1.getPsfFlux()*.281)
+            catSet.append(s1)
+            
+        #Make a SourceMatch object
         maxDist = 1/3600. #matches must be this close together
         srcMatchSet = afwDet.matchXy(catSet, srcSet, maxDist)
         
         #Put them on the clipboard
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "PhotometricZeroPointStageDictionary.paf", "policy")
-        self.policy = pexPolicy.Policy.createPolicy(file)
+        filename = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                      "PhotometricZeroPointStageDictionary.paf", "policy")
+        self.policy = pexPolicy.Policy.createPolicy(filename)
 
         self.clipboard = pexClipboard.Clipboard()         
         self.clipboard.put(self.policy.get("sourceMatchSetKey"), srcMatchSet)
