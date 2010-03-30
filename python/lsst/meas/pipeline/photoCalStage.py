@@ -16,26 +16,15 @@ import lsst.afw.image as afwImg
 import lsst.meas.astrom as measAstrom
 import lsst.meas.astrom.net as astromNet
 import lsst.meas.astrom.sip as sip
+import lsst.meas.photocal as photocal
 import lsst.meas.astrom.sip.cleanBadPoints as cleanBadPoints
 
 import pdb
     
 
 class PhotoCalStageParallel(harnessStage.ParallelProcessing):
-    """Validate the Wcs for an image using the astrometry.net package and calculate distortion
-    coefficients
-    
-    Given a initial Wcs, and a list of sources (with pixel positions for each) in an image,
-    pass these to the astrometry_net package to verify the result. Then calculate
-    the distortion in the image and add that to the Wcs as SIP polynomials
-    
-    Clipboard Input:
-    - an Exposure containing a Wcs
-    - a SourceSet
-    
-    Clipboard Output
-    - A wcs
-    - A vector of SourceMatch objects
+    """Calculate the magnitude zero point for a SourceSet for an image that
+    has been matched to a corresponding SourceSet for a catalogue
     """
     
     def setup(self):
@@ -66,15 +55,14 @@ class PhotoCalStageParallel(harnessStage.ParallelProcessing):
         srcMatchSetKey = self.policy.get("sourceMatchSetKey")
         if not clipboard.contains(srcMatchSetKey):
             raise RuntimeError("No input SourceMatch set on clipboard")
+        srcMatchSet = clipboard.get(srcMatchSetKey)            
         
         outputValueKey = self.policy.get("outputValueKey")
         outputUncKey = self.policy.get("outputUncertaintyKey")
         
         
         #Do the work
-        #@FIXME. Where is this code going to be???
-        zero, zeroUnc = measAstrom.PhotoCal(srcMatchSetKey, log=log)
-        #zero, zeroUnc = None, None
+        zero, zeroUnc = photocal.calcPhotoCal(srcMatchSet, log=self.log)
 
         #Save results to clipboard
         clipboard.put(self.policy.get('outputValueKey'), zero)
