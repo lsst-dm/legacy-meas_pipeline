@@ -1,0 +1,28 @@
+#<?cfg paf dictionary ?>
+#
+# Dictionary for Photometric Zeropoint Stage.
+# This file is currently empty - there are no parameters for this 
+# stage. We include a policy file for consistency (and in case 
+# we need to add parameters at a later date
+#
+
+
+
+
+
+definitions: {
+     sourceMatchSetKey: {
+        type: "string"
+        description: "specify clipboard key of input SourceMatchSet"
+        minOccurs: 1
+        maxOccurs: 1
+        default: SourceMatchSet
+    }
+    outputDictKey: {
+        type: "string"
+        description: "specify clipboard key of output statistics"
+        minOccurs: 1
+        maxOccurs: 1
+        default: wcsVerificationStats
+    }
+}

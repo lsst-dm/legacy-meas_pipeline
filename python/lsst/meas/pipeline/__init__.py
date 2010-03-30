@@ -8,4 +8,5 @@ from transformDetectionStage import *
 from multifitStage import *
 from forcedPhotometryStage import *
 from backgroundEstimationStage import *
+from wcsVerificationStage import *
 from photoCalStage import *
