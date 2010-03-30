@@ -1,0 +1,35 @@
+#<?cfg paf dictionary ?>
+#
+# Dictionary for Photometric Zeropoint Stage.
+# This file is currently empty - there are no parameters for this 
+# stage. We include a policy file for consistency (and in case 
+# we need to add parameters at a later date
+#
+
+
+
+
+
+definitions: {
+     sourceMatchSetKey: {
+        type: "string"
+        description: "specify clipboard key of input SourceMatchSet"
+        minOccurs: 1
+        maxOccurs: 1
+        default: SourceMatchSet
+    }
+    outputValueKey: {
+        type: "string"
+        description: "specify clipboard key of output Photometric Zero Point"
+        minOccurs: 1
+        maxOccurs: 1
+        default: photometricZeroPoint
+    }
+    outputUncertaintyKey: {
+        type: "string"
+        description: "specify clipboard key uncertainty in output photometric zero point"
+        minOccurs: 1
+        maxOccurs: 1
+        default: photometricZeroPointUnc
+    }
+}
