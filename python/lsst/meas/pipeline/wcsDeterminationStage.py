@@ -76,12 +76,22 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
         exp = clipboard.get(expKey)
 
         srcSetKey=self.policy.get('inputSourceSetKey')
+        
         if not clipboard.contains(srcSetKey):
             raise RuntimeError("No wcsSourceSet on clipboard")
         srcSet = clipboard.get(srcSetKey)
         
+        #What band was this image take in (e.g B,V or R, etc.)
+        filterNameKey = self.policy.get('filterNameKey')
+        if not clipboard.contains(filterNameKey):
+            filterName=None
+        else:
+            filterName= clipboard.get(filterNameKey)
+
+        
         #Determine list of matching sources, and Wcs
-        matchList, wcs = measAstrom.determineWcs(self.policy, exp, srcSet, log=self.log)
+        matchList, wcs = measAstrom.determineWcs(self.policy, exp, 
+                         srcSet, filterName=filterName, log=self.log)
 
         #Save results to clipboard
         clipboard.put(self.policy.get('outputMatchListKey'), matchList)
