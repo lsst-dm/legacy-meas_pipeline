@@ -66,8 +66,9 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         sourceSet = srcMeas.sourceMeasurement(exposure, psf, footprintLists, measurePolicy)
         
         # place SourceSet on the clipboard
-        clipboard.put(self.policy.get("outputKeys.sources"), sourceSet)
-
+        sourceKey = self.policy.get("outputKeys.sources")
+        clipboard.put(sourceKey, sourceSet)
+        clipboard.put(sourceKey + "_persistable", afwDet.PersistableSourceVector(sourceSet))
         
     def getClipboardData(self, clipboard):
         #private helped method for grabbing the clipboard data in a useful way 
