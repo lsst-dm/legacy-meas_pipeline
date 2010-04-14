@@ -90,6 +90,6 @@ definitions: {
         description: "includes all the parameters needed to perform source
                       detection on an exposure"
         minOccurs: 1 
-        macOccurs: 1
+        maxOccurs: 1
     }
 }

@@ -54,7 +54,6 @@ class PhotoCalStageTestCase(unittest.TestCase):
     """A test case for PhotoCalStage.py"""
 
     def setUp(self):
-        pass
         ##Load sample input from disk
         path = os.path.join(eups.productDir("meas_pipeline"), "tests")
         srcSet = readSourceSet(os.path.join(path, "v695833-e0-c000.xy.txt"))
@@ -81,7 +80,7 @@ class PhotoCalStageTestCase(unittest.TestCase):
 
         
     def tearDown(self):
-        pass
+        del self.policy
         
     def testSingleExposure(self):
         pass

@@ -13,7 +13,7 @@ outputKeys: {
 
 parameters: {
     psfDeterminationPolicy: {
-        fluxLim: 1000.0
+        fluxLim: 2000.0
         nEigenComponents: 2
         spatialOrder: 1
         nStarPerCell: 2

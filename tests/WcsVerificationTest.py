@@ -83,9 +83,8 @@ class WcsVerificationStageTestCase(unittest.TestCase):
         self.clipboard = pexClipboard.Clipboard()         
         self.clipboard.put(self.policy.get("sourceMatchSetKey"), srcMatchSet)
 
-        
     def tearDown(self):
-        pass
+        del self.policy
         
     def testSingleExposure(self):
         #Run the stage

@@ -19,6 +19,7 @@ import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
+import lsst.afw.geom as afwGeom
 import lsst.afw.image as afwImage
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
@@ -50,7 +51,7 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
         for i in xrange(5):
             sourceSet.append(afwDet.Source())
         
-        point = afwImage.PointD(0.0, 0.0)
+        point = afwGeom.makePointD(0.0, 0.0)
         wcs = afwImage.createWcs(point, point, 1, 0, 0, 1);
         ampBBox = afwImage.BBox(afwImage.PointI(0, 0), 1, 1)
 

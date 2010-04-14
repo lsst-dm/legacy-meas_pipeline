@@ -9,7 +9,7 @@ definitions: {
         type: "string"
         description: "name of the psf algorithm to use"
         minOccurs: 0
-        maxOCcurs: 1
+        maxOccurs: 1
         default: "DoubleGaussian"
         allowed: {
             value: "DoubleGaussian"

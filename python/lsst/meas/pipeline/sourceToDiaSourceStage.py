@@ -4,6 +4,7 @@ from lsst.pex.logging import Log
 
 import lsst.pex.policy as pexPolicy
 import lsst.afw.detection as afwDet
+import lsst.afw.coord as afwCoord
 import lsst.afw.image as afwImg
 import lsst.pex.exceptions as pexExcept
 import lsst.meas.algorithms as measAlg
@@ -73,10 +74,10 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
                 diaSource.setRaAstromErr(raErr); diaSource.setDecAstromErr(decErr)
 
                 # No errors for XPeak, YPeak
-                raDec = self.ccdWcs.xyToRaDec(
-                        diaSource.getXPeak(), diaSource.getYPeak())
-                diaSource.setRaPeak(raDec.getX())
-                diaSource.setDecPeak(raDec.getY())
+                raDec = self.ccdWcs.pixelToSky(
+                    diaSource.getXPeak(), diaSource.getYPeak())
+                diaSource.setRaPeak(raDec.getLongitude(afwCoord.DEGREES))
+                diaSource.setDecPeak(raDec.getLatitude(afwCoord.DEGREES))
 
                 # Simple RA/decl == Astrom versions
                 diaSource.setRa(diaSource.getRaAstrom())
@@ -97,11 +98,11 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
         # to the amp coordinate system before using the WCS.
         ampX = x - self.ampBBox.getX0()
         ampY = y - self.ampBBox.getY0()
-        raDec = self.ccdWcs.xyToRaDec(ampX, ampY)
-        ra = raDec.getX(); dec = raDec.getY()
-        raDecWithErr = self.ccdWcs.xyToRaDec(ampX + xErr, ampY + yErr)
-        raErr = raDecWithErr.getX() - ra
-        decErr = raDecWithErr.getY() - dec
+        raDec = self.ccdWcs.pixelToSky(ampX, ampY)
+        ra = raDec.getLongitude(afwCoord.DEGREES); dec = raDec.getLatitude(afwCoord.DEGREES)
+        raDecWithErr = self.ccdWcs.pixelToSky(ampX + xErr, ampY + yErr)
+        raErr = raDecWithErr.getLongitude(afwCoord.DEGREES) - ra
+        decErr = raDecWithErr.getLatitude(afwCoord.DEGREES) - dec
         return (ra, dec, raErr, decErr)
 
 class SourceToDiaSourceStage(harnessStage.Stage):

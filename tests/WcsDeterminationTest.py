@@ -69,8 +69,9 @@ class WcsDeterminationStageTestCase(unittest.TestCase):
 
         
     def tearDown(self):
-        pass
-        
+        del self.policy
+        del self.clipboard
+
     def testSingleExposure(self):
         #Run the stage
         stage = measPipe.WcsDeterminationStage(self.policy)
