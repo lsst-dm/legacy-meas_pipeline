@@ -11,6 +11,10 @@ definitions: {
         maxOccurs: 1
         default: "SDSS"
         allowed: {
+            value: "GAUSSIAN"
+            description: "use Monet's Gaussian-fit algorithm"
+        }
+        allowed: {
             value: "SDSS"
             description: "use the Sloan algorithm"
         }

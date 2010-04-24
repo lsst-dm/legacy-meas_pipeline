@@ -3,7 +3,7 @@
 # Stage policy for SourceMeasurementStage
 
 measureObjects: { 
-    centroidAlgorithm: "SDSS"
+    centroidAlgorithm: "GAUSSIAN"
     shapeAlgorithm: "SDSS"
     photometryAlgorithm: "NAIVE"
     apRadius: 3.0

@@ -13,17 +13,19 @@ outputKeys: {
 
 parameters: {
     psfDeterminationPolicy: {
-        fluxLim: 2000.0
-        nEigenComponents: 2
-        spatialOrder: 1
-        nStarPerCell: 2
-        kernelSize: 15
-        nStarPerCellSpatialFit: 2
-        nIterForPsf: 3        
+        fluxLim: 3000.0
+        clumpNSigma: 3.0
+        nEigenComponents: 4
+        spatialOrder: 2
+        nStarPerCell: 3
+        kernelSize: 25
+        nStarPerCellSpatialFit: 3
+        constantWeight: false
+        nIterForPsf: 5
         tolerance: 0.1
-        reducedChi2ForPsfCandidates: 2.0
-        sizeCellX: 256
-        sizeCellY: 256
+        reducedChi2ForPsfCandidates: 10.0
+        sizeCellX: 512 # 256
+        sizeCellY: 512 # 256
     }
 }
 
