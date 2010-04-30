@@ -20,6 +20,14 @@ definitions: {
                     maxOccurs: 1
                     default: "wcs"
                 }
+                exposure: {
+                    type: "string"
+                    description: "clipboard key of the exposure to obtain a WCS from if
+                                  the clipboard does not directly reference a WCS.
+                                 "
+                    maxOccurs: 1
+                    default: "exposure"
+                }
             }
         }
     }

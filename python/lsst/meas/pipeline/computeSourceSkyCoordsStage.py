@@ -32,7 +32,12 @@ class ComputeSourceSkyCoordsStageParallel(harnessStage.ParallelProcessing):
     def process(self, clipboard):
         wcsKey = self.policy.getString("inputKeys.wcs")
         sourcesKey = self.policy.getString("inputKeys.sources")
-        wcs = clipboard.get(wcsKey)
+        exposureKey = self.policy.getString("inputKeys.exposure")
+        if clipboard.contains(wcsKey):
+            wcs = clipboard.get(wcsKey)
+        else:
+            exposure = clipboard.get(exposureKey)
+            wcs = exposure.getWcs()
         sourceSet = clipboard.get(sourcesKey)
         if sourceSet is None:
             self.log.log(Log.WARN, "No SourceSet with key " + sourcesKey)
