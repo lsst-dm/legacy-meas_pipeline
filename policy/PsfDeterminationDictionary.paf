@@ -24,6 +24,13 @@ definitions: {
             min: 0.0
         }
     }
+    nonLinearSpatialFit: {
+        type: "bool"
+        description: "Use non-linear fitter for spatial variation of Kernel"
+        minOccurs: 0
+        maxOccurs: 1
+        default: true
+    }
     nEigenComponents: {
         type: "int"
         description: "number of eigen components for PSF kernel creation"
@@ -51,6 +58,13 @@ definitions: {
         minOccurs: 1
         maxOccurs: 1
         default: 21
+    }
+    borderWidth: {
+        type: "int"
+        description: "Number of pixels to ignore around the edge of PSF candidate postage stamps"
+        minOccurs: 1
+        maxOccurs: 1
+        default: 0
     }
     nStarPerCellSpatialFit: {
         type: "int"
