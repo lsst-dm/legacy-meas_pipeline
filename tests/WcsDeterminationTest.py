@@ -59,9 +59,9 @@ class WcsDeterminationStageTestCase(unittest.TestCase):
         srcSet = readSourceSet(os.path.join(path, "v695833-e0-c000.xy.txt"))
 
         #Put them on the clipboard
-        file = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+        fileName = pexPolicy.DefaultPolicyFile("meas_pipeline", 
                 "WcsDeterminationStageDictionary.paf", "policy")
-        self.policy = pexPolicy.Policy.createPolicy(file)
+        self.policy = pexPolicy.Policy.createPolicy(fileName)
 
         self.clipboard = pexClipboard.Clipboard()         
         self.clipboard.put(self.policy.get("inputExposureKey"), exp)
@@ -85,7 +85,8 @@ class WcsDeterminationStageTestCase(unittest.TestCase):
         matchListKey = self.policy.get("outputMatchListKey")
         assert(outWorker.contains(matchListKey))
 
-    
+
+        
 def suite():
     """Returns a suite containing all the test cases in this module."""
 

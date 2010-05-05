@@ -90,16 +90,19 @@ definitions: {
         default: 3
     }
     
-    filterNameKey: {
+    defaultFilterName: {
         type: "string"
         description: "When matching source to catalogue, we have the option
         of returning the catalogue magnitude for each star. To do this,
         we need to know the filter used for these observations (e.g Johnson B,
         or Sloan z). This variable stores the dictionary key under which
-        the filter name is stored. This variable is not required."
+        the filter name is stored. This variable is not required.
+        The default value, mag, is usually to be found in the catalogue's
+        index files. If this variable is unset, no catalogue magnitudes
+        are returned."
         minOccurs: 0
         maxOccurs: 1
-        default: "NoFilterNameSupplied"
+        default: "mag"
     }
     
     calculateSip:{
