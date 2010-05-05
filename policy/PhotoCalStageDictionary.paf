@@ -20,16 +20,9 @@ definitions: {
     }
     outputValueKey: {
         type: "string"
-        description: "specify clipboard key of output Photometric Zero Point"
+        description: "specify clipboard key of output PhotometricMagnitude Object"
         minOccurs: 1
         maxOccurs: 1
-        default: photometricZeroPoint
-    }
-    outputUncertaintyKey: {
-        type: "string"
-        description: "specify clipboard key uncertainty in output photometric zero point"
-        minOccurs: 1
-        maxOccurs: 1
-        default: photometricZeroPointUnc
+        default: photometricMagnitudeObject
     }
 }

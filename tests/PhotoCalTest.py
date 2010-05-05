@@ -83,18 +83,15 @@ class PhotoCalStageTestCase(unittest.TestCase):
         del self.policy
         
     def testSingleExposure(self):
-        pass
         #Run the stage
         stage = measPipe.PhotoCalStage(self.policy)
         tester = SimpleStageTester(stage)
         outWorker = tester.runWorker(self.clipboard)
 
         #Check for output parameters
-        zeroKey = self.policy.get("outputValueKey")
-        assert(outWorker.contains(zeroKey))
+        magKey = self.policy.get("outputValueKey")
+        assert(outWorker.contains(magKey))
 
-        zeroUncKey = self.policy.get("outputUncertaintyKey")
-        assert(outWorker.contains(zeroUncKey))
 
     
 def suite():

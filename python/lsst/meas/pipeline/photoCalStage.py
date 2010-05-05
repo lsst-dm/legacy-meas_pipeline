@@ -57,16 +57,14 @@ class PhotoCalStageParallel(harnessStage.ParallelProcessing):
             raise RuntimeError("No input SourceMatch set on clipboard")
         srcMatchSet = clipboard.get(srcMatchSetKey)            
         
-        outputValueKey = self.policy.get("outputValueKey")
-        outputUncKey = self.policy.get("outputUncertaintyKey")
-        
+       
         
         #Do the work
-        zero, zeroUnc = photocal.calcPhotoCal(srcMatchSet, log=self.log)
+        magObj = photocal.calcPhotoCal(srcMatchSet, log=self.log)
 
         #Save results to clipboard
-        clipboard.put(self.policy.get('outputValueKey'), zero)
-        clipboard.put(self.policy.get('outputUncertaintyKey'), zeroUnc)
+        outputValueKey = self.policy.get("outputValueKey")
+        clipboard.put(outputValueKey, magObj)
 
 
 
