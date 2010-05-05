@@ -101,8 +101,8 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
         raDec = self.ccdWcs.pixelToSky(ampX, ampY)
         ra = raDec.getLongitude(afwCoord.DEGREES); dec = raDec.getLatitude(afwCoord.DEGREES)
         raDecWithErr = self.ccdWcs.pixelToSky(ampX + xErr, ampY + yErr)
-        raErr = raDecWithErr.getLongitude(afwCoord.DEGREES) - ra
-        decErr = raDecWithErr.getLatitude(afwCoord.DEGREES) - dec
+        raErr = abs(raDecWithErr.getLongitude(afwCoord.DEGREES) - ra)
+        decErr = abs(raDecWithErr.getLatitude(afwCoord.DEGREES) - dec)
         return (ra, dec, raErr, decErr)
 
 class SourceToDiaSourceStage(harnessStage.Stage):

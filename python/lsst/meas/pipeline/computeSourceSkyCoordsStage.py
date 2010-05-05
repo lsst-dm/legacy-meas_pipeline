@@ -77,8 +77,8 @@ class ComputeSourceSkyCoordsStageParallel(harnessStage.ParallelProcessing):
         ra = raDec.getLongitude(afwCoord.RADIANS)
         dec = raDec.getLatitude(afwCoord.RADIANS)
         raDecWithErr = wcs.pixelToSky(x + xErr, y + yErr)
-        raErr = raDecWithErr.getLongitude(afwCoord.RADIANS) - ra
-        decErr = raDecWithErr.getLatitude(afwCoord.RADIANS) - dec
+        raErr = abs(raDecWithErr.getLongitude(afwCoord.RADIANS) - ra)
+        decErr = abs(raDecWithErr.getLatitude(afwCoord.RADIANS) - dec)
         return (ra, dec, raErr, decErr)
 
 class ComputeSourceSkyCoordsStage(harnessStage.Stage):
