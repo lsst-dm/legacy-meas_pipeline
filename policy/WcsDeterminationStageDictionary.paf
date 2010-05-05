@@ -102,7 +102,7 @@ definitions: {
         are returned."
         minOccurs: 0
         maxOccurs: 1
-        default: "mag"
+        # default: "mag"
     }
     
     calculateSip:{
