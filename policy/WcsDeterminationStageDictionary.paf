@@ -117,7 +117,7 @@ definitions: {
         description: "How good must the distortion correction be to declare success?"
         minOccurs: 0
         maxOccurs: 1
-        default: 0.1
+        default: 0.3
     }
     maxSipOrder: {
         type: "int"
