@@ -1,3 +1,5 @@
+import math
+
 import lsst.pex.harness.stage as harnessStage
 
 from lsst.pex.logging import Log
@@ -5,7 +7,7 @@ from lsst.pex.logging import Log
 import lsst.pex.policy as pexPolicy
 import lsst.afw.detection as afwDet
 import lsst.afw.coord as afwCoord
-import lsst.afw.image as afwImg
+import lsst.afw.geom as afwGeom
 import lsst.pex.exceptions as pexExcept
 import lsst.meas.algorithms as measAlg
 
@@ -91,19 +93,67 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
 
             clipboard.put(outputKey, diaSourceSet)
             clipboard.put("persistable_" + outputKey, persistableSet)
-        
-    def raDecWithErrs(self, x, y, xErr, yErr):
-        # ccdWcs is determined from a CCDs worth of WcsSources (by each slice in the CCD),
-        # but is shifted to amp relative coordinates. XY coords are CCD relative, so transform
-        # to the amp coordinate system before using the WCS.
+
+    def raDecWithErrs(self, x, y, xErr, yErr, wcs):
+        """Use wcs to transform pixel coordinates x,y to sky coordinates ra,dec.
+        """
         ampX = x - self.ampBBox.getX0()
         ampY = y - self.ampBBox.getY0()
-        raDec = self.ccdWcs.pixelToSky(ampX, ampY)
-        ra = raDec.getLongitude(afwCoord.DEGREES); dec = raDec.getLatitude(afwCoord.DEGREES)
-        raDecWithErr = self.ccdWcs.pixelToSky(ampX + xErr, ampY + yErr)
-        raErr = abs(raDecWithErr.getLongitude(afwCoord.DEGREES) - ra)
-        decErr = abs(raDecWithErr.getLatitude(afwCoord.DEGREES) - dec)
-        return (ra, dec, raErr, decErr)
+        sky = self.ccdWcs.pixelToSky(ampX, ampY)
+        xform = self.ccdWcs.linearizeAt(afwGeom.makePointD(
+            sky.getLongitude(afwCoord.DEGREES), sky.getLatitude(afwCoord.DEGREES)))
+        raErr = math.sqrt(xform[0]**2 * xErr**2 + xform[2]**2 * yErr**2)
+        decErr = math.sqrt(xform[1]**2 * xErr**2 + xform[3]**2 * yErr**2)
+        return (sky.getLongitude(afwCoord.DEGREES),
+                sky.getLatitude(afwCoord.DEGREES),
+                raErr,
+                decErr)
+
+    def raDecWithErrs(self, x, y, xErr, yErr, pixToSkyAffineTransform=None):
+        """Use wcs to transform pixel coordinates x, y and their errors to 
+        sky coordinates ra, dec with errors. If the caller does not provide an
+        affine approximation to the pixel->sky WCS transform, an approximation
+        is automatically computed (and used to propagate errors). For sources
+        from exposures far from the poles, a single approximation can be reused
+        without introducing much error.
+
+        Note that the affine transform is expected to take inputs in units of
+        pixels to outputs in units of degrees. This is an artifact of WCSLIB
+        using degrees as its internal angular unit.
+
+        Sky coordinates and their errors are returned in units of degrees.
+        """
+        ampX = x - self.ampBBox.getX0()
+        ampY = y - self.ampBBox.getY0()
+        sky = self.ccdWcs.pixelToSky(ampX, ampY)
+        if pixToSkyAffineTransform is None:
+            skyp = afwGeom.makePointD(sky.getLongitude(afwCoord.DEGREES),
+                                      sky.getLatitude(afwCoord.DEGREES))
+            pixToSkyAffineTransform = self.ccdWcs.linearizeAt(skyp)
+        raErr, decErr = self.raDecErrs(xErr, yErr, pixToSkyAffineTransform)
+        return (sky.getLongitude(afwCoord.DEGREES),
+                sky.getLatitude(afwCoord.DEGREES),
+                raErr,
+                decErr)
+
+    def raDecErrs(self, xErr, yErr, pixToSkyAffineTransform):
+        """Propagates errors in pixel space to errors in ra, dec space
+        using an affine approximation to the pixel->sky WCS transform
+        (e.g. as returned by lsst.afw.image.Wcs.linearizeAt).
+
+        Note that pixToSkyAffineTransform is expected to take inputs in units
+        of pixels to outputs in units of degrees. This is an artifact of WCSLIB
+        using degrees as its internal angular unit.
+
+        Errors are returned in units of degrees.
+        """
+        t = pixToSkyAffineTransform
+        varRa  = t[0]**2 * xErr**2 + t[2]**2 * yErr**2
+        varDec = t[1]**2 * xErr**2 + t[3]**2 * yErr**2
+        return (math.sqrt(varRa), math.sqrt(varDec))
+
+
+
 
 class SourceToDiaSourceStage(harnessStage.Stage):
     parallelClass = SourceToDiaSourceStageParallel

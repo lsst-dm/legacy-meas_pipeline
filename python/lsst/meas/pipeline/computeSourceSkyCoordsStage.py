@@ -1,3 +1,5 @@
+import math
+
 import lsst.pex.harness.stage as harnessStage
 
 from lsst.pex.logging import Log
@@ -5,6 +7,7 @@ from lsst.pex.logging import Log
 import lsst.pex.policy as pexPolicy
 import lsst.afw.detection as afwDet
 import lsst.afw.coord as afwCoord
+import lsst.afw.geom as afwGeom
 import lsst.pex.exceptions as pexExcept
 
 
@@ -70,16 +73,47 @@ class ComputeSourceSkyCoordsStageParallel(harnessStage.ParallelProcessing):
             s.setDec(s.getDecAstrom())
             s.setDecErrForDetection(s.getDecAstromErr())
 
-    def raDecWithErrs(self, x, y, xErr, yErr, wcs):
-        """Use wcs to transform pixel coordinates x,y to sky coordinates ra,dec.
+    def raDecWithErrs(self, x, y, xErr, yErr, wcs, pixToSkyAffineTransform=None):
+        """Use wcs to transform pixel coordinates x, y and their errors to 
+        sky coordinates ra, dec with errors. If the caller does not provide an
+        affine approximation to the pixel->sky WCS transform, an approximation
+        is automatically computed (and used to propagate errors). For sources
+        from exposures far from the poles, a single approximation can be reused
+        without introducing much error.
+
+        Note that the affine transform is expected to take inputs in units of
+        pixels to outputs in units of degrees. This is an artifact of WCSLIB
+        using degrees as its internal angular unit.
+
+        Sky coordinates and their errors are returned in units of radians.
         """
-        raDec = wcs.pixelToSky(x, y)
-        ra = raDec.getLongitude(afwCoord.RADIANS)
-        dec = raDec.getLatitude(afwCoord.RADIANS)
-        raDecWithErr = wcs.pixelToSky(x + xErr, y + yErr)
-        raErr = abs(raDecWithErr.getLongitude(afwCoord.RADIANS) - ra)
-        decErr = abs(raDecWithErr.getLatitude(afwCoord.RADIANS) - dec)
-        return (ra, dec, raErr, decErr)
+        sky = wcs.pixelToSky(x, y)
+        if pixToSkyAffineTransform is None:
+            skyp = afwGeom.makePointD(sky.getLongitude(afwCoord.DEGREES),
+                                      sky.getLatitude(afwCoord.DEGREES))
+            pixToSkyAffineTransform = wcs.linearizeAt(skyp)
+        raErr, decErr = self.raDecErrs(xErr, yErr, pixToSkyAffineTransform)
+        return (sky.getLongitude(afwCoord.RADIANS),
+                sky.getLatitude(afwCoord.RADIANS),
+                raErr,
+                decErr)
+
+    def raDecErrs(self, xErr, yErr, pixToSkyAffineTransform):
+        """Propagates errors in pixel space to errors in ra, dec space
+        using an affine approximation to the pixel->sky WCS transform
+        (e.g. as returned by lsst.afw.image.Wcs.linearizeAt).
+
+        Note that pixToSkyAffineTransform is expected to take inputs in units
+        of pixels to outputs in units of degrees. This is an artifact of WCSLIB
+        using degrees as its internal angular unit.
+
+        Errors are returned in units of radians.
+        """
+        t = pixToSkyAffineTransform
+        varRa  = t[0]**2 * xErr**2 + t[2]**2 * yErr**2
+        varDec = t[1]**2 * xErr**2 + t[3]**2 * yErr**2
+        return (math.radians(math.sqrt(varRa)), math.radians(math.sqrt(varDec)))
+         
 
 class ComputeSourceSkyCoordsStage(harnessStage.Stage):
     parallelClass = ComputeSourceSkyCoordsStageParallel

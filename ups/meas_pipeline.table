@@ -2,7 +2,6 @@ setupRequired(pex_harness >= 3.4)
 setupRequired(pex_policy >= 3.4)
 setupRequired(afw >= 3.3.17)
 setupRequired(meas_utils)
-setupOptional(matplotlib)
 setupOptional(astrometry_net_data cfhttemplate)
 
 envAppend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
