@@ -94,21 +94,6 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
             clipboard.put(outputKey, diaSourceSet)
             clipboard.put("persistable_" + outputKey, persistableSet)
 
-    def raDecWithErrs(self, x, y, xErr, yErr, wcs):
-        """Use wcs to transform pixel coordinates x,y to sky coordinates ra,dec.
-        """
-        ampX = x - self.ampBBox.getX0()
-        ampY = y - self.ampBBox.getY0()
-        sky = self.ccdWcs.pixelToSky(ampX, ampY)
-        xform = self.ccdWcs.linearizeAt(afwGeom.makePointD(
-            sky.getLongitude(afwCoord.DEGREES), sky.getLatitude(afwCoord.DEGREES)))
-        raErr = math.sqrt(xform[0]**2 * xErr**2 + xform[2]**2 * yErr**2)
-        decErr = math.sqrt(xform[1]**2 * xErr**2 + xform[3]**2 * yErr**2)
-        return (sky.getLongitude(afwCoord.DEGREES),
-                sky.getLatitude(afwCoord.DEGREES),
-                raErr,
-                decErr)
-
     def raDecWithErrs(self, x, y, xErr, yErr, pixToSkyAffineTransform=None):
         """Use wcs to transform pixel coordinates x, y and their errors to 
         sky coordinates ra, dec with errors. If the caller does not provide an
@@ -151,8 +136,6 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
         varRa  = t[0]**2 * xErr**2 + t[2]**2 * yErr**2
         varDec = t[1]**2 * xErr**2 + t[3]**2 * yErr**2
         return (math.sqrt(varRa), math.sqrt(varDec))
-
-
 
 
 class SourceToDiaSourceStage(harnessStage.Stage):
