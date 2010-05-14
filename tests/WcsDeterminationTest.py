@@ -84,6 +84,7 @@ class WcsDeterminationStageTestCase(unittest.TestCase):
 
         matchListKey = self.policy.get("outputMatchListKey")
         assert(outWorker.contains(matchListKey))
+        assert(len(outWorker['matchListKey']) > 0)
 
 
         

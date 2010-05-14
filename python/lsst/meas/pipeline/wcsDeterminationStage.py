@@ -56,6 +56,13 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
             self.policy = defaultPolicy
         else:
             self.policy.mergeDefaults(defaultPolicy)
+
+
+        #Setup the astrometry solver
+        path=os.path.join(eups.productDir("astrometry_net_data"), "metadata.paf")
+        self.solver = astromNet.GlobalAstrometrySolution(path)
+        self.solver.allowDistortion(self.policy.get('allowDistortion'))
+        self.solver.setMatchThreshold(self.policy.get('matchThreshold'))
                
         #Setup the log
         self.log = Debug(self.log, "WcsDeterminationStageParallel")
@@ -83,7 +90,7 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
         
         #Determine list of matching sources, and Wcs
         matchList, wcs = measAstrom.determineWcs(self.policy, exp, 
-                srcSet, log=self.log)
+                srcSet, solver=self.solver, log=self.log)
 
         #Save results to clipboard
         clipboard.put(self.policy.get('outputMatchListKey'), matchList)

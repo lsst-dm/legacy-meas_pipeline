@@ -112,20 +112,11 @@ definitions: {
         maxOccurs: 1
         default: true
     }
-    wcsToleranceInArcsec: {
-        type: "double"
-        description: "How good must the distortion correction be to declare success?"
-        minOccurs: 0
-        maxOccurs: 1
-        default: 0.3
-    }
-    maxSipOrder: {
+    sipOrder: {
         type: "int"
-        description: "If we can't reach wcsToleranceInArcsec with a SIP order this large, give up."
+        description: "What order polynomial to use to fit image distortions"
         minOccurs: 0
         maxOccurs: 1
-        default: 9
+        default: 4
     }
-    
-    
 }
