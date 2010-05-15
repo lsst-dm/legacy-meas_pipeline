@@ -34,8 +34,10 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
 
     def setUp(self):
         filename = os.path.join(eups.productDir("afwdata"), "CFHT", "D4", "cal-53535-i-797722_1")
-        if True:
+        if not True:
             bbox = afwImage.BBox(afwImage.PointI(32,32), 1024, 1024)
+        elif not True:
+            bbox = afwImage.BBox(afwImage.PointI(32,32), 1024, 2*1024)
         else:
             bbox = afwImage.BBox(afwImage.PointI(32, 2), afwImage.PointI(2079, 4609))
 
