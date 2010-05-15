@@ -84,7 +84,6 @@ class SourceDetectionStageParallel(harnessStage.ParallelProcessing):
             exposureList.append(exposure)
        
         if exposure is None:
-            import pdb; pdb.set_trace()
             raise RuntimeError, "Input Exposure Missing"
             
         #subtract the background

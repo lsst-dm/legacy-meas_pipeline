@@ -7,7 +7,6 @@ Run with:
 import sys, os, math
 from math import *
 
-import pdb
 import unittest
 import random
 import time
@@ -36,6 +35,7 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
     def setUp(self):
         filename = os.path.join(eups.productDir("afwdata"), "CFHT", "D4", "cal-53535-i-797722_1")
         bbox = afwImage.BBox(afwImage.PointI(32,32), 1024, 1024)
+
         self.exposure =  afwImage.ExposureF(filename, 0, bbox)
 
     def tearDown(self):
