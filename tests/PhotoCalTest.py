@@ -19,7 +19,7 @@ import lsst.pex.policy as pexPolicy
 from lsst.pex.logging import Trace
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
-
+import lsst.meas.algorithms.utils as malgUtil
 
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
@@ -60,11 +60,17 @@ class PhotoCalStageTestCase(unittest.TestCase):
         
         #Make a copy, with different fluxes.
         #The exact choice doesn't matter ,we just want to make sure the code returns an answer
+        #Also need to specify that each source is a star
         catSet = []
+        
+        flags = malgUtil.getDetectionFlags()
+        goodFlag = flags['BINNED1'] | flags['STAR']
         for s in srcSet:
             s1 = afwDet.Source(s)
             s1.setPsfFlux(s1.getPsfFlux()*.281)
             catSet.append(s1)
+            
+            s.setFlagForDetection(goodFlag)
             
         #Make a SourceMatch object
         maxDist = 1/3600. #matches must be this close together
@@ -93,6 +99,23 @@ class PhotoCalStageTestCase(unittest.TestCase):
         assert(outWorker.contains(magKey))
 
 
+    def testLogMessage(self):
+        """Writing to log failed raised an exception, this test ensures the problem was fixed."""
+
+        #Modify the input data so that a good fit can not be obtained
+        matchSet = self.clipboard.get(self.policy.get("sourceMatchSetKey"))
+        for m in matchSet:
+            m.second.setPsfFlux(1e4)
+            
+        stage = measPipe.PhotoCalStage(self.policy)
+        tester = SimpleStageTester(stage)
+        outWorker = tester.runWorker(self.clipboard)
+
+        #Check for output parameters
+        magKey = self.policy.get("outputValueKey")
+        assert(outWorker.contains(magKey))
+
+        
     
 def suite():
     """Returns a suite containing all the test cases in this module."""
