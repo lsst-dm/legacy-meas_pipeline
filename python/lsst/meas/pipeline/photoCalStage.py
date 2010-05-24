@@ -60,7 +60,12 @@ class PhotoCalStageParallel(harnessStage.ParallelProcessing):
        
         
         #Do the work
-        magObj = photocal.calcPhotoCal(srcMatchSet, log=self.log)
+        try:
+            magObj = photocal.calcPhotoCal(srcMatchSet, log=self.log)
+        except ValueError, e:
+            msg = "Failed to calculate photometric zeropoint: %s" %(e)
+            self.log.log(Log.FAIL, msg)
+            magObj = None
 
         #Save results to clipboard
         outputValueKey = self.policy.get("outputValueKey")
