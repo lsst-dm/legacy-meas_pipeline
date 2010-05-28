@@ -11,6 +11,13 @@
 
 
 definitions: {
+     inputExposureKey: {
+        type: "string"
+        description: "specify clipboard key of input Exposure"
+        minOccurs: 1
+        maxOccurs: 1
+        default: visitExposure
+    }
      sourceMatchSetKey: {
         type: "string"
         description: "specify clipboard key of input SourceMatchSet"

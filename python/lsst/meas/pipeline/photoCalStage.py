@@ -52,6 +52,11 @@ class PhotoCalStageParallel(harnessStage.ParallelProcessing):
         if clipboard is None:
             raise RuntimeError("Clipboard is empty")
 
+        expKey = self.policy.get('inputExposureKey')
+        if not clipboard.contains(expKey):
+            raise RuntimeError("No exposure on clipboard")
+        exp = clipboard.get(expKey)
+
         srcMatchSetKey = self.policy.get("sourceMatchSetKey")
         if not clipboard.contains(srcMatchSetKey):
             raise RuntimeError("No input SourceMatch set on clipboard")
@@ -66,6 +71,11 @@ class PhotoCalStageParallel(harnessStage.ParallelProcessing):
             msg = "Failed to calculate photometric zeropoint: %s" %(e)
             self.log.log(Log.FAIL, msg)
             magObj = None
+
+        if magObj is not None:
+            exp.getCalib().setFluxMag0(magObj.getFlux(0))
+            self.log.log(Log.INFO, "Flux of magnitude 0: %g" %
+                    (magObj.getFlux(0),))
 
         #Save results to clipboard
         outputValueKey = self.policy.get("outputValueKey")
