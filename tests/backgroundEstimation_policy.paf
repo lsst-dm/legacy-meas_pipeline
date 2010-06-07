@@ -6,7 +6,7 @@ inputKeys: {
     exposure: "calibratedExposure"
 }
 outputKeys: {
-    exposure: "calibratedExposure"
+    backgroundSubtractedExposure: "calibratedExposure"
     background: "background"
 }
 parameters: {
