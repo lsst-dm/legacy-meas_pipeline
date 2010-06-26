@@ -4,7 +4,6 @@ import os
 import sys
 import math
 
-import eups
 import lsst.pex.harness as pexHarness
 import lsst.pex.harness.stage as harnessStage
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
@@ -59,7 +58,7 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
 
 
         #Setup the astrometry solver
-        path=os.path.join(eups.productDir("astrometry_net_data"), "metadata.paf")
+        path=os.path.join(os.environ['ASTROMETRY_NET_DATA_DIR'], "metadata.paf")
         self.solver = astromNet.GlobalAstrometrySolution(path)
         self.solver.allowDistortion(self.policy.get('allowDistortion'))
         self.solver.setMatchThreshold(self.policy.get('matchThreshold'))
