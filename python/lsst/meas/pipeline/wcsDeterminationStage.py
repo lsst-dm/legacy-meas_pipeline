@@ -60,7 +60,7 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
         #Setup the astrometry solver
         path=os.path.join(os.environ['ASTROMETRY_NET_DATA_DIR'], "metadata.paf")
         self.solver = astromNet.GlobalAstrometrySolution(path)
-        self.solver.allowDistortion(self.policy.get('allowDistortion'))
+        # self.solver.allowDistortion(self.policy.get('allowDistortion'))
         self.solver.setMatchThreshold(self.policy.get('matchThreshold'))
                
         #Setup the log

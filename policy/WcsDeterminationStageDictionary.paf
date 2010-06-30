@@ -49,13 +49,13 @@ definitions: {
         maxOccurs: 1
         default: 50
     }
-    allowDistortion: {
-        type: "boolean"
-        description: "Inform the solver that the image may suffer from some distortion. Leave this on if a purely linear wcs solution will get the postions of some stars wrong by more than 1 pixel."
-        default: true
-        minOccurs: 0
-        maxOccurs: 1
-    }
+#    allowDistortion: {
+#         type: "boolean"
+#         description: "Inform the solver that the image may suffer from some distortion. Leave this on if a purely linear wcs solution will get the postions of some stars wrong by more than 1 pixel."
+#         default: true
+#         minOccurs: 0
+#         maxOccurs: 1
+#    }
     matchThreshold: {
         type: "double"
         description: "How good does a match need to be to be accepted. Typical value is log(1e12) approximately 27"
