@@ -17,9 +17,6 @@ import lsst.meas.astrom.net as astromNet
 import lsst.meas.astrom.sip as sip
 import lsst.meas.astrom.sip.cleanBadPoints as cleanBadPoints
 
-import pdb
-    
-
 class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
     """Validate the Wcs for an image using the astrometry.net package and calculate distortion
     coefficients
