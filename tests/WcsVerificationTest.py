@@ -20,6 +20,7 @@ import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as pexPolicy
 from lsst.pex.logging import Trace
 import lsst.meas.pipeline as measPipe
+import lsst.afw.image as afwImg
 import lsst.afw.detection as afwDet
 
 
@@ -82,8 +83,11 @@ class WcsVerificationStageTestCase(unittest.TestCase):
 
         self.clipboard = pexClipboard.Clipboard()         
         self.clipboard.put(self.policy.get("sourceMatchSetKey"), srcMatchSet)
+        self.clipboard.put(self.policy.get("inputExposureKey"),
+                afwImg.ExposureF(4000, 4000))
 
     def tearDown(self):
+        del self.clipboard
         del self.policy
         
     def testSingleExposure(self):
@@ -93,8 +97,12 @@ class WcsVerificationStageTestCase(unittest.TestCase):
         outWorker = tester.runWorker(self.clipboard)
 
         #Check for output parameters
-        key = self.policy.get("outputDictKey")
-        assert(outWorker.contains(key))
+        image = self.clipboard.get(self.policy.get("inputExposureKey"))
+        metadata = image.getMetadata()
+        self.assert_(metadata.exists("minObjectsPerCell"))
+        self.assert_(metadata.exists("maxObjectsPerCell"))
+        self.assert_(metadata.exists("meanObjectsPerCell"))
+        self.assert_(metadata.exists("stdObjectsPerCell"))
 
     
 def suite():
