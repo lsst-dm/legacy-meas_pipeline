@@ -55,6 +55,14 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         if self.policy is None:
             self.policy = pexPolicy.policy()
         self.policy.mergeDefaults(defPolicy.getDictionary())
+        #
+        # RHL doesn't know how to do this properly
+        #
+        self.log.log(Log.WARN, "Overridding self.policy.measureObjects from MeasureSources.paf")
+        moPolicy = pexPolicy.Policy(os.path.join(policyFile.getRepositoryPath(), "MeasureSources.paf"))
+
+        self.policy.remove("measureObjects")
+        self.policy.add("measureObjects", moPolicy)
         
     def process(self, clipboard):
         """
