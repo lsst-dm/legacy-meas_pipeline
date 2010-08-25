@@ -55,7 +55,7 @@ definitions: {
         }		
     }
 
-    measureObjects: {
+    measureSources: {
         type: "policy"        
         description: "policy for configuring measurement algorithms"
         dictionary: @MeasureSourcesDictionary.paf

@@ -58,11 +58,11 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         #
         # RHL doesn't know how to do this properly
         #
-        self.log.log(Log.WARN, "Overridding self.policy.measureObjects from MeasureSources.paf")
+        self.log.log(Log.WARN, "Overridding self.policy.measureSources from MeasureSources.paf")
         moPolicy = pexPolicy.Policy(os.path.join(policyFile.getRepositoryPath(), "MeasureSources.paf"))
 
-        self.policy.remove("measureObjects")
-        self.policy.add("measureObjects", moPolicy)
+        self.policy.remove("measureSources")
+        self.policy.add("measureSources", moPolicy)
         
     def process(self, clipboard):
         """
@@ -104,7 +104,7 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
     def getClipboardData(self, clipboard):
         #private helped method for grabbing the clipboard data in a useful way 
 
-        measurePolicy = self.policy.getPolicy("measureObjects")
+        measurePolicy = self.policy.getPolicy("measureSources")
 
         exposure = clipboard.get(self.policy.get("inputKeys.exposure"))
         psf = clipboard.get(self.policy.get("inputKeys.psf"))

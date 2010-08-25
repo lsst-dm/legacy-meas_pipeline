@@ -2,7 +2,7 @@
 #
 # Stage policy for SourceMeasurementStage
 
-measureObjects: { 
+measureSources: { 
     centroidAlgorithm: "GAUSSIAN"
     shapeAlgorithm: "SDSS"
     photometryAlgorithm: "NAIVE"
