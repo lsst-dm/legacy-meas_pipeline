@@ -31,7 +31,7 @@ import lsst.afw.detection as afwDet
 import lsst.afw.coord as afwCoord
 import lsst.afw.geom as afwGeom
 import lsst.pex.exceptions as pexExcept
-from lsst.meas.utils.sourceMeasurement import computeSkyCoords
+import lsst.meas.utils.sourceMeasurement as sourceMeasurement
 
 class ComputeSourceSkyCoordsStageParallel(harnessStage.ParallelProcessing):
     """
@@ -64,7 +64,7 @@ class ComputeSourceSkyCoordsStageParallel(harnessStage.ParallelProcessing):
             exposure = clipboard.get(exposureKey)
             wcs = exposure.getWcs()
         sourceSet = clipboard.get(sourcesKey)
-        computeSkyCoords(wcs, sourceSet)
+        sourceMeasurement.computeSkyCoords(wcs, sourceSet)
          
 
 class ComputeSourceSkyCoordsStage(harnessStage.Stage):
