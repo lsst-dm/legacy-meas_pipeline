@@ -11,7 +11,7 @@ definitions: {
             definitions: {
 			    model: {
 			    	type: "string"			        
-        			default: "initialGalaxyModel"
+        			default: "initialSGModel"
 			        minOccurs: 0
 			        maxOccurs: 1
 			    }

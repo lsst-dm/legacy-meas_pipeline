@@ -28,6 +28,8 @@ from lsst.pex.logging import Log
 import lsst.daf.base as dafBase
 from lsst.daf.base import *
 import lsst.pex.policy as pexPolicy
+import lsst.meas.multifit as measMult
+import lsst.meas.utils.multifit as utilsMult
 
 __all__ = ["MultifitStage", "MultifitStageParallel"]
 
@@ -37,13 +39,12 @@ class MultifitStageParallel(harnessStage.ParallelProcessing):
     stack using multifit.
 
     INPUT:
-    - a Model
-    - an ExposureStack
+    - initial model
+    - ExposureList
     OUTPUT:
-    - a Model
-    - a chisq
-    - a covariance matrix
-
+    - fit model
+    - double : sgChisq
+    - double : psChisq
     """
     
     def setup(self):
@@ -57,7 +58,18 @@ class MultifitStageParallel(harnessStage.ParallelProcessing):
         self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
-        pass
+        exposureList = clipboard.get(self.policy.get("input.exposureList"))
+
+        fitter = measMult.SingleLinearParameterFitter(
+            self.policy.get("parameters.fitterPolicy")
+        )
+
+        model = clipboard.get(self.policy.get("input.model"))
+        evaluator = measMult.ModelEvaluator(model)
+        evaluator.setExposureList(exposureList)
+        psResult = fitter.apply(evaluator)
+        clipboard.put(self.policy.get("output.model"), psResult.getModel())
+        clipboard.put(self.policy.get("output.chisq"), psResult.getChisq())
 
 class MultifitStage(harnessStage.Stage):
     parallelClass = MultifitStageParallel

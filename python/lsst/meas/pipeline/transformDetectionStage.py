@@ -44,9 +44,10 @@ class TransformDetectionStageParallel(harnessStage.ParallelProcessing):
 
     INPUT:
     - a Model
+    - WCS list
+    - Psf list
     OUTPUT:
-    - a String representing the image filename-bbox pairs used to input
-      an ExposureStack
+    - BBox list
     """
     
     def setup(self):
@@ -61,6 +62,9 @@ class TransformDetectionStageParallel(harnessStage.ParallelProcessing):
         self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
-        pass
+        model = clipboard.get(self.policy.get("inputKeys.initialSGModel"))
+        quadsphere = quadsphere.makeQuadsphere(self.policy.get("parameters.quadspherePolicy"))
+        pixIds = measUtils.multifit.computeSkypixIdList(model, quadsphere)
+        clipboard.put(self.policy.get("outputKeys.skypixId"), pixIds)
 
 
