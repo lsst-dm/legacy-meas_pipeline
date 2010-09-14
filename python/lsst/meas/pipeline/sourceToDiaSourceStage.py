@@ -134,9 +134,7 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
         ampY = y - self.ampBBox.getY0()
         sky = self.ccdWcs.pixelToSky(ampX, ampY)
         if pixToSkyAffineTransform is None:
-            skyp = afwGeom.makePointD(sky.getLongitude(afwCoord.DEGREES),
-                                      sky.getLatitude(afwCoord.DEGREES))
-            pixToSkyAffineTransform = self.ccdWcs.linearizeAt(skyp)
+            pixToSkyAffineTransform = self.ccdWcs.linearizePixelToSky(sky)
         raErr, decErr = self.raDecErrs(xErr, yErr, pixToSkyAffineTransform)
         return (sky.getLongitude(afwCoord.DEGREES),
                 sky.getLatitude(afwCoord.DEGREES),
