@@ -2,12 +2,6 @@
 #
 # Stage policy for SourceMeasurementStage
 
-measureSources: { 
-    centroidAlgorithm: "GAUSSIAN"
-    shapeAlgorithm: "SDSS"
-    photometryAlgorithm: "NAIVE"
-    apRadius: 3.0
-}
 inputKeys: {
     psf: "smoothingPsfModel"
     positiveDetection: "positiveFootprintSet"

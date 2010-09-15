@@ -53,16 +53,25 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
-            self.policy = pexPolicy.policy()
-        self.policy.mergeDefaults(defPolicy.getDictionary())
+            self.policy = pexPolicy.Policy()
         #
-        # RHL doesn't know how to do this properly
+        # Pick up the default values for the measureSources Policy;  we have to do this by loading
+        # a policy not a dictionary as all possible entries are not know a priori (due to pluggable
+        # algorithms)
         #
-        self.log.log(Log.WARN, "Overridding self.policy.measureSources from MeasureSources.paf")
-        moPolicy = pexPolicy.Policy(os.path.join(policyFile.getRepositoryPath(), "MeasureSources.paf"))
+        measureSourcesDefaultFile = pexPolicy.DefaultPolicyFile("meas_algorithms",
+                                                                "MeasureSourcesDefaults.paf", "policy")
+        measureSourcesDefaults = \
+                               pexPolicy.Policy.createPolicy(measureSourcesDefaultFile,
+                                                             measureSourcesDefaultFile.getRepositoryPath())
+        
+        if not self.policy.exists("measureSources"):
+            self.policy.add("measureSources", pexPolicy.Policy())
 
-        self.policy.remove("measureSources")
-        self.policy.add("measureSources", moPolicy)
+        measureSourcesPolicy = self.policy.get("measureSources")
+        measureSourcesPolicy.mergeDefaults(measureSourcesDefaults)
+        
+        self.policy.mergeDefaults(defPolicy.getDictionary())
         
     def process(self, clipboard):
         """
@@ -75,7 +84,7 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
             measurePolicy, exposure, psf, positiveDetection, negativeDetection = \
                            self.getClipboardData(clipboard)
         except pexExcept.LsstException, e:
-            self.log.log(Log.FATAL, e.what())
+            self.log.log(Log.FATAL, str(e))
          
         #
         # Need to do something smart about merging positive and negative
