@@ -23,6 +23,15 @@ definitions: {
         default:   "NATURAL_SPLINE"
 
         allowed: {
+            value: "LINEAR"
+        }
+        allowed: {
+            value: "AKIMA_SPLINE"
+        }
+        allowed: {
+            value: "CUBIC_SPLINE"
+        }
+        allowed: {
             value: "NATURAL_SPLINE"
         }
         allowed: {
