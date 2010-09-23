@@ -22,7 +22,7 @@ definitions: {
                     type: "string"
                     description: "clipboard key of the input exposure"
                     minOccurs: 1
-                    maxOccurs:
+                    maxOccurs: 1
                 }
                 positiveDetection: {
                     type: "string"
@@ -49,7 +49,7 @@ definitions: {
                     type: "string"
                     description: "clipboard key of the output SourceSet"
                     minOccurs: 1
-                    maxOccurs:
+                    maxOccurs: 1
                 }
             }
         }		
@@ -59,7 +59,6 @@ definitions: {
         type: "policy"        
         description: "policy for configuring measurement algorithms"
         dictionary: @@meas_algorithms:policy:MeasureSourcesDictionary.paf
-        minOccurs: 1
         maxOccurs: 1
     }
 }

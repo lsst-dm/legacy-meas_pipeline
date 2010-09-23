@@ -53,25 +53,9 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
-            self.policy = pexPolicy.Policy()
-        #
-        # Pick up the default values for the measureSources Policy;  we have to do this by loading
-        # a policy not a dictionary as all possible entries are not know a priori (due to pluggable
-        # algorithms)
-        #
-        measureSourcesDefaultFile = pexPolicy.DefaultPolicyFile("meas_algorithms",
-                                                                "MeasureSourcesDefaults.paf", "policy")
-        measureSourcesDefaults = \
-                               pexPolicy.Policy.createPolicy(measureSourcesDefaultFile,
-                                                             measureSourcesDefaultFile.getRepositoryPath())
-        
-        if not self.policy.exists("measureSources"):
-            self.policy.add("measureSources", pexPolicy.Policy())
-
-        measureSourcesPolicy = self.policy.get("measureSources")
-        measureSourcesPolicy.mergeDefaults(measureSourcesDefaults)
-        
-        self.policy.mergeDefaults(defPolicy.getDictionary())
+            self.policy = defPolicy
+        else:
+            self.policy.mergeDefaults(defPolicy.getDictionary())
         
     def process(self, clipboard):
         """
@@ -113,7 +97,10 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
     def getClipboardData(self, clipboard):
         #private helped method for grabbing the clipboard data in a useful way 
 
-        measurePolicy = self.policy.getPolicy("measureSources")
+        if self.policy.exists("measureSources"):
+            measurePolicy = self.policy.getPolicy("measureSources")
+        else:
+            measurePolicy = pexPolicy.Policy()
 
         exposure = clipboard.get(self.policy.get("inputKeys.exposure"))
         psf = clipboard.get(self.policy.get("inputKeys.psf"))
