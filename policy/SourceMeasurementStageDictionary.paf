@@ -58,7 +58,6 @@ definitions: {
     measureSources: {
         type: "policy"        
         description: "policy for configuring measurement algorithms"
-        dictionary: @@meas_algorithms:policy:MeasureSourcesDictionary.paf
         maxOccurs: 1
     }
 }
