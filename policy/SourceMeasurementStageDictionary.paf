@@ -15,7 +15,7 @@ definitions: {
                     type: "string"
                     description: "clipboard key of the input psf"
                     minOccurs: 1
-                    maxOccurs:
+                    maxOccurs: 1
                     default: "psf"
                 }
                 exposure : {
@@ -23,6 +23,7 @@ definitions: {
                     description: "clipboard key of the input exposure"
                     minOccurs: 1
                     maxOccurs: 1
+                    default: "exposure"
                 }
                 positiveDetection: {
                     type: "string"
@@ -50,14 +51,16 @@ definitions: {
                     description: "clipboard key of the output SourceSet"
                     minOccurs: 1
                     maxOccurs: 1
+                    default: "sourceSet"
                 }
             }
         }		
     }
 
     measureSources: {
-        type: "policy"        
-        description: "policy for configuring measurement algorithms"
+        type: "policy"
+        dictionary: @@meas_algorithms:policy/MeasureSourcesDictionary.paf     
+        description: "policy for configuring measurement algorithms"     
         maxOccurs: 1
     }
 }

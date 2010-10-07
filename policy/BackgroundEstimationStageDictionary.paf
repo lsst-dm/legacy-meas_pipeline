@@ -53,7 +53,7 @@ definitions: {
             definitions: {
                 backgroundPolicy: {
                     type: "policy"
-                    dictionary: @BackgroundDictionary.paf
+                    dictionary: @@meas_utils:policy/BackgroundDictionary.paf
                     description: "Parameters to control background subtraction"
                     minOccurs: 1
                     maxOccurs: 1

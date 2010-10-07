@@ -14,12 +14,14 @@ definitions: {
                     description: "specify clipboard key of input Exposure"
                     minOccurs: 1
                     maxOccurs: 1
+                    default: "exposure"
                 }
                 sourceSet: {
                     type: "string"
                     description: "specify clipboard key of input SourceSet"
                     minOccurs: 1
                     maxOccurs: 1
+                    default: "sourceSet"
                 }
             }
         }

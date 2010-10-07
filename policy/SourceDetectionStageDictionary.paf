@@ -72,21 +72,21 @@ definitions: {
     #parameters    
     backgroundPolicy: {
         type: "policy"
-        dictionary: @BackgroundDictionary.paf
+        dictionary: @@meas_utils:policy/BackgroundDictionary.paf
         description: "includes all the parameters needed to estimate an exposure's background"
-        minOccurs: 1 
+        minOccurs: 0 
         maxOccurs: 1
     }
     psfPolicy: {
         type: "policy"
-        dictionary: @PsfDictionary.paf
+        dictionary: @@meas_utils:policy/PsfDictionary.paf
         description: "includes all the parameters needed to create a PSF"
         minOccurs: 0 
         maxOccurs: 1
     }
     detectionPolicy: {
         type: "policy"
-        dictionary: @DetectionDictionary.paf
+        dictionary: @@meas_utils:policy/DetectionDictionary.paf
         description: "includes all the parameters needed to perform source
                       detection on an exposure"
         minOccurs: 1 
