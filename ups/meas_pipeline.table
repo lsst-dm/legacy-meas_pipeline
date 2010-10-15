@@ -1,9 +1,9 @@
 setupRequired(pex_harness >= 3.6)
 setupRequired(pex_policy >= 3.5)
-setupRequired(afw >= 3.6.0)
-setupRequired(meas_algorithms >= 3.2.0)
-setupRequired(meas_astrom >= 3.2.1)
-setupRequired(meas_utils >= 3.2.2)
+setupRequired(afw >= 4.1.0.0)
+setupRequired(meas_algorithms >= 4.1.0.0)
+setupRequired(meas_astrom >= 4.1.0.0)
+setupRequired(meas_utils >= 4.1.0.0)
 setupOptional(astrometry_net_data cfhttemplate)
 
 envAppend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
