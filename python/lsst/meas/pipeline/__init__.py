@@ -40,3 +40,4 @@ from backgroundEstimationStage import *
 from wcsVerificationStage import *
 from photoCalStage import *
 from computeSourceSkyCoordsStage import *
+from singleFrameMultifitStage import *
