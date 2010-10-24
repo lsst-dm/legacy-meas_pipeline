@@ -1,0 +1,19 @@
+#<? cfg paf dictionary ?>
+#
+# 
+inputKeys: {
+    exposure: "exposure"
+    sourceSet: "sourceSet"
+}
+
+outputKeys: {
+    apCorr: "apCorr"
+    cellSet: "cellSet"
+    sdqa: "sdqa"
+}
+
+parameters: {
+    ApertureCorrectionPolicy: @@meas_pipeline:tests/apCorr_policy.paf
+}
+
+

@@ -1,0 +1,9 @@
+#<? cfg paf dictionary ?>
+#
+# 
+selectionPolicy: @@meas_pipeline:tests/psfSelectSdss_policy.paf
+order: 2
+algorithm1: "PSF"
+radius1: -0.0
+algorithm2: "SINC"
+radius2: 2.0
