@@ -1,0 +1,19 @@
+#<? cfg paf ?>
+#
+# 
+inputKeys: {
+    exposure: "backgroundSubtractedExposure"
+    sourceSet: "sources"
+}
+outputKeys: {
+    psf: "psf"
+    cellSet: "cells"
+    sdqa: "sdqa"
+}
+
+
+parameters: {
+    psfDeterminationPolicy: @@meas_pipeline:tests/psfDetermination_policy.paf
+}
+
+

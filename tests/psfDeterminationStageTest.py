@@ -80,7 +80,7 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         tester.addStage(measPipe.SourceMeasurementStage(policy))
         #
         policy = pexPolicy.Policy.createPolicy(pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                                                                           "psfDetermination_policy.paf",
+                                                                           "psfDetermination_stagePolicy.paf",
                                                                            "tests"))
         tester.addStage(measPipe.PsfDeterminationStage(policy))
         

@@ -45,9 +45,9 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
         self.log = Log(self.log, "PsfDeterminationStage - parallel")
 
         policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-            "PsfDeterminationStageDictionary.paf", "policy")
+                                                 "PsfDeterminationStageDictionary.paf", "policy")
         defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
-
+        
         if self.policy is None:
             self.policy = pexPolicy.Policy()
         self.policy.mergeDefaults(defPolicy.getDictionary())
