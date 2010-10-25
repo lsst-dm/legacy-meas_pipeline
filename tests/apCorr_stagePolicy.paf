@@ -2,13 +2,12 @@
 #
 # 
 inputKeys: {
-    exposure: "exposure"
-    sourceSet: "sourceSet"
+    exposure: "backgroundSubtractedExposure"
+    sourceSet: "psfSourceSet"
 }
 
 outputKeys: {
     apCorr: "apCorr"
-    cellSet: "cellSet"
     sdqa: "sdqa"
 }
 

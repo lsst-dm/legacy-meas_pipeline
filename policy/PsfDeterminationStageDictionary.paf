@@ -38,9 +38,15 @@ definitions: {
                     minOccurs: 1
                     maxOccurs: 1
                 }
-                cellSet: {
+		cellSet: {
                     type: "string"
                     description: "specify the clipboard key for output psfCellSet"
+                    minOccurs: 1
+                    maxOccurs: 1                    
+                }
+                sourceSet: {
+                    type: "string"
+                    description: "specify the clipboard key for output psfSourceSet"
                     minOccurs: 1
                     maxOccurs: 1                    
                 }

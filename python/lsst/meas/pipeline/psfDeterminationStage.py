@@ -63,10 +63,11 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
         sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
 
         sdqaRatings = sdqa.SdqaRatingSet()
-        psf, cellSet = Psf.getPsf(exposure, sourceSet, self.psfDeterminationPolicy, sdqaRatings)
+        psf, cellSet, psfSourceSet = Psf.getPsf(exposure, sourceSet, self.psfDeterminationPolicy, sdqaRatings)
 
         clipboard.put(self.policy.get("outputKeys.psf"), psf)
         clipboard.put(self.policy.get("outputKeys.cellSet"), cellSet)
+        clipboard.put(self.policy.get("outputKeys.sourceSet"), psfSourceSet)
         clipboard.put(self.policy.get("outputKeys.sdqa"), sdqa)
 
 class PsfDeterminationStage(harnessStage.Stage):

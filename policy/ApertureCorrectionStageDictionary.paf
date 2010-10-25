@@ -16,12 +16,12 @@ definitions: {
                     maxOccurs: 1
                     default: "exposure"
                 }
-                sourceSet: {
+		sourceSet: {
                     type: "string"
                     description: "specify clipboard key of input SourceSet"
                     minOccurs: 1
                     maxOccurs: 1
-                    default: "sourceSet"
+                    default: "psfSourceSet"
                 }
             }
         }
@@ -37,18 +37,14 @@ definitions: {
                     description: "specify clipboard key for output apCorr object"
                     minOccurs: 1
                     maxOccurs: 1
-                }
-                cellSet: {
-                    type: "string"
-                    description: "specify the clipboard key for output psfCellSet"
-                    minOccurs: 1
-                    maxOccurs: 1                    
+		    default: "apCorr"
                 }
                 sdqa: {
                     type: "string"
                     description: "specify the clipboard key for SDQA"
                     minOccurs: 0
-                    maxOccurs: 1                    
+                    maxOccurs: 1
+		    default: "sdqa"
                 }
             }
         }

@@ -103,9 +103,11 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         if display:
             ds9.mtv(self.exposure, frame=frame, title="Detected"); frame += 1
 
-        psf = outClipboard.get(policy.get("outputKeys.psf"))
-        psfCellSet = outClipboard.get(policy.get("outputKeys.cellSet"))
-
+        apCorr = outClipboard.get(policy.get("outputKeys.apCorr"))
+        exposure = clipboard.get(policy.get("inputKeys.exposure"))
+        x, y = exposure.getWidth()/2, exposure.getHeight()/2
+        print apCorr.computeCorrectionAt(x,y)
+        
         if display:
             maUtils.showPsf(psf, frame=frame); frame += 1
             maUtils.showPsfMosaic(self.exposure, psf, frame=frame); frame += 1
