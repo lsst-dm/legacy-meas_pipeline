@@ -66,8 +66,9 @@ class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
         sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
 
         sdqaRatings = sdqa.SdqaRatingSet()
+        apCorrCtrl = apertureCorrection.ApertureCorrectionControl(self.ApCorrPolicy)
         apCorr = apertureCorrection.ApertureCorrection(exposure, sourceSet, sdqaRatings,
-                                                       self.ApCorrPolicy, self.selectPolicy,
+                                                       apCorrCtrl, self.selectPolicy,
                                                        log=self.log, doSelect=False)
         
 
