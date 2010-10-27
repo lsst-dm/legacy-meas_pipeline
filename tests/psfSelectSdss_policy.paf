@@ -1,7 +1,7 @@
 #<? cfg paf dictionary ?>
 #
 # 
-name : "SDSS"
+package: "lsst.meas.algorithms.psfSelectionSdss"
 fluxLim: 1000.0
 clumpNSigma: 1.0
 kernelSize: 21

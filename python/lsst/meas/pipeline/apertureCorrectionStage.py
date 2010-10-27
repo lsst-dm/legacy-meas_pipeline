@@ -66,13 +66,12 @@ class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
         sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
 
         sdqaRatings = sdqa.SdqaRatingSet()
-        apCorr = apertureCorrection.ApertureCorrection(exposure, sourceSet,
+        apCorr = apertureCorrection.ApertureCorrection(exposure, sourceSet, sdqaRatings,
                                                        self.ApCorrPolicy, self.selectPolicy,
-                                                       sdqaRatings, log=self.log, useAll=True)
+                                                       log=self.log, doSelect=False)
         
 
         clipboard.put(self.policy.get("outputKeys.apCorr"), apCorr)
-        #clipboard.put(self.policy.get("outputKeys.cellSet"), apCorrCellSet)
         clipboard.put(self.policy.get("outputKeys.sdqa"), sdqa)
 
         

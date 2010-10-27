@@ -2,6 +2,7 @@
 #
 # 
 selectionPolicy: @@meas_pipeline:tests/psfSelectSdss_policy.paf
+polyStyle: "standard"
 order: 2
 algorithm1: "PSF"
 radius1: -0.0

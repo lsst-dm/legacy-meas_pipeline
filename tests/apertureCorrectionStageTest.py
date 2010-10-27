@@ -106,7 +106,7 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         apCorr = outClipboard.get(policy.get("outputKeys.apCorr"))
         exposure = clipboard.get(policy.get("inputKeys.exposure"))
         x, y = exposure.getWidth()/2, exposure.getHeight()/2
-        print apCorr.computeCorrectionAt(x,y)
+        print "Aperture Correction: %.3f +/- %.3f" % apCorr.computeAt(x,y)
         
         if display:
             maUtils.showPsf(psf, frame=frame); frame += 1
