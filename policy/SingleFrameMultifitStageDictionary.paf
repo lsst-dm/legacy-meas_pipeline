@@ -41,9 +41,9 @@ definitions: {
             }
         }
     }
-    fitterPolicy: {
+    fitPolicy: {
         type: "policy"
-        dictionary: @@meas_multifit:/policy/MinuitFitterDict.paf
+        dictionary: @@meas_utils:policy/FitSourceModelsDictionary.paf
         minOccurs: 1
         maxOccurs: 1
     }

@@ -39,14 +39,13 @@ class SingleFrameMultifitStageParallel(harnessStage.ParallelProcessing):
         defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
 
         if self.policy is None:
-            self.policy = defPolicy
-        else:
-            self.policy.mergeDefaults(defPolicy.getDictionary())
+            self.policy = pexPolicy.Policy()
+        self.policy.mergeDefaults(defPolicy.getDictionary())
 
     def process(self, clipboard):
         self.log.log(Log.INFO, "Fitting Sources in process")
 
-        fitterPolicy = self.policy.get("fitterPolicy")
+        fitPolicy = self.policy.getPolicy("fitPolicy")
         exposure = clipboard.get(self.policy.get("inputKeys.exposure"))
         psf = clipboard.get(self.policy.get("inputKeys.psf"))
         fpSet = clipboard.get(self.policy.get("inputKeys.fpSet")).getFootprints()
@@ -57,7 +56,16 @@ class SingleFrameMultifitStageParallel(harnessStage.ParallelProcessing):
         elif len(sourceSet) != len(fpSet):
             self.log.log(Log.FATAL, "source and footprint sets have different lengths")
         else:
-            multifitUtils.fitSourceModels(exposure.getMaskedImage(), psf, sourceSet, fpSet, fitterPolicy)
+            (n, nSkipPs, nFailPs, nSkipSg, nFailSg) = multifitUtils.fitSourceModels( \
+                exposure.getMaskedImage(), \
+                psf, \
+                sourceSet, fpSet, \
+                fitPolicy)
+            print n
+            print nSkipPs
+            print nFailPs
+            print nSkipSg
+            print nFailSg
 
 class SingleFrameMultifitStage(harnessStage.Stage):
     parallelClass = SingleFrameMultifitStageParallel
