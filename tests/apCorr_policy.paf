@@ -1,7 +1,7 @@
 #<? cfg paf dictionary ?>
 #
 # 
-selectionPolicy: @@meas_pipeline:tests/psfSelectSdss_policy.paf
+selectionPolicy: @@meas_pipeline:tests/psfSelectRhl_policy.paf
 polyStyle: "standard"
 order: 2
 algorithm1: "PSF"
