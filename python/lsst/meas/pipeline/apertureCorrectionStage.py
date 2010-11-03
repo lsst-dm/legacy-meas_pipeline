@@ -27,6 +27,8 @@ from lsst.pex.logging import Log
 import lsst.pex.harness.stage as harnessStage
 import lsst.pex.policy as pexPolicy
 import lsst.meas.algorithms as measAlg
+import lsst.afw.image as afwImage
+import lsst.afw.math as afwMath
 import lsst.meas.algorithms.ApertureCorrection as apertureCorrection
 import lsst.sdqa as sdqa
 
@@ -55,7 +57,6 @@ class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
         self.policy.mergeDefaults(defPolicy.getDictionary())
 
         self.ApCorrPolicy = self.policy.get("parameters.ApertureCorrectionPolicy")
-        self.selectPolicy = self.ApCorrPolicy.get("selectionPolicy")
 
     def process(self, clipboard):
         self.log.log(Log.INFO, "Estimating Aperture Correction is in process")
@@ -63,13 +64,12 @@ class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
         
         #grab exposure from clipboard
         exposure = clipboard.get(self.policy.get("inputKeys.exposure"))       
-        sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
-
+        cellSet = clipboard.get(self.policy.get("inputKeys.cellSet"))
+        
         sdqaRatings = sdqa.SdqaRatingSet()
         apCorrCtrl = apertureCorrection.ApertureCorrectionControl(self.ApCorrPolicy)
-        apCorr = apertureCorrection.ApertureCorrection(exposure, sourceSet, sdqaRatings,
-                                                       apCorrCtrl, self.selectPolicy,
-                                                       log=self.log, doSelect=False)
+        apCorr = apertureCorrection.ApertureCorrection(exposure, cellSet, sdqaRatings,
+                                                       apCorrCtrl, log=self.log)
         
 
         clipboard.put(self.policy.get("outputKeys.apCorr"), apCorr)

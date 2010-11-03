@@ -27,7 +27,8 @@ from lsst.pex.logging import Log
 import lsst.pex.harness.stage as harnessStage
 import lsst.pex.policy as pexPolicy
 import lsst.meas.algorithms as measAlg
-import lsst.meas.algorithms.Psf as Psf
+import lsst.meas.algorithms.psfSelectionRhl as psfSel
+import lsst.meas.algorithms.psfAlgorithmRhl as psfAlg
 import lsst.sdqa as sdqa
 
 class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
@@ -53,7 +54,9 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
         self.policy.mergeDefaults(defPolicy.getDictionary())
 
         self.psfDeterminationPolicy = self.policy.get("parameters.psfDeterminationPolicy")
-
+        self.psfSelectionPolicy = self.psfDeterminationPolicy.get("selectionPolicy")
+        self.psfAlgorithmPolicy = self.psfDeterminationPolicy.get("psfPolicy")
+        
     def process(self, clipboard):
         self.log.log(Log.INFO, "Estimating PSF is in process")
 
@@ -63,8 +66,10 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
         sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
 
         sdqaRatings = sdqa.SdqaRatingSet()
-        psf, cellSet, psfSourceSet = Psf.getPsf(exposure, sourceSet, self.psfDeterminationPolicy, sdqaRatings)
-
+        psfStars, psfCellSet = psfSel.selectPsfSources(exposure, sourceSet, self.psfSelectionPolicy)
+        psf, cellSet, psfSourceSet = psfAlg.getPsf(exposure, psfStars, psfCellSet,
+                                                   self.psfAlgorithmPolicy, sdqaRatings)
+        
         clipboard.put(self.policy.get("outputKeys.psf"), psf)
         clipboard.put(self.policy.get("outputKeys.cellSet"), cellSet)
         clipboard.put(self.policy.get("outputKeys.sourceSet"), psfSourceSet)

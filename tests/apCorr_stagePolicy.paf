@@ -3,7 +3,7 @@
 # 
 inputKeys: {
     exposure: "backgroundSubtractedExposure"
-    sourceSet: "psfSourceSet"
+    cellSet: "psfCellSet"
 }
 
 outputKeys: {

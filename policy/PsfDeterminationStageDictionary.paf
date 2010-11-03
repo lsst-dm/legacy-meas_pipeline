@@ -65,10 +65,10 @@ definitions: {
         type: "policy"
         dictionary: {
             definitions: {
-                psfDeterminationPolicy: {
+	        psfDeterminationPolicy: {
                     type: "policy"
 		    dictionary: @@meas_algorithms:policy/PsfDeterminationDictionary.paf
-                    description: "Parameters to control PSF selection and estimation"
+                    description: "Parameters to control PSF selection"
                     minOccurs: 1
                     maxOccurs: 1
                 }
