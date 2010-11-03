@@ -1,7 +1,6 @@
 #<? cfg paf dictionary ?>
 #
 # 
-package: "lsst.meas.algorithms.psfSelectionRhl"
 fluxLim: 1000.0
 clumpNSigma: 1.0
 kernelSize: 21
