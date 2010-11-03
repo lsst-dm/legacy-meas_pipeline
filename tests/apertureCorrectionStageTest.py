@@ -83,11 +83,20 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
                                                                            "psfDetermination_stagePolicy.paf",
                                                                            "tests"))
         tester.addStage(measPipe.PsfDeterminationStage(policy))
-        #
-        policy = pexPolicy.Policy.createPolicy(pexPolicy.DefaultPolicyFile("meas_pipeline",
-                                                                           "apCorr_stagePolicy.paf",
-                                                                           "tests"))
-        tester.addStage(measPipe.ApertureCorrectionStage(policy))
+        
+        # create the aperture correction object, for later use
+        acPolicy = pexPolicy.Policy.createPolicy(pexPolicy.DefaultPolicyFile("meas_pipeline",
+                                                                             "apCorr_stagePolicy.paf",
+                                                                             "tests"))
+        tester.addStage(measPipe.ApertureCorrectionStage(acPolicy))
+        # apply the aperture correction in situ
+        acAppPolicy = pexPolicy.Policy.createPolicy(pexPolicy.DefaultPolicyFile("meas_pipeline",
+                                                                                "apCorrApply_stagePolicy.paf",
+                                                                                "tests"))
+        tester.addStage(measPipe.ApertureCorrectionApplyStage(acAppPolicy))
+
+
+
 
         
         if display:
@@ -103,10 +112,22 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         if display:
             ds9.mtv(self.exposure, frame=frame, title="Detected"); frame += 1
 
-        apCorr = outClipboard.get(policy.get("outputKeys.apCorr"))
-        exposure = clipboard.get(policy.get("inputKeys.exposure"))
+        # check the aperture correction in the middle of the exposure
+        apCorr   = outClipboard.get(acPolicy.get("outputKeys.apCorr"))
+        exposure = outClipboard.get(acPolicy.get("inputKeys.exposure"))
         x, y = exposure.getWidth()/2, exposure.getHeight()/2
         print "Aperture Correction: %.3f +/- %.3f" % apCorr.computeAt(x,y)
+
+        # check that it was applied
+        sourceSetPre = outClipboard.get(acAppPolicy.get("outputKeys.sourceSet"))
+        sourceSet    = outClipboard.get(acAppPolicy.get("inputKeys.sourceSet"))
+        nSource = len(sourceSet)
+        step = nSource/10
+        for i in range(0, nSource, step):
+            fPre = sourceSetPre[i].getPsfFlux()
+            f = sourceSet[i].getPsfFlux()
+            print "%8.2f %8.2f %5.3f" % (fPre, f, f/fPre)
+                                     
         
         if display:
             maUtils.showPsf(psf, frame=frame); frame += 1
