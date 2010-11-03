@@ -2,7 +2,7 @@
 #
 # 
 package: "lsst.meas.algorithms.psfSelectionRhl"
-fluxLim: 8000.0
+fluxLim: 1000.0
 clumpNSigma: 1.0
 kernelSize: 21
 borderWidth: 0
