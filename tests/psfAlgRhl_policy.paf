@@ -1,7 +1,7 @@
 #<? cfg paf dictionary ?>
 #
 # 
-package: "lsst.meas.algorithms.psfAlgorithmSdss"
+package: "lsst.meas.algorithms.psfAlgorithmRhl"
 #nonLinearSpatialFit: true
 nonLinearSpatialFit: false
 nEigenComponents: 4
