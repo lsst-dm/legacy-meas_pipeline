@@ -83,11 +83,11 @@ definitions: {
         default: 1.0
     }
     cleaningParameter: {
-        type: "int"
+        type: "double"
         description: "Used to sigma clip the matches. Matches between image and catalogue whose distance is more than this many sigma from the measured mean difference are discarded."
         minOccurs: 0
         maxOccurs: 1
-        default: 3
+        default: 3.0
     }
     
     defaultFilterName: {
