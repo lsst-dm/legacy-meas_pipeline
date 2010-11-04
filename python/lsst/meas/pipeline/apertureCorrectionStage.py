@@ -27,54 +27,55 @@ from lsst.pex.logging import Log
 import lsst.pex.harness.stage as harnessStage
 import lsst.pex.policy as pexPolicy
 import lsst.meas.algorithms as measAlg
-import lsst.meas.algorithms.psfSelectionRhl as psfSel
-import lsst.meas.algorithms.psfAlgorithmRhl as psfAlg
+import lsst.afw.image as afwImage
+import lsst.afw.math as afwMath
+import lsst.meas.algorithms.ApertureCorrection as apertureCorrection
 import lsst.sdqa as sdqa
 
-class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
+class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
     """
     Given an exposure and a set of sources measured on that exposure,
-    determine a PSF for that exposure.
+    determine the aperture correction for that exposure.
 
     This stage works on lists of (exposure, sourceSet) pairs.
 
     Their location on the clipboard is specified via policy.
-    see lsst/meas/pipeline/pipeline/PsfDeterminationStageDictionary.paf
+    see lsst/meas/pipeline/pipeline/ApertureCorrectionStageDictionary.paf
     for details on configuring valid stage policies
     """
     def setup(self):
-        self.log = Log(self.log, "PsfDeterminationStage - parallel")
+        self.log = Log(self.log, "ApertureCorrectionStage - parallel")
 
-        policyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                                                 "PsfDeterminationStageDictionary.paf", "policy")
-        defPolicy = pexPolicy.Policy.createPolicy(policyFile, policyFile.getRepositoryPath(), True)
-        
+        # aperture correction policy
+        apCorrPolicyFile = pexPolicy.DefaultPolicyFile("meas_pipeline", 
+                                                       "ApertureCorrectionStageDictionary.paf", "policy")
+        defPolicy = pexPolicy.Policy.createPolicy(apCorrPolicyFile,
+                                                  apCorrPolicyFile.getRepositoryPath(), True)
+
         if self.policy is None:
             self.policy = pexPolicy.Policy()
         self.policy.mergeDefaults(defPolicy.getDictionary())
 
-        self.psfDeterminationPolicy = self.policy.get("parameters.psfDeterminationPolicy")
-        self.psfSelectionPolicy = self.psfDeterminationPolicy.get("selectionPolicy")
-        self.psfAlgorithmPolicy = self.psfDeterminationPolicy.get("psfPolicy")
-        
+        self.ApCorrPolicy = self.policy.get("parameters.ApertureCorrectionPolicy")
+
     def process(self, clipboard):
-        self.log.log(Log.INFO, "Estimating PSF is in process")
+        self.log.log(Log.INFO, "Estimating Aperture Correction is in process")
 
         
         #grab exposure from clipboard
         exposure = clipboard.get(self.policy.get("inputKeys.exposure"))       
-        sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
-
-        sdqaRatings = sdqa.SdqaRatingSet()
-        psfStars, psfCellSet = psfSel.selectPsfSources(exposure, sourceSet, self.psfSelectionPolicy)
-        psf, cellSet, psfSourceSet = psfAlg.getPsf(exposure, psfStars, psfCellSet,
-                                                   self.psfAlgorithmPolicy, sdqaRatings)
+        cellSet = clipboard.get(self.policy.get("inputKeys.cellSet"))
         
-        clipboard.put(self.policy.get("outputKeys.psf"), psf)
-        clipboard.put(self.policy.get("outputKeys.cellSet"), cellSet)
-        clipboard.put(self.policy.get("outputKeys.sourceSet"), psfSourceSet)
+        sdqaRatings = sdqa.SdqaRatingSet()
+        apCorrCtrl = apertureCorrection.ApertureCorrectionControl(self.ApCorrPolicy)
+        apCorr = apertureCorrection.ApertureCorrection(exposure, cellSet, sdqaRatings,
+                                                       apCorrCtrl, log=self.log)
+        
+
+        clipboard.put(self.policy.get("outputKeys.apCorr"), apCorr)
         clipboard.put(self.policy.get("outputKeys.sdqa"), sdqa)
 
-class PsfDeterminationStage(harnessStage.Stage):
-    parallelClass = PsfDeterminationStageParallel
+        
+class ApertureCorrectionStage(harnessStage.Stage):
+    parallelClass = ApertureCorrectionStageParallel
 

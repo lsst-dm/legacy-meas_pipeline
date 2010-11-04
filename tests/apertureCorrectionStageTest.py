@@ -84,6 +84,21 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
                                                                            "tests"))
         tester.addStage(measPipe.PsfDeterminationStage(policy))
         
+        # create the aperture correction object, for later use
+        acPolicy = pexPolicy.Policy.createPolicy(pexPolicy.DefaultPolicyFile("meas_pipeline",
+                                                                             "apCorr_stagePolicy.paf",
+                                                                             "tests"))
+        tester.addStage(measPipe.ApertureCorrectionStage(acPolicy))
+        # apply the aperture correction in situ
+        acAppPolicy = pexPolicy.Policy.createPolicy(pexPolicy.DefaultPolicyFile("meas_pipeline",
+                                                                                "apCorrApply_stagePolicy.paf",
+                                                                                "tests"))
+        tester.addStage(measPipe.ApertureCorrectionApplyStage(acAppPolicy))
+
+
+
+
+        
         if display:
             frame = 0
             ds9.mtv(self.exposure, frame=frame, title="Input"); frame += 1
@@ -97,9 +112,23 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         if display:
             ds9.mtv(self.exposure, frame=frame, title="Detected"); frame += 1
 
-        psf = outClipboard.get(policy.get("outputKeys.psf"))
-        psfCellSet = outClipboard.get(policy.get("outputKeys.cellSet"))
+        # check the aperture correction in the middle of the exposure
+        apCorr   = outClipboard.get(acPolicy.get("outputKeys.apCorr"))
+        exposure = outClipboard.get(acPolicy.get("inputKeys.exposure"))
+        x, y = exposure.getWidth()/2, exposure.getHeight()/2
+        print "Mid-frame aperture correction: %.3f +/- %.3f" % apCorr.computeAt(x,y)
 
+        # check what was applied for a few objects
+        sourceSet    = outClipboard.get(acAppPolicy.get("inputKeys.sourceSet"))
+        nSource = len(sourceSet)
+        step = nSource/10
+        for i in range(0, nSource, step):
+            f = sourceSet[i].getPsfFlux()
+            x, y = sourceSet[i].getXAstrom(), sourceSet[i].getYAstrom()
+            ac, acErr = apCorr.computeAt(x, y)
+            print "x: %7.2f y: %7.2f f: %8.2f apCorr: %5.4f+/-%5.4f" % (x, y, f, ac, acErr)
+                                     
+        
         if display:
             maUtils.showPsf(psf, frame=frame); frame += 1
             maUtils.showPsfMosaic(self.exposure, psf, frame=frame); frame += 1

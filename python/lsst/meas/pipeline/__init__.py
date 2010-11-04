@@ -30,6 +30,8 @@ def version():
 from sourceMeasurementStage import *
 from sourceDetectionStage import *
 from psfDeterminationStage import *
+from apertureCorrectionStage import *
+from apertureCorrectionApplyStage import *
 from wcsDeterminationStage import *
 from sourceClassificationStage import *
 from sourceToDiaSourceStage import *

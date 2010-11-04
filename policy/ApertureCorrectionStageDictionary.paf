@@ -1,7 +1,7 @@
 #<? cfg paf dictionary ?>
 #
 # 
-target: lsst.meas.pipeline.PsfDeterminationStage
+target: lsst.meas.pipeline.ApertureCorrectionStage
 
 definitions: {
     #input clipboard keys
@@ -16,12 +16,12 @@ definitions: {
                     maxOccurs: 1
                     default: "exposure"
                 }
-                sourceSet: {
+		cellSet: {
                     type: "string"
                     description: "specify clipboard key of input SourceSet"
                     minOccurs: 1
                     maxOccurs: 1
-                    default: "sourceSet"
+                    default: "cellSet"
                 }
             }
         }
@@ -32,29 +32,19 @@ definitions: {
         type: "policy"
         dictionary: {
             definitions: {
-                psf: {
+	        apCorr: {
                     type: "string"
-                    description: "specify clipboard key for output PSF"
+                    description: "specify clipboard key for output apCorr object"
                     minOccurs: 1
                     maxOccurs: 1
-                }
-		cellSet: {
-                    type: "string"
-                    description: "specify the clipboard key for output psfCellSet"
-                    minOccurs: 1
-                    maxOccurs: 1                    
-                }
-                sourceSet: {
-                    type: "string"
-                    description: "specify the clipboard key for output psfSourceSet"
-                    minOccurs: 1
-                    maxOccurs: 1                    
+		    default: "apCorr"
                 }
                 sdqa: {
                     type: "string"
                     description: "specify the clipboard key for SDQA"
                     minOccurs: 0
-                    maxOccurs: 1                    
+                    maxOccurs: 1
+		    default: "sdqaApCorr"
                 }
             }
         }
@@ -65,10 +55,10 @@ definitions: {
         type: "policy"
         dictionary: {
             definitions: {
-	        psfDeterminationPolicy: {
+                ApertureCorrectionPolicy: {
                     type: "policy"
-		    dictionary: @@meas_algorithms:policy/PsfDeterminationDictionary.paf
-                    description: "Parameters to control PSF selection"
+                    dictionary: @@meas_algorithms:policy/ApertureCorrectionDictionary.paf
+                    description: "Parameters to control aperture correction"
                     minOccurs: 1
                     maxOccurs: 1
                 }
