@@ -116,17 +116,17 @@ class PsfDeterminationStageTestCase(unittest.TestCase):
         apCorr   = outClipboard.get(acPolicy.get("outputKeys.apCorr"))
         exposure = outClipboard.get(acPolicy.get("inputKeys.exposure"))
         x, y = exposure.getWidth()/2, exposure.getHeight()/2
-        print "Aperture Correction: %.3f +/- %.3f" % apCorr.computeAt(x,y)
+        print "Mid-frame aperture correction: %.3f +/- %.3f" % apCorr.computeAt(x,y)
 
-        # check that it was applied
-        sourceSetPre = outClipboard.get(acAppPolicy.get("outputKeys.sourceSet"))
+        # check what was applied for a few objects
         sourceSet    = outClipboard.get(acAppPolicy.get("inputKeys.sourceSet"))
         nSource = len(sourceSet)
         step = nSource/10
         for i in range(0, nSource, step):
-            fPre = sourceSetPre[i].getPsfFlux()
             f = sourceSet[i].getPsfFlux()
-            print "%8.2f %8.2f %5.3f" % (fPre, f, f/fPre)
+            x, y = sourceSet[i].getXAstrom(), sourceSet[i].getYAstrom()
+            ac, acErr = apCorr.computeAt(x, y)
+            print "x: %7.2f y: %7.2f f: %8.2f apCorr: %5.4f+/-%5.4f" % (x, y, f, ac, acErr)
                                      
         
         if display:

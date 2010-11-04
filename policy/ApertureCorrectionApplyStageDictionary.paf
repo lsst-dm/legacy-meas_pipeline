@@ -27,21 +27,5 @@ definitions: {
         }
     }
 
-    #output clipboard keys:
-    outputKeys: {
-        type: "policy"
-        dictionary: {
-            definitions: {
-		sourceSet: {
-                    type: "string"
-                    description: "specify clipboard key of input SourceSet"
-                    minOccurs: 1
-                    maxOccurs: 1
-                    default: "rawSourceSet"
-                }
-            }
-        }
-    }
-
 }
 

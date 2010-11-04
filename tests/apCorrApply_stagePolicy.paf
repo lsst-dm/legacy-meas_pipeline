@@ -5,8 +5,6 @@ inputKeys: {
     sourceSet: "sources"
     apCorr:    "apCorr"
 }
-outputKeys: {
-    sourceSet: "rawSourceSet"
-}
+
 
 

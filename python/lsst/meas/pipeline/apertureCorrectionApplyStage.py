@@ -62,13 +62,8 @@ class ApertureCorrectionApplyStageParallel(harnessStage.ParallelProcessing):
         sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
         apCorr    = clipboard.get(self.policy.get("inputKeys.apCorr"))
 
-        rawSourceSet = afwDet.SourceSet()
         for s in sourceSet:
             
-            # stash the original values
-            s0 = afwDet.Source(s)
-            rawSourceSet.append(s0)
-
             # apply the correction, and propegate the error
             ac, acErr = apCorr.computeAt(s.getXAstrom(), s.getYAstrom())
             s.setPsfFlux(s.getPsfFlux()*ac)
@@ -77,7 +72,6 @@ class ApertureCorrectionApplyStageParallel(harnessStage.ParallelProcessing):
             fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
             s.setPsfFluxErr(fluxErrPropegated)
 
-        clipboard.put(self.policy.get("outputKeys.sourceSet"), rawSourceSet)
         
 class ApertureCorrectionApplyStage(harnessStage.Stage):
     parallelClass = ApertureCorrectionApplyStageParallel
