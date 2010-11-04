@@ -44,7 +44,7 @@ definitions: {
                     description: "specify the clipboard key for SDQA"
                     minOccurs: 0
                     maxOccurs: 1
-		    default: "sdqa"
+		    default: "sdqaApCorr"
                 }
             }
         }
