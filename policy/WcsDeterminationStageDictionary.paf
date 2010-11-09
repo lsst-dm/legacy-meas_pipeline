@@ -32,6 +32,13 @@ definitions: {
         maxOccurs: 1
         default: matchListKey
     }
+    outputMatchListMetaKey: {
+        type: "string"
+        description: "specify clipboard key for output list of matched object metadata"
+        minOccurs: 1
+        maxOccurs: 1
+        default: matchListMetaKey
+    }
 
 
     # Parameters for solving for wcs

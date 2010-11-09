@@ -108,13 +108,13 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
         srcSet = clipboard.get(srcSetKey)
         
         #Determine list of matching sources, and Wcs
-        matchList, wcs = measAstrom.determineWcs(self.policy, exp, 
-                srcSet, solver=self.solver, log=self.log)
+        matchList, wcs, matchListMeta = measAstrom.determineWcs(self.policy, exp, 
+                                                                srcSet, solver=self.solver, log=self.log)
 
         #Save results to clipboard
         clipboard.put(self.policy.get('outputMatchListKey'), matchList)
         clipboard.put(self.policy.get('outputWcsKey'), wcs)
-
+        clipboard.put(self.policy.get('outputMatchListMetaKey'), matchListMeta)
 
 
 class WcsDeterminationStage(harnessStage.Stage):
