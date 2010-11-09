@@ -111,6 +111,14 @@ definitions: {
         maxOccurs: 1
         default: "mag"
     }
+
+    defaultIdColumnName: {
+        type: "string"
+        description: "In the astrometry_net_data index file, what is the reference catalog ID column called?"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "id"
+    }
     
     calculateSip:{
         type: "boolean"
