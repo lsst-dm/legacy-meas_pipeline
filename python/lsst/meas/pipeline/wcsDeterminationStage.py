@@ -113,48 +113,14 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
                                                                 srcSet, solver=self.solver, log=self.log)
 
         #Save results to clipboard
-
-        print 'matchList is a', type(matchList)
-        print 'matchListMeta is a', type(matchListMeta)
-        print 'matchList:', matchList
-        print 'matchListMeta:', matchListMeta
-
         smv = afwDet.SourceMatchVector()
         for m in matchList:
             smv.push_back(m)
-
-        print 'test0:'
-        try:
-            d = afwDet.PersistableSourceMatchVector(smv)
-            print 'got', d
-        except:
-            print 'failed'
-
-        print 'test1:'
-        try:
-            d = afwDet.PersistableSourceMatchVector(matchList)
-            print 'got', d
-        except:
-            print 'failed'
-
-        print 'test2:'
-        try:
-            d = afwDet.PersistableSourceMatchVector(matchList, matchListMeta)
-            print 'got', d
-        except:
-            print 'failed'
-
-        print 'test3:'
-        try:
-            d = afwDet.PersistableSourceMatchVector(smv, matchListMeta)
-            print 'got', d
-        except:
-            print 'failed'
+        psmv = afwDet.PersistableSourceMatchVector(smv, matchListMeta))
 
         clipboard.put(self.policy.get('outputMatchListKey'), matchList)
         clipboard.put(self.policy.get('outputMatchListMetaKey'), matchListMeta)
-        clipboard.put(self.policy.get('outputMatchListKey') + '_persistable',
-                      afwDet.PersistableSourceMatchVector(smv, matchListMeta))
+        clipboard.put(self.policy.get('outputMatchListKey') + '_persistable', psmv)
         clipboard.put(self.policy.get('outputWcsKey'), wcs)
 
 
