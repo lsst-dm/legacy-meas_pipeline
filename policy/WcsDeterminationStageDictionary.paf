@@ -32,6 +32,13 @@ definitions: {
         maxOccurs: 1
         default: matchListKey
     }
+    outputMatchListMetaKey: {
+        type: "string"
+        description: "specify clipboard key for output list of matched object metadata"
+        minOccurs: 1
+        maxOccurs: 1
+        default: matchListMetaKey
+    }
 
 
     # Parameters for solving for wcs
@@ -103,6 +110,14 @@ definitions: {
         minOccurs: 0
         maxOccurs: 1
         default: "mag"
+    }
+
+    defaultIdColumnName: {
+        type: "string"
+        description: "In the astrometry_net_data index file, what is the reference catalog ID column called?"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "id"
     }
     
     calculateSip:{

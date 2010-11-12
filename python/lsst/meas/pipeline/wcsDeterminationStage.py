@@ -34,6 +34,7 @@ import lsst.pex.policy as pexPolicy
 from lsst.pex.logging import Log, Debug, LogRec, Prop
 from lsst.pex.exceptions import LsstCppException
 import lsst.afw.image as afwImg
+import lsst.afw.detection as afwDet
 
 import lsst.meas.astrom as measAstrom
 import lsst.meas.astrom.net as astromNet
@@ -108,13 +109,19 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
         srcSet = clipboard.get(srcSetKey)
         
         #Determine list of matching sources, and Wcs
-        matchList, wcs = measAstrom.determineWcs(self.policy, exp, 
-                srcSet, solver=self.solver, log=self.log)
+        matchList, wcs, matchListMeta = measAstrom.determineWcs(self.policy, exp, 
+                                                                srcSet, solver=self.solver, log=self.log)
 
         #Save results to clipboard
-        clipboard.put(self.policy.get('outputMatchListKey'), matchList)
-        clipboard.put(self.policy.get('outputWcsKey'), wcs)
+        smv = afwDet.SourceMatchVector()
+        for m in matchList:
+            smv.push_back(m)
+        psmv = afwDet.PersistableSourceMatchVector(smv, matchListMeta)
 
+        clipboard.put(self.policy.get('outputMatchListKey'), matchList)
+        clipboard.put(self.policy.get('outputMatchListMetaKey'), matchListMeta)
+        clipboard.put(self.policy.get('outputMatchListKey') + '_persistable', psmv)
+        clipboard.put(self.policy.get('outputWcsKey'), wcs)
 
 
 class WcsDeterminationStage(harnessStage.Stage):
