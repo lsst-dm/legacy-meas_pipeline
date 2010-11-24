@@ -37,6 +37,18 @@ definitions: {
                     maxOccurs: 1
                     default: "negativeFootprintSet"
                 }
+	            sourceIdStart: {
+                    type: "string"
+                    description: "specify the clipboard key of the source id start"
+                    maxOccurs: 1
+                    default: "sourceIdStart"
+                }
+	            maxSources: {
+                    type: "string"
+                    description: "specify the clipboard key of the maximum number of sources"
+                    maxOccurs: 1
+                    default: "maxSources"
+                }
             }
         }
     }

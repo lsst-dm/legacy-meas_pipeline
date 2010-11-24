@@ -65,8 +65,8 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         
         #this may raise exceptions
         try:
-            measurePolicy, exposure, psf, positiveDetection, negativeDetection = \
-                           self.getClipboardData(clipboard)
+            (measurePolicy, exposure, psf, positiveDetection, negativeDetection,
+             sourceIdStart, maxSources) = self.getClipboardData(clipboard)
         except pexExcept.LsstException, e:
             self.log.log(Log.FATAL, str(e))
          
@@ -87,7 +87,8 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
             isNegative = True
             footprintLists.append([negativeDetection.getFootprints(), isNegative])
 
-        sourceSet = srcMeas.sourceMeasurement(exposure, psf, footprintLists, measurePolicy)
+        sourceSet = srcMeas.sourceMeasurement(exposure, psf, footprintLists, measurePolicy,
+                                              sourceIdStart, maxSources)
         
         # place SourceSet on the clipboard
         sourceKey = self.policy.get("outputKeys.sources")
@@ -95,7 +96,7 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         clipboard.put(sourceKey + "_persistable", afwDet.PersistableSourceVector(sourceSet))
         
     def getClipboardData(self, clipboard):
-        #private helped method for grabbing the clipboard data in a useful way 
+        #private helper method for grabbing the clipboard data in a useful way 
 
         if self.policy.exists("measureSources"):
             measurePolicy = self.policy.getPolicy("measureSources")
@@ -106,11 +107,13 @@ class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):
         psf = clipboard.get(self.policy.get("inputKeys.psf"))
         positiveDetection = clipboard.get(self.policy.get("inputKeys.positiveDetection"))
         negativeDetection = clipboard.get(self.policy.get("inputKeys.negativeDetection"))
+        sourceIdStart = clipboard.get(self.policy.get('inputKeys.sourceIdStart'))
+        maxSources = clipboard.get(self.policy.get('inputKeys.maxSources'))
 
         if not positiveDetection and not negativeDetection:
             raise Exception("Missing input FootprintSets")
 
-        return measurePolicy, exposure, psf, positiveDetection, negativeDetection
+        return measurePolicy, exposure, psf, positiveDetection, negativeDetection, sourceIdStart, maxSources
 		
 class SourceMeasurementStage(harnessStage.Stage):
     parallelClass = SourceMeasurementStageParallel
