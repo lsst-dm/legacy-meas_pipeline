@@ -108,9 +108,12 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
             raise RuntimeError("No wcsSourceSet on clipboard")
         srcSet = clipboard.get(srcSetKey)
         
-        #Determine list of matching sources, and Wcs
-        matchList, wcs, matchListMeta = measAstrom.determineWcs(self.policy, exp, 
-                                                                srcSet, solver=self.solver, log=self.log)
+        # Determine list of matching sources, and WCS
+        astrom  = measAstrom.determineWcs(self.policy, exp, 
+                                          srcSet, solver=self.solver, log=self.log)
+        matchList = astrom.getMatches()
+        wcs = astrom.getWcs()
+        matchListMeta = astrom.getMatchMetadata()
 
         #Save results to clipboard
         smv = afwDet.SourceMatchVector()
