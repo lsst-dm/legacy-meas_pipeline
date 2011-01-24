@@ -134,4 +134,26 @@ definitions: {
         maxOccurs: 1
         default: 4
     }
+
+    starGalaxyColumnName: {
+        type: string
+        description: "Name of column for star/galaxy separation"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "STARNOTGAL"
+    }
+    variableColumnName: {
+        type: string
+        description: "Name of column for variable flag"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "VARIABLE"
+    }
+    magErrorColumnPattern: {
+        type: string
+        description: "Pattern for determining magnitude error column name from magnitude column name"
+        minOccurs: 0
+        maxOccurs: 1
+        default: "%(filter)s_ERR"
+    }
 }
