@@ -1,7 +1,4 @@
 #<?cfg paf dictionary ?>
-#
-# Dictionary for wcs-examples.paf
-#
 
 definitions: {
     inputExposureKey: {
@@ -39,7 +36,6 @@ definitions: {
         maxOccurs: 1
         default: matchListMetaKey
     }
-
 
     # Parameters for solving for wcs
     blindSolve: {
@@ -140,20 +136,20 @@ definitions: {
         description: "Name of column for star/galaxy separation"
         minOccurs: 0
         maxOccurs: 1
-        default: "STARNOTGAL"
+        default: "starnotgal"
     }
     variableColumnName: {
         type: string
         description: "Name of column for variable flag"
         minOccurs: 0
         maxOccurs: 1
-        default: "VARIABLE"
+        default: "variable"
     }
     magErrorColumnPattern: {
         type: string
         description: "Pattern for determining magnitude error column name from magnitude column name"
         minOccurs: 0
         maxOccurs: 1
-        default: "%(filter)s_ERR"
+        default: "%(filter)s_err"
     }
 }
