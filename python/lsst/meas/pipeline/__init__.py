@@ -42,4 +42,7 @@ from backgroundEstimationStage import *
 from wcsVerificationStage import *
 from photoCalStage import *
 from computeSourceSkyCoordsStage import *
-from singleFrameMultifitStage import *
+try:
+    from singleFrameMultifitStage import *
+except ImportError:
+    pass                                # it's setupOptional
