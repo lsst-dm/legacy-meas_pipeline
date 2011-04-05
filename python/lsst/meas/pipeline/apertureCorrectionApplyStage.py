@@ -26,9 +26,6 @@ from math import *
 from lsst.pex.logging import Log
 import lsst.pex.harness.stage as harnessStage
 import lsst.pex.policy as pexPolicy
-import lsst.meas.algorithms as measAlg
-import lsst.afw.detection as afwDet
-import lsst.meas.algorithms.ApertureCorrection as apertureCorrection
 import lsst.sdqa as sdqa
 
 class ApertureCorrectionApplyStageParallel(harnessStage.ParallelProcessing):
