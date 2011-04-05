@@ -1,6 +1,6 @@
 #<? cfg paf dictionary ?>
 #
-# 
+#
 target: lsst.meas.pipeline.PsfDeterminationStage
 
 definitions: {
@@ -37,21 +37,18 @@ definitions: {
                     description: "specify clipboard key for output PSF"
                     minOccurs: 1
                     maxOccurs: 1
-                    default: "psf"
                 }
                 cellSet: {
                     type: "string"
                     description: "specify the clipboard key for output psfCellSet"
                     minOccurs: 1
                     maxOccurs: 1
-                    default: "psfCellSet"
                 }
                 sdqa: {
                     type: "string"
                     description: "specify the clipboard key for SDQA"
                     minOccurs: 0
                     maxOccurs: 1
-                    default: "sdqa"
                 }
             }
         }

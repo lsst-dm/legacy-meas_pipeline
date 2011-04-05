@@ -5,3 +5,8 @@ inputKeys: {
     exposure: "backgroundSubtractedExposure"
     sourceSet: "sources"
 }
+outputKeys: {
+    psf: "psf"
+    cellSet: "psfCellSet"
+    sdqa: "sdqa"
+}
