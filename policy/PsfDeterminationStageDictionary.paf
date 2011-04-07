@@ -1,6 +1,6 @@
 #<? cfg paf dictionary ?>
 #
-# 
+#
 target: lsst.meas.pipeline.PsfDeterminationStage
 
 definitions: {
@@ -38,42 +38,50 @@ definitions: {
                     minOccurs: 1
                     maxOccurs: 1
                 }
-		cellSet: {
+                cellSet: {
                     type: "string"
                     description: "specify the clipboard key for output psfCellSet"
                     minOccurs: 1
-                    maxOccurs: 1                    
-                }
-                sourceSet: {
-                    type: "string"
-                    description: "specify the clipboard key for output psfSourceSet"
-                    minOccurs: 1
-                    maxOccurs: 1                    
+                    maxOccurs: 1
                 }
                 sdqa: {
                     type: "string"
                     description: "specify the clipboard key for SDQA"
                     minOccurs: 0
-                    maxOccurs: 1                    
+                    maxOccurs: 1
                 }
             }
         }
     }
 
     # control the algorithm
-    parameters: {
+    starSelectorName: {
+        type: "string"
+        description: "Name of algorithm to use for star selection. The starSelectorPolicy must match."
+        minOccurs: 1
+        maxOccurs: 1
+        default: "secondMomentStarSelector"
+    }
+    psfDeterminerName: {
+        type: "string"
+        description: "Name of algorithm to use for PSF determination. The psfDeterminerPolicy must match."
+        minOccurs: 1
+        maxOccurs: 1
+        default: "pcaPsfDeterminer"
+    }
+    starSelectorPolicy: {
         type: "policy"
-        dictionary: {
-            definitions: {
-	        psfDeterminationPolicy: {
-                    type: "policy"
-		    dictionary: @@meas_algorithms:policy/PsfDeterminationDictionary.paf
-                    description: "Parameters to control PSF selection"
-                    minOccurs: 1
-                    maxOccurs: 1
-                }
-            }
-        }
+        description: "Policy file for the star selection algorithm."
+        minOccurs: 1
+        maxOccurs: 1
+        dictionary: @@meas_algorithms:policy/secondMomentStarSelectorDictionary.paf
+    }
+    psfDeterminerPolicy: {
+        type: "policy"
+        description: "Policy file for the psf determiner algorithm."
+        minOccurs: 1
+        maxOccurs: 1
+        dictionary: @@meas_algorithms:policy/pcaPsfDeterminerDictionary.paf
     }
 }
 

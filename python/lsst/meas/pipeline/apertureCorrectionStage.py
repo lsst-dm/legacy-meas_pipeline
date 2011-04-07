@@ -29,7 +29,6 @@ import lsst.pex.policy as pexPolicy
 import lsst.meas.algorithms as measAlg
 import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
-import lsst.meas.algorithms.ApertureCorrection as apertureCorrection
 import lsst.sdqa as sdqa
 
 class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
@@ -67,8 +66,8 @@ class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
         cellSet = clipboard.get(self.policy.get("inputKeys.cellSet"))
         
         sdqaRatings = sdqa.SdqaRatingSet()
-        apCorrCtrl = apertureCorrection.ApertureCorrectionControl(self.ApCorrPolicy)
-        apCorr = apertureCorrection.ApertureCorrection(exposure, cellSet, sdqaRatings,
+        apCorrCtrl = measAlg.ApertureCorrectionControl(self.ApCorrPolicy)
+        apCorr = measAlg.ApertureCorrection(exposure, cellSet, sdqaRatings,
                                                        apCorrCtrl, log=self.log)
         
 

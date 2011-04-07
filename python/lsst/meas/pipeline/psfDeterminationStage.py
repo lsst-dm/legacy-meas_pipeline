@@ -27,8 +27,6 @@ from lsst.pex.logging import Log
 import lsst.pex.harness.stage as harnessStage
 import lsst.pex.policy as pexPolicy
 import lsst.meas.algorithms as measAlg
-import lsst.meas.algorithms.psfSelectionRhl as psfSel
-import lsst.meas.algorithms.psfAlgorithmRhl as psfAlg
 import lsst.sdqa as sdqa
 
 class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
@@ -53,27 +51,29 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
             self.policy = pexPolicy.Policy()
         self.policy.mergeDefaults(defPolicy.getDictionary())
 
-        self.psfDeterminationPolicy = self.policy.get("parameters.psfDeterminationPolicy")
-        self.psfSelectionPolicy = self.psfDeterminationPolicy.get("selectionPolicy")
-        self.psfAlgorithmPolicy = self.psfDeterminationPolicy.get("psfPolicy")
+        starSelectorName = self.policy.get("starSelectorName")
+        starSelectorPolicy = self.policy.getPolicy("starSelectorPolicy")
+        self.starSelector = measAlg.makeStarSelector(starSelectorName, starSelectorPolicy)
+
+        psfDeterminerName = self.policy.get("psfDeterminerName")
+        psfDeterminerPolicy = self.policy.getPolicy("psfDeterminerPolicy")
+        self.psfDeterminer = measAlg.makePsfDeterminer(psfDeterminerName, psfDeterminerPolicy)
+
         
     def process(self, clipboard):
         self.log.log(Log.INFO, "Estimating PSF is in process")
 
-        
         #grab exposure from clipboard
         exposure = clipboard.get(self.policy.get("inputKeys.exposure"))       
         sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
 
+        psfCandidateList = self.starSelector.selectStars(exposure, sourceSet)
         sdqaRatings = sdqa.SdqaRatingSet()
-        psfStars, psfCellSet = psfSel.selectPsfSources(exposure, sourceSet, self.psfSelectionPolicy)
-        psf, cellSet, psfSourceSet = psfAlg.getPsf(exposure, psfStars, psfCellSet,
-                                                   self.psfAlgorithmPolicy, sdqaRatings)
+        psf, psfCellSet = self.psfDeterminer.determinePsf(exposure, psfCandidateList, sdqaRatings)
         
         clipboard.put(self.policy.get("outputKeys.psf"), psf)
-        clipboard.put(self.policy.get("outputKeys.cellSet"), cellSet)
-        clipboard.put(self.policy.get("outputKeys.sourceSet"), psfSourceSet)
-        clipboard.put(self.policy.get("outputKeys.sdqa"), sdqa)
+        clipboard.put(self.policy.get("outputKeys.cellSet"), psfCellSet)
+        clipboard.put(self.policy.get("outputKeys.sdqa"), sdqaRatings)
 
 class PsfDeterminationStage(harnessStage.Stage):
     parallelClass = PsfDeterminationStageParallel

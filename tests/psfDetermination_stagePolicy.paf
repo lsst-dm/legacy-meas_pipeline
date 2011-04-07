@@ -7,14 +7,6 @@ inputKeys: {
 }
 outputKeys: {
     psf: "psf"
-    sourceSet: "psfSourceSet"
     cellSet: "psfCellSet"
     sdqa: "sdqa"
 }
-
-
-parameters: {
-    psfDeterminationPolicy: @@meas_pipeline:tests/psfDetermination_policy.paf
-}
-
-
