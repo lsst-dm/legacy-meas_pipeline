@@ -43,7 +43,8 @@ import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as pexPolicy
 from lsst.pex.logging import Trace
 import lsst.meas.pipeline as measPipe
-import lsst.afw.image as afwImg
+import lsst.afw.geom as afwGeom
+import lsst.afw.image as afwImage
 import lsst.afw.detection as afwDet
 
 
@@ -107,7 +108,7 @@ class WcsVerificationStageTestCase(unittest.TestCase):
         self.clipboard = pexClipboard.Clipboard()         
         self.clipboard.put(self.policy.get("sourceMatchSetKey"), srcMatchSet)
         self.clipboard.put(self.policy.get("inputExposureKey"),
-                afwImg.ExposureF(4000, 4000))
+                afwImage.ExposureF(afwGeom.Extent2I(4000, 4000)))
 
     def tearDown(self):
         del self.clipboard

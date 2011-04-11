@@ -76,7 +76,7 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
         
         point = afwGeom.makePointD(0.0, 0.0)
         wcs = afwImage.createWcs(point, point, 1, 0, 0, 1);
-        ampBBox = afwImage.BBox(afwImage.PointI(0, 0), 1, 1)
+        ampBBox = afwGeom.Box2I(afwGeom.Point2I(0, 0), afwGeom.Extent2I(1, 1))
 
         tester = SimpleStageTester(measPipe.SourceToDiaSourceStage(stagePolicy))
 

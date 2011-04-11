@@ -42,7 +42,8 @@ import lsst.pex.policy as pexPolicy
 from lsst.pex.logging import Trace
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
-import lsst.afw.image as afwImg
+import lsst.afw.geom as afwGeom
+import lsst.afw.image as afwImage
 import lsst.meas.algorithms.utils as malgUtil
 
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
@@ -107,8 +108,7 @@ class PhotoCalStageTestCase(unittest.TestCase):
 
         self.clipboard = pexClipboard.Clipboard()         
         self.clipboard.put(self.policy.get("sourceMatchSetKey"), srcMatchSet)
-        self.clipboard.put(self.policy.get("inputExposureKey"),
-                afwImg.ExposureF(10, 10))
+        self.clipboard.put(self.policy.get("inputExposureKey"), afwImage.ExposureF(afwGeom.Extent2I(10, 10)))
 
         
     def tearDown(self):

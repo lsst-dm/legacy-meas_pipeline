@@ -33,7 +33,6 @@ import lsst.pex.exceptions               as pexExcept
 import lsst.afw.detection                as afwDet
 import lsst.afw.image                    as afwImg
 import lsst.afw.math                     as afwMath
-import lsst.meas.algorithms              as measAlg
 import lsst.meas.utils.sourceMeasurement as srcMeas
 
 class SourceMeasurementStageParallel(harnessStage.ParallelProcessing):

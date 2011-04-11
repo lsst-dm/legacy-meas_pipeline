@@ -31,7 +31,6 @@ import lsst.afw.detection as afwDet
 import lsst.afw.coord as afwCoord
 import lsst.afw.geom as afwGeom
 import lsst.pex.exceptions as pexExcept
-import lsst.meas.algorithms as measAlg
 
 class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
     """
