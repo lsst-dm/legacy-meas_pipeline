@@ -129,8 +129,8 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
 
         Sky coordinates and their errors are returned in units of degrees.
         """
-        ampX = x - self.ampBBox.getX0()
-        ampY = y - self.ampBBox.getY0()
+        ampX = x - self.ampBBox.getMinX()
+        ampY = y - self.ampBBox.getMinY()
         sky = self.ccdWcs.pixelToSky(ampX, ampY)
         if pixToSkyAffineTransform is None:
             pixToSkyAffineTransform = self.ccdWcs.linearizePixelToSky(sky)

@@ -74,7 +74,7 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
         for i in xrange(5):
             sourceSet.append(afwDet.Source())
         
-        point = afwGeom.makePointD(0.0, 0.0)
+        point = afwGeom.Point2D(0.0, 0.0)
         wcs = afwImage.createWcs(point, point, 1, 0, 0, 1);
         ampBBox = afwGeom.Box2I(afwGeom.Point2I(0, 0), afwGeom.Extent2I(1, 1))
 
