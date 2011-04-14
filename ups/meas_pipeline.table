@@ -1,5 +1,5 @@
-setupRequired(pex_harness >= 3.6)
-setupRequired(pex_policy >= 3.5)
+setupRequired(pex_harness >= 4.3.0.0)
+setupRequired(pex_policy >= 4.1.1.0)
 setupRequired(afw >= 4.3.2.0)
 setupRequired(meas_algorithms >= 4.3.1.0)
 setupRequired(meas_astrom >= 4.3.1.0)
