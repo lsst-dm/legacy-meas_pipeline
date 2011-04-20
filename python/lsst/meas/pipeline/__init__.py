@@ -28,6 +28,7 @@ def version():
     return lsst.utils.version(HeadURL, "meas.pipeline")
 
 from sourceMeasurementStage import *
+from sourceMeasurementPsfFluxStage import *
 from sourceDetectionStage import *
 from psfDeterminationStage import *
 from apertureCorrectionStage import *

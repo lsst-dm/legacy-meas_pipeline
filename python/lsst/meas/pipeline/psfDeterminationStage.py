@@ -70,6 +70,8 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
         psfCandidateList = self.starSelector.selectStars(exposure, sourceSet)
         sdqaRatings = sdqa.SdqaRatingSet()
         psf, psfCellSet = self.psfDeterminer.determinePsf(exposure, psfCandidateList, sdqaRatings)
+        self.log.log(Log.INFO, "Calling exposure.setPsf(psf) in stage code")
+        exposure.setPsf(psf)
         
         clipboard.put(self.policy.get("outputKeys.psf"), psf)
         clipboard.put(self.policy.get("outputKeys.cellSet"), psfCellSet)
