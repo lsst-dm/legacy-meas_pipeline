@@ -1,0 +1,44 @@
+#<?cfg paf dictionary ?>
+
+target: lsst.meas.pipeline.SourceMeasurementPsfFluxStage
+
+definitions: {
+    #input clipboard keys
+    inputKeys: {
+        type: "policy"
+        minOccurs: 1 
+        dictionary: {
+            definitions: {
+                exposure : {
+                    type: "string"
+                    description: "clipboard key of the input exposure"
+                    minOccurs: 1
+                    maxOccurs: 1
+                    default: "exposure"
+                }
+                sourceSet: {
+                    type: "string"
+                    description: "specify the clipboard key of the SourceSet"
+                    maxOccurs: 1
+                    default: "sourceSet"
+                }
+            }
+        }
+    }
+
+    #output clipboard keys:
+    outputKeys: {
+    	type: "policy"
+    	dictionary: {
+            definitions: {
+                sourceSet: {
+                    type: "string"
+                    description: "clipboard key of the output SourceSet"
+                    minOccurs: 1
+                    maxOccurs: 1
+                    default: "sourceSet"
+                }
+            }
+        }		
+    }
+}
