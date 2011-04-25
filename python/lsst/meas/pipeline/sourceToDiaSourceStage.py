@@ -84,23 +84,21 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
             for source in sourceSet:
                 diaSource = afwDet.makeDiaSourceFromSource(source)
 
-                (ra, dec, raErr, decErr) = self.raDecWithErrs(
+                (radec, raErr, decErr) = self.raDecWithErrs(
                         diaSource.getXFlux(), diaSource.getYFlux(),
                         diaSource.getXFluxErr(), diaSource.getYFluxErr())
-                diaSource.setRaFlux(ra); diaSource.setDecFlux(dec)
+                diaSource.setRaDecFlux(radec)
                 diaSource.setRaFluxErr(raErr); diaSource.setDecFluxErr(decErr)
 
-                (ra, dec, raErr, decErr) = self.raDecWithErrs(
+                (radec, raErr, decErr) = self.raDecWithErrs(
                         diaSource.getXAstrom(), diaSource.getYAstrom(),
                         diaSource.getXAstromErr(), diaSource.getYAstromErr())
-                diaSource.setRaAstrom(ra); diaSource.setDecAstrom(dec)
+                diaSource.setRaDecAstrom(radec)
                 diaSource.setRaAstromErr(raErr); diaSource.setDecAstromErr(decErr)
 
                 # No errors for XPeak, YPeak
-                raDec = self.ccdWcs.pixelToSky(
-                    diaSource.getXPeak(), diaSource.getYPeak())
-                diaSource.setRaPeak(raDec.getLongitude(afwCoord.DEGREES))
-                diaSource.setDecPeak(raDec.getLatitude(afwCoord.DEGREES))
+                diaSource.setRaDecPeak(self.ccdWcs.pixelToSky(
+                    diaSource.getXPeak(), diaSource.getYPeak()))
 
                 # Simple RA/decl == Astrom versions
                 diaSource.setRa(diaSource.getRaAstrom())
@@ -135,8 +133,7 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
         if pixToSkyAffineTransform is None:
             pixToSkyAffineTransform = self.ccdWcs.linearizePixelToSky(sky)
         raErr, decErr = self.raDecErrs(xErr, yErr, pixToSkyAffineTransform)
-        return (sky.getLongitude(afwCoord.DEGREES),
-                sky.getLatitude(afwCoord.DEGREES),
+        return (sky,
                 raErr,
                 decErr)
 
