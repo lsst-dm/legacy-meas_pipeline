@@ -36,8 +36,7 @@ definitions: {
                 }
                 pythonClass: {
                     type: "string"
-                    description: "Name of python class for implementing classification. Currently
-                                  this class must live in the lsst.meas.pipeline package."
+                    description: "Name of python class for implementing classification." 
                     minOccurs: 1
                     maxOccurs: 1
                 }

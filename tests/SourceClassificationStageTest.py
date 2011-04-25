@@ -34,7 +34,6 @@ from lsst.pex.harness.simpleStageTester import SimpleStageTester
 import lsst.pex.policy as pexPolicy
 import lsst.afw.detection as afwDet
 import lsst.meas.pipeline as measPipe
-from lsst.meas.utils.sourceClassifiers import *
 
 class SourceClassificationStageTestCase(unittest.TestCase):
     """A test case for the SourceClassificationStage"""
