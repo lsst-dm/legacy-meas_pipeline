@@ -69,6 +69,12 @@ class ApertureCorrectionApplyStageParallel(harnessStage.ParallelProcessing):
             fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
             s.setPsfFluxErr(fluxErrPropegated)
 
+            s.setModelFlux(s.getModelFlux()*ac)
+            varFlux = ac**2 * s.getModelFluxErr()**2
+            varApCorr = s.getModelFlux()**2 * acErr**2
+            fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
+            s.setModelFluxErr(fluxErrPropegated)
+
         
 class ApertureCorrectionApplyStage(harnessStage.Stage):
     parallelClass = ApertureCorrectionApplyStageParallel
