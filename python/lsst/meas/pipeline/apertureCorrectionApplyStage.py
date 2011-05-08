@@ -63,17 +63,23 @@ class ApertureCorrectionApplyStageParallel(harnessStage.ParallelProcessing):
             
             # apply the correction, and propegate the error
             ac, acErr = apCorr.computeAt(s.getXAstrom(), s.getYAstrom())
-            s.setPsfFlux(s.getPsfFlux()*ac)
-            varFlux = ac**2 * s.getPsfFluxErr()**2
-            varApCorr = s.getPsfFlux()**2 * acErr**2
-            fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
-            s.setPsfFluxErr(fluxErrPropegated)
+            try:
+                s.setPsfFlux(s.getPsfFlux()*ac)
+                varFlux = ac**2 * s.getPsfFluxErr()**2
+                varApCorr = s.getPsfFlux()**2 * acErr**2
+                fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
+                s.setPsfFluxErr(fluxErrPropegated)
+            except Exception, e:
+                self.log.log(Log.WARN, "Correcting PsfFlux for object %d" % s.getId())
 
-            s.setModelFlux(s.getModelFlux()*ac)
-            varFlux = ac**2 * s.getModelFluxErr()**2
-            varApCorr = s.getModelFlux()**2 * acErr**2
-            fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
-            s.setModelFluxErr(fluxErrPropegated)
+            try:
+                s.setModelFlux(s.getModelFlux()*ac)
+                varFlux = ac**2 * s.getModelFluxErr()**2
+                varApCorr = s.getModelFlux()**2 * acErr**2
+                fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
+                s.setModelFluxErr(fluxErrPropegated)
+            except Exception, e:
+                self.log.log(Log.WARN, "Correcting ModelFlux for object %d" % s.getId())
 
         
 class ApertureCorrectionApplyStage(harnessStage.Stage):
