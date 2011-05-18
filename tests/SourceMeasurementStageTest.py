@@ -42,9 +42,6 @@ import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
 import lsst.afw.geom as afwGeom
 import lsst.afw.image as afwImage
-import lsst.afw.detection as afwDetection
-import lsst.daf.persistence as dafPersist
-import lsst.daf.base as dafBase
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
 import lsst.afw.display.ds9 as ds9
@@ -100,28 +97,6 @@ class SourceMeasurementStageTestCase(unittest.TestCase):
         assert(outClipboard.contains(sources))
         if False:
             assert(outClipboard.contains("persistable_" + sources))
-
-        src = outClipboard.get(sources)[0]
-        print src.getAstrometry(), src.getPhotometry(), src.getShape()
-
-        psv = outClipboard.get(sources + "_persistable")
-        src = psv.getSources()[0]
-        print src.getAstrometry(), src.getPhotometry(), src.getShape()
-        pers = dafPersist.Persistence.getPersistence(pexPolicy.Policy())
-        loc = dafPersist.LogicalLocation("testSource.boost")
-        dp = dafBase.PropertySet()
-        dp.setLongLong("ampExposureId", 10)
-        stl = dafPersist.StorageList()
-        stl.append(pers.getPersistStorage("BoostStorage", loc))
-        pers.persist(psv, stl, dp) 
-
-        stl = dafPersist.StorageList()
-        stl.append(pers.getRetrieveStorage("BoostStorage", loc))
-        persistable = pers.unsafeRetrieve("PersistableSourceVector", stl, dp)
-        res = afwDetection.PersistableSourceVector.swigConvert(persistable)
-
-        src = res.getSources()[0]
-        print src.getAstrometry(), src.getPhotometry(), src.getShape()
 
         del clipboard
         del outClipboard
