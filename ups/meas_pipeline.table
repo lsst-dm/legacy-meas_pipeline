@@ -4,7 +4,7 @@ setupRequired(afw >= 4.3.2.0)
 setupRequired(meas_algorithms >= 4.3.1.0)
 setupRequired(meas_astrom >= 4.3.1.0)
 setupRequired(meas_utils >= 4.3.1.0)
-setupOptional(astrometry_net_data cfhttemplate)
+setupOptional(astrometry_net_data)
 
 envAppend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
 envAppend(DYLD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
