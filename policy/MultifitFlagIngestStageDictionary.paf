@@ -1,0 +1,44 @@
+#<?cfg paf dictionary ?>
+target: lsst.meas.pipeline.MultifitStage
+
+definitions: {
+	inputKeys: {
+		type: "policy"
+		description: "specify clipboard inputs"		
+        minOccurs: 1
+        dictionary: {
+            definitions: {
+                sourceSet: {
+			        type: "string"
+			        description: "clipboard key of the input source set"
+        			default: "sourceSet"
+			        minOccurs: 1
+			        maxOccurs: 1
+			    }
+            }
+        }
+    }
+	parameters: {
+        type: "policy"
+        description: "specify stage parameters"
+        minOccurs: 1
+        dictionary: {
+            definitions: {
+                algorithm: {                    
+                	type: "string"
+                	description: "name of the algorithm to get flags from"
+                	default: "SHAPELET_MODEL_8"
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+                flagSchemaId: {
+                    type: "int"
+                    description: "index of the flags in the photometry schema"
+                    default: 2
+                    minOccurs: 1
+                    maxOccurs: 1
+                }
+            }
+        }
+    }
+}

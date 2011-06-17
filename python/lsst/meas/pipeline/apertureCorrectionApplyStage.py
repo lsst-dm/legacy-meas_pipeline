@@ -61,14 +61,14 @@ class ApertureCorrectionApplyStageParallel(harnessStage.ParallelProcessing):
 
         for s in sourceSet:
             
-            # apply the correction, and propegate the error
+            # apply the correction, and propagate the error
             ac, acErr = apCorr.computeAt(s.getXAstrom(), s.getYAstrom())
             try:
                 s.setPsfFlux(s.getPsfFlux()*ac)
                 varFlux = ac**2 * s.getPsfFluxErr()**2
                 varApCorr = s.getPsfFlux()**2 * acErr**2
-                fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
-                s.setPsfFluxErr(fluxErrPropegated)
+                fluxErrPropagated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
+                s.setPsfFluxErr(fluxErrPropagated)
             except Exception, e:
                 self.log.log(Log.WARN, "Correcting PsfFlux for object %d" % s.getId())
 
@@ -76,10 +76,19 @@ class ApertureCorrectionApplyStageParallel(harnessStage.ParallelProcessing):
                 s.setModelFlux(s.getModelFlux()*ac)
                 varFlux = ac**2 * s.getModelFluxErr()**2
                 varApCorr = s.getModelFlux()**2 * acErr**2
-                fluxErrPropegated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
-                s.setModelFluxErr(fluxErrPropegated)
+                fluxErrPropagated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
+                s.setModelFluxErr(fluxErrPropagated)
             except Exception, e:
                 self.log.log(Log.WARN, "Correcting ModelFlux for object %d" % s.getId())
+
+            try:
+                s.setInstFlux(s.getInstFlux()*ac)
+                varFlux = ac**2 * s.getInstFluxErr()**2
+                varApCorr = s.getInstFlux()**2 * acErr**2
+                fluxErrPropagated = math.sqrt(varFlux + varApCorr) # assume covariance = 0
+                s.setInstFluxErr(fluxErrPropagated)
+            except Exception, e:
+                self.log.log(Log.WARN, "Correcting InstFlux for object %d" % s.getId())
 
         
 class ApertureCorrectionApplyStage(harnessStage.Stage):

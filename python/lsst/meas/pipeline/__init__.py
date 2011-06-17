@@ -38,6 +38,7 @@ from sourceClassificationStage import *
 from sourceToDiaSourceStage import *
 #from transformDetectionStage import *
 #from multifitStage import *
+from multifitFlagIngestStage import *
 from forcedPhotometryStage import *
 from backgroundEstimationStage import *
 from wcsVerificationStage import *
