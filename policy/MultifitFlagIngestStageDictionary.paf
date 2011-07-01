@@ -27,7 +27,7 @@ definitions: {
                 algorithm: {                    
                 	type: "string"
                 	description: "name of the algorithm to get flags from"
-                	default: "SHAPELET_MODEL_8"
+                	default: "SHAPELET_MODEL"
                     minOccurs: 1
                     maxOccurs: 1
                 }
