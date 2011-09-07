@@ -43,6 +43,7 @@ import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
 import lsst.afw.geom as afwGeom
+import lsst.afw.coord as afwCoord
 import lsst.afw.image as afwImage
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
@@ -75,7 +76,8 @@ class SourceToDiaSourceStageTestCase(unittest.TestCase):
             sourceSet.append(afwDet.Source())
         
         point = afwGeom.Point2D(0.0, 0.0)
-        wcs = afwImage.createWcs(point, point, 1, 0, 0, 1);
+        wcs = afwImage.makeWcs(afwCoord.Coord(point, afwGeom.degrees),
+                               point, 1., 0., 0., 1.)
         ampBBox = afwGeom.Box2I(afwGeom.Point2I(0, 0), afwGeom.Extent2I(1, 1))
 
         tester = SimpleStageTester(measPipe.SourceToDiaSourceStage(stagePolicy))
