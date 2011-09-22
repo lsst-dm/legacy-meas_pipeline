@@ -22,26 +22,28 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
+from __future__ import with_statement
+
 """
 Run with:
-   python DetectTest.py
+   python WcsDeterminationTest.py
+or
+   >>> import WcsDeterminationTest; WcsDeterminationTest.run()
 """
 
 import sys, os, math
 from math import *
 
-import pdb
 import unittest
 
 import eups
 import lsst.utils.tests as utilsTests
 import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as pexPolicy
-from lsst.pex.logging import Trace
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
 import lsst.afw.image as afwImg
-
+import lsst.meas.algorithms.utils as maUtils
 
 from lsst.pex.harness.simpleStageTester import SimpleStageTester
 
@@ -77,19 +79,31 @@ class WcsDeterminationStageTestCase(unittest.TestCase):
 
     def setUp(self):
         #Load sample input from disk
-        path = os.path.join(eups.productDir("meas_pipeline"), "tests")
-        exp = afwImg.ExposureF(os.path.join(path, "v695833-e0-c000-a00.sci"))
-        srcSet = readSourceSet(os.path.join(path, "v695833-e0-c000.xy.txt"))
-
+        srcSet = readSourceSet(os.path.join(eups.productDir("meas_pipeline"), "tests",
+                                            "v695833-e0-c000.xy.txt"))
+        exp = afwImg.ExposureF(2048, 4612)
+        
         #Put them on the clipboard
         fileName = pexPolicy.DefaultPolicyFile("meas_pipeline", 
-                "WcsDeterminationStageDictionary.paf", "policy")
+                                               "WcsDeterminationStageDictionary.paf", "policy")
         self.policy = pexPolicy.Policy.createPolicy(fileName)
 
         self.clipboard = pexClipboard.Clipboard()         
         self.clipboard.put(self.policy.get("inputExposureKey"), exp)
         self.clipboard.put(self.policy.get("inputSourceSetKey"), srcSet)
 
+        # Set up local astrometry_net_data
+        adnDB = 'testTagAlong'
+        datapath = os.path.join(eups.productDir("meas_pipeline"), 'tests', 'astrometry_net_data', adnDB)
+        
+        # scons doesn't set $HOME, so make sure it's set
+        os.environ['HOME'] = os.environ.get("HOME", os.path.expanduser("~"))
+        
+        eupsObj = eups.Eups(root=datapath)
+        ok, version, reason = eupsObj.setup('astrometry_net_data')
+        if not ok:
+            raise ValueError("Need %s version of astrometry_net_data (from path: %s): %s" %
+                             (adnDN, datapath, reason))
         
     def tearDown(self):
         del self.policy
@@ -107,9 +121,7 @@ class WcsDeterminationStageTestCase(unittest.TestCase):
 
         matchListKey = self.policy.get("outputMatchListKey")
         assert(outWorker.contains(matchListKey))
-        assert(len(outWorker['matchListKey']) > 0)
-
-
+        assert(len(outWorker[matchListKey]) > 0)
         
 def suite():
     """Returns a suite containing all the test cases in this module."""
@@ -117,12 +129,7 @@ def suite():
     utilsTests.init()
 
     suites = []
-
-    if not eups.productDir("astrometry_net_data"):
-        print >> sys.stderr, "Unable to test WcsDeterminationStage as astrometry_net_data is not setup"
-    else:
-        suites += unittest.makeSuite(WcsDeterminationStageTestCase)
-
+    suites += unittest.makeSuite(WcsDeterminationStageTestCase)
     suites += unittest.makeSuite(utilsTests.MemoryTestCase)
     return unittest.TestSuite(suites)
 

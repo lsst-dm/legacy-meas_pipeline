@@ -7,7 +7,6 @@ import glob
 #
 import lsst.tests
 
-# This is failing to solve for some unknown reason.
-ignoreList = ["WcsDeterminationTest.py"]
+ignoreList = []
 tests = lsst.tests.Control(env, ignoreList=ignoreList, verbose = True)
 tests.run("*.py")
