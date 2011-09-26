@@ -42,6 +42,7 @@ import lsst.pex.harness.Clipboard as pexClipboard
 import lsst.pex.policy as pexPolicy
 import lsst.meas.pipeline as measPipe
 import lsst.afw.detection as afwDet
+import lsst.afw.geom as afwGeom
 import lsst.afw.image as afwImg
 import lsst.meas.algorithms.utils as maUtils
 
@@ -66,10 +67,10 @@ def readSourceSet(fileName):
 
         s.setId(int(id))
         s.setFlagForDetection(int(flags))
-        s.setRa(float(ra))
+        s.setRa(float(ra) * afwGeom.radians)
+        s.setDec(float(dec) * afwGeom.radians)
         s.setXAstrom(float(x))
         s.setYAstrom(float(y))
-        s.setDec(float(dec))
         s.setPsfFlux(float(cts))
 
     return sourceSet
