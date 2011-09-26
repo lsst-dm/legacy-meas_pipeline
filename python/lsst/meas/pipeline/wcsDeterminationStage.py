@@ -112,6 +112,9 @@ class WcsDeterminationStageParallel(harnessStage.ParallelProcessing):
         astrom  = measAstrom.determineWcs(self.policy, exp, 
                                           srcSet, solver=self.solver, log=self.log)
         matchList = astrom.getMatches()
+        if not matchList:
+            matchList = []
+
         wcs = astrom.getWcs()
         matchListMeta = astrom.getMatchMetadata()
 
