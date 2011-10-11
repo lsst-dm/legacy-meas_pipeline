@@ -146,12 +146,14 @@ class SourceToDiaSourceStageParallel(harnessStage.ParallelProcessing):
         of pixels to outputs in units of degrees. This is an artifact of WCSLIB
         using degrees as its internal angular unit.
 
-        Errors are returned in units of degrees.
+        Errors are returned as afwGeom.Angle objects
         """
         t = pixToSkyAffineTransform
         varRa  = t[0]**2 * xErr**2 + t[2]**2 * yErr**2
         varDec = t[1]**2 * xErr**2 + t[3]**2 * yErr**2
-        return (math.sqrt(varRa), math.sqrt(varDec))
+        raErr =  math.sqrt(varRa ) * afwGeom.degrees
+        decErr = math.sqrt(varDec) * afwGeom.degrees
+        return (raErr, decErr)
 
 
 class SourceToDiaSourceStage(harnessStage.Stage):
