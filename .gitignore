@@ -1,0 +1,14 @@
+
+# /
+/config.log
+/.scon*
+
+# /doc/
+/doc/htmlDir
+
+# /python/lsst/meas/pipeline/
+/python/lsst/meas/pipeline/*.pyc
+
+# /tests/
+/tests/.tests
+/tests/*.pyc
