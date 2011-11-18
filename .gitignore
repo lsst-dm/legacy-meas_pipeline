@@ -1,14 +1,17 @@
-
-# /
-/config.log
-/.scon*
-
-# /doc/
-/doc/htmlDir
-
-# /python/lsst/meas/pipeline/
-/python/lsst/meas/pipeline/*.pyc
-
-# /tests/
-/tests/.tests
-/tests/*.pyc
+.sconsign.dblite
+config.log
+.sconf_temp
+*.o
+*.dylib
+*.os
+*.so
+*.cfgc
+*.pyc
+*_wrap.cc
+*Lib.py
+doc/html
+doc/*.tag
+doc/*.inc
+doc/doxygen.conf
+tests/.tests
+version.py
