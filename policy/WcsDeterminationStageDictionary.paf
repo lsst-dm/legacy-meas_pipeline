@@ -38,6 +38,10 @@ definitions: {
     }
 
     # Parameters for solving for wcs
+    #
+    # N.b. These parameters are also in meas_astrom/policy/WcsDeterminationDictionary.paf where they belong;
+    # as we move to using pipette these values should *not* be copied over.
+    # I suspect that there is some way to include that file here by reference, but I forget the syntax. RHL
     blindSolve: {
         type: "boolean"
         description: "Whether to ignore wcs information in header when trying to solve. Slows down the solution step significantly, but can be useful if the initial wcs is significantly off"
