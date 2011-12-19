@@ -4,6 +4,7 @@ setupRequired(afw >= 4.6.0.0)
 setupRequired(meas_algorithms >= 4.6.0.0)
 setupRequired(meas_astrom >= 4.6.0.0)
 setupRequired(meas_utils >= 4.6.0.0)
+setupRequired(sdqa)
 setupOptional(astrometry_net_data)
 
 envAppend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
