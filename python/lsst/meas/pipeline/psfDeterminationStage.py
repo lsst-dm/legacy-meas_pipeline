@@ -74,7 +74,7 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
         
         clipboard.put(self.policy.get("outputKeys.psf"), psf)
         clipboard.put(self.policy.get("outputKeys.cellSet"), psfCellSet)
-        clipboard.put(self.policy.get("outputKeys.metadata"), metadata)
+        clipboard.put(self.policy.get("outputKeys.sdqa"), metadata)
 
 class PsfDeterminationStage(harnessStage.Stage):
     parallelClass = PsfDeterminationStageParallel

@@ -8,5 +8,5 @@ inputKeys: {
 outputKeys: {
     psf: "psf"
     cellSet: "psfCellSet"
-    metadata: "metadata"
+    sdqa: "sdqa"
 }

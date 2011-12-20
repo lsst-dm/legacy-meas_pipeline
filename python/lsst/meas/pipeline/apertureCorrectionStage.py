@@ -70,7 +70,7 @@ class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
         apCorr = measAlg.ApertureCorrection(exposure, cellSet, metadata, apCorrCtrl, log=self.log)
 
         clipboard.put(self.policy.get("outputKeys.apCorr"), apCorr)
-        clipboard.put(self.policy.get("outputKeys.metadata"), metadata)
+        clipboard.put(self.policy.get("outputKeys.sdqa"), metadata)
 
         
 class ApertureCorrectionStage(harnessStage.Stage):
