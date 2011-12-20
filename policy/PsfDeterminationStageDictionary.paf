@@ -44,9 +44,9 @@ definitions: {
                     minOccurs: 1
                     maxOccurs: 1
                 }
-                sdqa: {
+                metadata: {
                     type: "string"
-                    description: "specify the clipboard key for SDQA"
+                    description: "specify the clipboard key for metadata"
                     minOccurs: 0
                     maxOccurs: 1
                 }

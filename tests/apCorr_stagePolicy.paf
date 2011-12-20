@@ -8,7 +8,7 @@ inputKeys: {
 
 outputKeys: {
     apCorr: "apCorr"
-    sdqa: "sdqaApCorr"
+    metadata: "metadataApCorr"
 }
 
 parameters: {
