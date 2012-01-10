@@ -27,7 +27,7 @@ from lsst.pex.logging import Log
 import lsst.pex.harness.stage as harnessStage
 import lsst.pex.policy as pexPolicy
 import lsst.meas.algorithms as measAlg
-import lsst.sdqa as sdqa
+import lsst.daf.base as dafBase
 
 class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
     """
@@ -68,14 +68,14 @@ class PsfDeterminationStageParallel(harnessStage.ParallelProcessing):
         sourceSet = clipboard.get(self.policy.get("inputKeys.sourceSet"))
 
         psfCandidateList = self.starSelector.selectStars(exposure, sourceSet)
-        sdqaRatings = sdqa.SdqaRatingSet()
-        psf, psfCellSet = self.psfDeterminer.determinePsf(exposure, psfCandidateList, sdqaRatings)
+        metadata = dafBase.PropertySet()
+        psf, psfCellSet = self.psfDeterminer.determinePsf(exposure, psfCandidateList, metadata)
         self.log.log(Log.INFO, "Calling exposure.setPsf(psf) in stage code")
         exposure.setPsf(psf)
         
         clipboard.put(self.policy.get("outputKeys.psf"), psf)
         clipboard.put(self.policy.get("outputKeys.cellSet"), psfCellSet)
-        clipboard.put(self.policy.get("outputKeys.sdqa"), sdqaRatings)
+        clipboard.put(self.policy.get("outputKeys.metadata"), metadata)
 
 class PsfDeterminationStage(harnessStage.Stage):
     parallelClass = PsfDeterminationStageParallel
