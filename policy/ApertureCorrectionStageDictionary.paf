@@ -39,12 +39,12 @@ definitions: {
                     maxOccurs: 1
 		    default: "apCorr"
                 }
-                sdqa: {
+                metadata: {
                     type: "string"
-                    description: "specify the clipboard key for SDQA"
+                    description: "specify the clipboard key for SDQA metadata"
                     minOccurs: 0
                     maxOccurs: 1
-		    default: "sdqaApCorr"
+		    default: "metadataApCorr"
                 }
             }
         }
