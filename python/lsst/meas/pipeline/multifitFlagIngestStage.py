@@ -27,7 +27,6 @@ from lsst.pex.logging import Log
 import lsst.pex.harness.stage as harnessStage
 import lsst.pex.policy as pexPolicy
 import lsst.afw.detection
-import lsst.sdqa as sdqa
 
 class MultifitFlagIngestStageParallel(harnessStage.ParallelProcessing):
     """

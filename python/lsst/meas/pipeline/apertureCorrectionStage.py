@@ -29,7 +29,7 @@ import lsst.pex.policy as pexPolicy
 import lsst.meas.algorithms as measAlg
 import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
-import lsst.sdqa as sdqa
+import lsst.daf.base as dafBase
 
 class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
     """
@@ -65,14 +65,14 @@ class ApertureCorrectionStageParallel(harnessStage.ParallelProcessing):
         exposure = clipboard.get(self.policy.get("inputKeys.exposure"))       
         cellSet = clipboard.get(self.policy.get("inputKeys.cellSet"))
         
-        sdqaRatings = sdqa.SdqaRatingSet()
+        metadata = dafBase.PropertySet()
         apCorrCtrl = measAlg.ApertureCorrectionControl(self.ApCorrPolicy)
-        apCorr = measAlg.ApertureCorrection(exposure, cellSet, sdqaRatings,
+        apCorr = measAlg.ApertureCorrection(exposure, cellSet, metadata,
                                                        apCorrCtrl, log=self.log)
         
 
         clipboard.put(self.policy.get("outputKeys.apCorr"), apCorr)
-        clipboard.put(self.policy.get("outputKeys.sdqa"), sdqa)
+        clipboard.put(self.policy.get("outputKeys.metadata"), metadata)
 
         
 class ApertureCorrectionStage(harnessStage.Stage):
