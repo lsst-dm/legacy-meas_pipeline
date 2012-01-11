@@ -16,7 +16,7 @@ definitions: {
                     maxOccurs: 1
                     default: "exposure"
                 }
-		cellSet: {
+                cellSet: {
                     type: "string"
                     description: "specify clipboard key of input SourceSet"
                     minOccurs: 1
@@ -32,19 +32,19 @@ definitions: {
         type: "policy"
         dictionary: {
             definitions: {
-	        apCorr: {
+                apCorr: {
                     type: "string"
                     description: "specify clipboard key for output apCorr object"
                     minOccurs: 1
                     maxOccurs: 1
-		    default: "apCorr"
+                    default: "apCorr"
                 }
                 metadata: {
                     type: "string"
                     description: "specify the clipboard key for SDQA metadata"
                     minOccurs: 0
                     maxOccurs: 1
-		    default: "metadataApCorr"
+                    default: "metadataApCorr"
                 }
             }
         }
