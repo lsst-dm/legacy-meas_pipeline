@@ -44,7 +44,7 @@ definitions: {
                     description: "specify the clipboard key for SDQA metadata"
                     minOccurs: 0
                     maxOccurs: 1
-                    default: "metadataApCorr"
+                    default: "apCorrMetadata"
                 }
             }
         }
