@@ -67,10 +67,10 @@ def readSourceSet(fileName):
 
         s.setId(int(id))
         s.setFlagForDetection(int(flags))
-        s.setRa(ra.asRadians())
+        s.setRa(float(ra) * afwGeom.degrees)
         s.setXAstrom(float(x))
         s.setYAstrom(float(y))
-        s.setDec(dec.asRadians())
+        s.setDec(float(dec) * afwGeom.degrees)
         s.setPsfFlux(float(cts))
 
     return sourceSet
